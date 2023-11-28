@@ -1,0 +1,27 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+a {
+  @apply text-blue-800 dark:text-blue-500;
+}
+a:visited {
+  @apply text-blue-900 dark:text-blue-600;
+}
+a:hover {
+  @apply text-blue-600 dark:text-blue-400;
+}
+
+@layer base {
+  input[type='number']::-webkit-inner-spin-button,
+  input[type='number']::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+}
