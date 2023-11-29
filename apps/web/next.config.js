@@ -12,6 +12,9 @@ const nextConfig = {
     // See: https://github.com/gregberge/svgr
     svgr: false,
   },
+  redirects: async () => [
+    { source: '/', destination: '/user', permanent: true },
+  ],
 };
 
 const plugins = [

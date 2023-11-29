@@ -1,3 +1,8 @@
 {
-  "singleQuote": true
+  "singleQuote": true,
+  "tabWidth": 4,
+  "bracketSpacing": true,
+  "endOfLine": "lf",
+  "embeddedLanguageFormatting": "auto",
+  "printWidth": 140
 }
