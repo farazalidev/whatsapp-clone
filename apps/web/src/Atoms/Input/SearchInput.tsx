@@ -1,9 +1,10 @@
-'use client';
-import { cn } from '@/utils/cn';
+import React, { ForwardRefRenderFunction, forwardRef } from 'react';
+import { InputProps } from './Input';
 import { VariantProps, cva } from 'class-variance-authority';
-import React, { ForwardRefRenderFunction } from 'react';
+import { cn } from '@/utils/cn';
+import Image from 'next/image';
 
-export interface InputProps
+interface SearchInputProps
     extends React.DetailedHTMLProps<React.InputHTMLAttributes<HTMLInputElement>, HTMLInputElement>,
         VariantProps<typeof InputProps>,
         VariantProps<typeof InputLabelVariants> {
@@ -11,6 +12,8 @@ export interface InputProps
     full_width?: boolean;
     error?: boolean;
     error_message?: string;
+    icon_src: string;
+    focus_down_icon_src: string;
 }
 
 const InputProps = cva(
@@ -46,8 +49,8 @@ const InputLabelVariants = cva(['text-base flex flex-col justify-center text-wha
     },
 });
 
-const Input: ForwardRefRenderFunction<HTMLInputElement, InputProps> = (
-    { className, label, error, error_message, full_width, labelTextSize, ...props },
+const SearchInput: ForwardRefRenderFunction<HTMLInputElement, SearchInputProps> = (
+    { className, label, error, error_message, full_width, labelTextSize, icon_src, ...props },
     ref
 ) => {
     return (
@@ -63,23 +66,29 @@ const Input: ForwardRefRenderFunction<HTMLInputElement, InputProps> = (
             >
                 {label}
             </label>
-            <input
-                id={props.id}
-                autoComplete="true"
-                ref={ref}
-                className={cn(
-                    InputProps({
-                        inputsize: props.inputsize,
-                        className: `mt-1 ${full_width ? 'w-full' : ''} ${error ? 'mb-2' : ''} ${
-                            error ? 'outline-red-500' : 'outline-whatsapp-default-primary_green outline-'
-                        } ${className}`,
-                    })
-                )}
-                {...props}
-            />
+
+            <div className="relative flex place-items-center">
+                <input
+                    id={props.id}
+                    autoComplete="true"
+                    ref={ref}
+                    className={cn(
+                        InputProps({
+                            inputsize: props.inputsize,
+                            className: `mt-1 py-2 pl-16 ${full_width ? 'w-full' : ''} ${error ? 'mb-2' : ''} ${
+                                error ? 'outline-red-500' : 'outline-whatsapp-default-primary_green outline-'
+                            } ${className}`,
+                        })
+                    )}
+                    {...props}
+                />
+                <span className="absolute left-[32px] ">
+                    <Image src={icon_src} alt="search" width={25} height={25} />
+                </span>
+            </div>
             {error ? <span className="text-red-500 text-xs whitespace-pre-line">{error_message}</span> : null}
         </div>
     );
 };
 
-export default React.forwardRef(Input);
+export default forwardRef(SearchInput);

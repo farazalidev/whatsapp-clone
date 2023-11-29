@@ -1,5 +1,5 @@
+import UserSideBar from '@/components/User/Sidebar/UserSideBar';
 import UserChat from '@/components/User/UserChat';
-import UserSideBar from '@/components/User/UserSideBar';
 import React from 'react';
 
 const UserPage = () => {
