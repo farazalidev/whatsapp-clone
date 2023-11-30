@@ -26,27 +26,18 @@ export class AuthService {
   constructor(
     private userService: UserService,
     private jwtService: JwtService,
-    @InjectRepository(UserEntity) private UserRepo: Repository<UserEntity>
+    @InjectRepository(UserEntity) private UserRepo: Repository<UserEntity>,
   ) {}
 
   // get tokens function
   private async getTokens(user_id: string): Promise<AuthTokens> {
-    const refresh_token = await this.jwtService.signAsync(
-      { user_id },
-      { expiresIn: '7d', secret: process.env.REFRESH_TOKEN_SECRET }
-    );
-    const access_token = await this.jwtService.signAsync(
-      { user_id },
-      { expiresIn: '1h', secret: process.env.ACCESS_TOKEN_SECRET }
-    );
+    const refresh_token = await this.jwtService.signAsync({ user_id }, { expiresIn: '7d', secret: process.env.REFRESH_TOKEN_SECRET });
+    const access_token = await this.jwtService.signAsync({ user_id }, { expiresIn: '1h', secret: process.env.ACCESS_TOKEN_SECRET });
     return { access_token, refresh_token };
   }
 
   private async getOptToken(user_id: string): Promise<OtpToken> {
-    const otp_token = await this.jwtService.signAsync(
-      { user_id },
-      { expiresIn: '5m', secret: process.env.OTP_TOKEN_SECRET }
-    );
+    const otp_token = await this.jwtService.signAsync({ user_id }, { expiresIn: '5m', secret: process.env.OTP_TOKEN_SECRET });
     return { otp_token };
   }
 
@@ -136,10 +127,7 @@ export class AuthService {
     }
   }
 
-  async verifyOtp(
-    otp: string,
-    user_id: string
-  ): Promise<ResponseType<AuthTokens>> {
+  async verifyOtp(otp: string, user_id: string): Promise<ResponseType<AuthTokens>> {
     const NowDate = parseInt((Date.now() / 1000).toFixed(0));
     try {
       const user = await this.UserRepo.findOne({
@@ -210,10 +198,7 @@ export class AuthService {
 
       if (isSuccess(response)) {
         // matching password
-        const isValidPassword = await compare(
-          user.password,
-          response.data.password
-        );
+        const isValidPassword = await compare(user.password, response.data.password);
 
         if (!isValidPassword) {
           return {
@@ -229,10 +214,7 @@ export class AuthService {
         const tokens = await this.getTokens(response.data.user_id);
 
         // updating refresh hash
-        await this.updateRefreshTokenHash(
-          response.data.user_id,
-          tokens.refresh_token
-        );
+        await this.updateRefreshTokenHash(response.data.user_id, tokens.refresh_token);
 
         return {
           success: true,
@@ -256,10 +238,7 @@ export class AuthService {
    * @param user_id requires user's id to resign refresh token
    * @returns ResponseType<AuthTokens>
    */
-  async refreshTokenService(
-    user_id: string,
-    refresh_token: string
-  ): Promise<ResponseType<AuthTokens>> {
+  async refreshTokenService(user_id: string, refresh_token: string): Promise<ResponseType<AuthTokens>> {
     try {
       const user = await this.userService.getUserProfileService(user_id);
 
@@ -274,10 +253,7 @@ export class AuthService {
       }
 
       // checking refresh token hash
-      const isValidRefreshToken = await bcrypt.compare(
-        refresh_token,
-        user.data.refresh_hash
-      );
+      const isValidRefreshToken = await bcrypt.compare(refresh_token, user.data.refresh_hash);
 
       if (!isValidRefreshToken) {
         return {
@@ -290,10 +266,7 @@ export class AuthService {
       const tokens = await this.getTokens(user.data.user_id);
 
       // updating refresh token hash
-      await this.updateRefreshTokenHash(
-        user.data.user_id,
-        tokens.refresh_token
-      );
+      await this.updateRefreshTokenHash(user.data.user_id, tokens.refresh_token);
 
       return {
         success: true,
