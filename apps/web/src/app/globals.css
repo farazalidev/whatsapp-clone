@@ -8,14 +8,26 @@
   box-sizing: border-box;
 }
 
+::-webkit-scrollbar {
+  width: 7px; /* Set the width of the scrollbar */
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-whatsapp-misc-scrollbar_light dark:bg-whatsapp-misc-scrollbar_dark;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+
 a {
-  @apply text-blue-800 dark:text-blue-500;
+  @apply text-whatsapp-misc-link;
 }
 a:visited {
-  @apply text-blue-900 dark:text-blue-600;
+  @apply text-whatsapp-misc-link;
 }
 a:hover {
-  @apply text-blue-600 dark:text-blue-400;
+  @apply text-whatsapp-misc-link;
 }
 
 @layer base {
