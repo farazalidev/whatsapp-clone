@@ -3,6 +3,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { UserEntity } from './entities/user.entity';
 import { LessThan, Repository } from 'typeorm';
 import { ResponseType } from 'src/Misc/ResponseType.type';
+import { UserProfileDto } from './DTO/userprofile.dto';
+import { UserProfileEntity } from './entities/userprofile.entity';
 
 @Injectable()
 export class UserService {
@@ -44,5 +46,45 @@ export class UserService {
   async removeFalseVerifiedUsers() {
     const NowDate = parseInt((Date.now() / 1000).toFixed(0));
     await this.UserRepo.delete({ isVerified: false, registration_otp_exp: LessThan(NowDate) });
+  }
+
+  // complete user profile
+  async completeUserProfileService(user_id: string, profile: UserProfileDto): Promise<ResponseType> {
+    try {
+      const user = await this.UserRepo.findOne({ where: { user_id } });
+      if (!user) {
+        return {
+          success: false,
+          error: { message: 'Registration was not successful', statusCode: HttpStatus.BAD_REQUEST },
+        };
+      }
+
+      if (!user.profile) {
+        // If user.profile is null, create a new UserProfileEntity
+        const newProfile = new UserProfileEntity();
+        newProfile.about = profile.about;
+        newProfile.profile_pic = profile.profile_pic;
+
+        user.profile = newProfile;
+      } else {
+        // If user.profile is not null, update its properties
+        user.profile.about = profile.about;
+        user.profile.profile_pic = profile.profile_pic;
+      }
+
+      user.name = profile.name;
+
+      await this.UserRepo.save(user);
+      return {
+        success: true,
+        successMessage: 'Profile saved',
+      };
+    } catch (error) {
+      console.log('🚀 ~ file: user.service.ts:67 ~ UserService ~ completeUserProfileService ~ error:', error);
+      return {
+        success: false,
+        error: { message: 'Error while saving profile', statusCode: HttpStatus.INTERNAL_SERVER_ERROR },
+      };
+    }
   }
 }

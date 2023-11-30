@@ -1,5 +1,6 @@
-import { Column, CreateDateColumn, Entity, PrimaryColumn, UpdateDateColumn } from 'typeorm';
+import { Column, CreateDateColumn, Entity, JoinColumn, OneToOne, PrimaryColumn, UpdateDateColumn } from 'typeorm';
 import { v4 } from 'uuid';
+import { UserProfileEntity } from './userprofile.entity';
 
 @Entity({ name: 'user' })
 export class UserEntity {
@@ -14,6 +15,10 @@ export class UserEntity {
 
   @Column({ unique: true })
   email: string;
+
+  @OneToOne(() => UserProfileEntity, (profile) => profile.id, { eager: true, cascade: true, nullable: true })
+  @JoinColumn()
+  profile: UserProfileEntity;
 
   @Column()
   password: string;
