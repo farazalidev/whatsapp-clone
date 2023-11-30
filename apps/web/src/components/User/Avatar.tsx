@@ -1,12 +1,17 @@
 import Image from 'next/image';
-import React from 'react';
+import React, { FC } from 'react';
 
-const Avatar = () => {
-    return (
-        <div>
-            <Image src={'/Avatar.png'} height={45} width={45} className="rounded-full" alt="avatar" />
-        </div>
-    );
+interface AvatarProps {
+  avatar_src?: string;
+  name?: string;
+}
+
+const Avatar: FC<AvatarProps> = ({ avatar_src = '/icons/avatardefault.svg', name }) => {
+  return (
+    <div>
+      <Image src={avatar_src} height={45} width={45} className="rounded-full" alt={name ? name : 'user'} />
+    </div>
+  );
 };
 
 export default Avatar;
