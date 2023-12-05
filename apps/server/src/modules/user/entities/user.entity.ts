@@ -1,10 +1,12 @@
-import { Column, CreateDateColumn, Entity, JoinColumn, OneToOne, PrimaryColumn, UpdateDateColumn } from 'typeorm';
+import { Column, CreateDateColumn, Entity, JoinColumn, OneToMany, OneToOne, PrimaryColumn, UpdateDateColumn } from 'typeorm';
 import { v4 } from 'uuid';
 import { UserProfileEntity } from './userprofile.entity';
+import { UserChatEntity } from 'src/modules/chat/entities/userchat.entity';
+import { ChatRequestEntity } from './chatRequest.entity';
 
 @Entity({ name: 'user' })
 export class UserEntity {
-  @PrimaryColumn()
+  @PrimaryColumn({ type: 'uuid' })
   user_id: string = v4();
 
   @Column({ unique: true })
@@ -13,14 +15,22 @@ export class UserEntity {
   @Column()
   name: string;
 
-  @Column({ unique: true })
+  @Column({ unique: true, type: 'varchar' })
   email: string;
 
   @OneToOne(() => UserProfileEntity, (profile) => profile.id, { eager: true, cascade: true, nullable: true })
-  @JoinColumn()
+  @JoinColumn({ name: 'profileId' })
   profile: UserProfileEntity;
 
-  @Column()
+  @OneToMany(() => UserChatEntity, (chat) => chat.user, { eager: true, cascade: true })
+  @JoinColumn({ name: 'chats' })
+  chats: UserChatEntity[];
+
+  @OneToMany(() => ChatRequestEntity, (chatRequest) => chatRequest.acceptor, { nullable: true, cascade: true })
+  @JoinColumn({ name: 'chat_requests' })
+  chats_requests: ChatRequestEntity[];
+
+  @Column({})
   password: string;
 
   @Column({ type: 'boolean', nullable: true, default: false })
@@ -35,6 +45,9 @@ export class UserEntity {
   @Column({ nullable: true })
   refresh_hash: string;
 
+  @Column({ default: false })
+  is_profile_completed: boolean = false;
+
   // Automatically set to the current timestamp when the entity is first created
   @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   created_at: Date;
@@ -42,4 +55,12 @@ export class UserEntity {
   // Automatically set to the current timestamp when the entity is updated
   @UpdateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP', onUpdate: 'CURRENT_TIMESTAMP' })
   updated_at: Date;
+
+  addChatRequest(chat_request: ChatRequestEntity) {
+    if (!this.chats_requests) {
+      this.chats_requests = [];
+      return this.chats_requests.push(chat_request);
+    }
+    return this.chats_requests.push(chat_request);
+  }
 }

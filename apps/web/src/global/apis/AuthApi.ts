@@ -1,9 +1,8 @@
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import { LoginUser, RegisterUser, VerifyUserPayload } from './api.types';
+import { SuccessResponseType } from '@server/Misc/ResponseType.type';
+import { apiSlice } from './ApiSlice';
+import { RegisterUser, LoginUser, VerifyUserPayload, CompleteProfileBody } from './api.types';
 
-export const AuthApi = createApi({
-  reducerPath: 'api',
-  baseQuery: fetchBaseQuery({ baseUrl: process.env.NEXT_PUBLIC_BACKEND_URL }),
+export const authApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     RegisterApi: builder.mutation<any, RegisterUser>({
       query: (user) => ({
@@ -21,6 +20,7 @@ export const AuthApi = createApi({
         credentials: 'include',
       }),
     }),
+
     verifyUser: builder.mutation<any, VerifyUserPayload>({
       query: (otp) => ({
         url: 'auth/verify-user',
@@ -29,7 +29,30 @@ export const AuthApi = createApi({
         method: 'POST',
       }),
     }),
+
+    uploadProfilePic: builder.mutation<SuccessResponseType<{ format: string; public_id: string }>, FormData>({
+      query: (image) => ({
+        url: '/image/upload/profile-pic',
+        body: image,
+        credentials: 'include',
+        method: 'POST',
+      }),
+    }),
+    completeProfile: builder.mutation<SuccessResponseType, CompleteProfileBody>({
+      query: (userProfile) => ({
+        url: 'user/complete-profile',
+        body: userProfile,
+        credentials: 'include',
+        method: 'POST',
+      }),
+    }),
   }),
 });
 
-export const { useRegisterApiMutation, useLoginApiMutation, useVerifyUserMutation } = AuthApi;
+export const {
+  useRegisterApiMutation,
+  useLoginApiMutation,
+  useVerifyUserMutation,
+  useUploadProfilePicMutation,
+  useCompleteProfileMutation,
+} = authApiSlice;

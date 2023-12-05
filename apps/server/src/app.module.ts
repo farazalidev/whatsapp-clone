@@ -9,6 +9,8 @@ import { APP_GUARD } from '@nestjs/core';
 import { AuthGuard } from './modules/auth/guards/auth.guard';
 import { JwtService } from '@nestjs/jwt';
 import { ScheduleModule } from '@nestjs/schedule';
+import { UploadModule } from './modules/upload/upload.module';
+import { ChatModule } from './modules/chat/chat.module';
 
 @Module({
   imports: [
@@ -22,10 +24,13 @@ import { ScheduleModule } from '@nestjs/schedule';
       database: 'whatsapp',
       synchronize: true,
       autoLoadEntities: true,
+      uuidExtension: 'pgcrypto',
     }),
     ScheduleModule.forRoot(),
     UserModule,
     AuthModule,
+    UploadModule,
+    ChatModule,
   ],
   controllers: [AppController],
   providers: [

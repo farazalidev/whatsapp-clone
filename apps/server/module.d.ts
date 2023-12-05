@@ -6,5 +6,8 @@ declare namespace NodeJS {
     REFRESH_TOKEN_NAME: string;
     OTP_TOKEN_SECRET: string;
     OTP_TOKEN_NAME: string;
+    CLOUDINARY_NAME: string;
+    CLOUDINARY_API_KEY: string;
+    CLOUDINARY_API_SECRET: string;
   }
 }

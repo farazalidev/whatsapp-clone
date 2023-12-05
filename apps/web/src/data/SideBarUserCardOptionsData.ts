@@ -1,8 +1,8 @@
-interface SideBarUserCardOptionArrayProps {
+interface SideBarUserCarddOptionArrayProps {
   label: string;
 }
 
-export const SideBarUserCardOptionsArray: SideBarUserCardOptionArrayProps[] = [
+export const SideBarUserCardOptionsArray: SideBarUserCarddOptionArrayProps[] = [
   {
     label: 'Archive Chat',
   },

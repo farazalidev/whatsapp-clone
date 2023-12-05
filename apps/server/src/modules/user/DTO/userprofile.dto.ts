@@ -1,13 +1,13 @@
-import { IsString, IsUrl } from 'class-validator';
+import { IsObject, IsString } from 'class-validator';
 import { CloudinaryImageEntity } from 'src/modules/upload/entities/cloudinaryimage.entity';
 
 export class UserProfileDto {
-  @IsUrl()
+  @IsObject({ message: 'Provide a valid object' })
   profile_pic: CloudinaryImageEntity;
 
-  @IsString()
+  @IsString({ message: 'Name is required' })
   name: string;
 
-  @IsString()
+  @IsString({ message: 'About is required' })
   about: string;
 }

@@ -17,7 +17,8 @@ const ButtonVariants = cva('px-2 py-[2px] rounded-md bg-whatsapp-default-primary
     },
     color_variant: {
       primary: 'bg-whatsapp-default-primary_green text-white dark:text-black',
-      secondary: 'bg-whatsapp-light-secondary_bg text-whatsapp-light-text border-[1px] border-gray-800 dark:text-whatsapp-dark-text',
+      secondary:
+        'bg-whatsapp-light-secondary_bg text-whatsapp-light-text border-[1px] border-gray-800 dark:bg-whatsapp-dark-secondary_bg dark:text-whatsapp-dark-text',
     },
   },
   defaultVariants: {
@@ -35,21 +36,21 @@ const Button: ForwardRefRenderFunction<HTMLButtonElement, ButtonProps> = ({ chil
       disabled={loading}
     >
       {loading ? (
-        <div className='flex place-items-center justify-center gap-2'>
-          <div role='status'>
+        <div className="flex place-items-center justify-center gap-2">
+          <div role="status">
             <svg
-              width='24'
-              height='24'
-              fill='none'
-              stroke='currentColor'
-              stroke-width='1.5'
-              viewBox='0 0 24 24'
-              stroke-linecap='round'
-              stroke-linejoin='round'
-              xmlns='http://www.w3.org/2000/svg'
-              className='animate-spin w-6 h-6 stroke-white'
+              width="24"
+              height="24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+              viewBox="0 0 24 24"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              xmlns="http://www.w3.org/2000/svg"
+              className="animate-spin w-6 h-6 stroke-white"
             >
-              <path d='M12 3v3m6.366-.366-2.12 2.12M21 12h-3m.366 6.366-2.12-2.12M12 21v-3m-6.366.366 2.12-2.12M3 12h3m-.366-6.366 2.12 2.12'></path>
+              <path d="M12 3v3m6.366-.366-2.12 2.12M21 12h-3m.366 6.366-2.12-2.12M12 21v-3m-6.366.366 2.12-2.12M3 12h3m-.366-6.366 2.12 2.12"></path>
             </svg>
           </div>
           <span>Loading...</span>

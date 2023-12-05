@@ -7,7 +7,7 @@ export class UserProfileEntity {
   @PrimaryColumn({ type: 'uuid' })
   id: string = v4();
 
-  @OneToOne(() => CloudinaryImageEntity, (image) => image.id)
+  @OneToOne(() => CloudinaryImageEntity, (image) => image.id, { eager: true, cascade: true, onDelete: 'CASCADE' })
   @JoinColumn()
   profile_pic: CloudinaryImageEntity;
 

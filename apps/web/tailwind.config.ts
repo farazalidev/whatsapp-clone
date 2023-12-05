@@ -35,6 +35,7 @@ const config: Config = {
             scrollbar_dark: '#374045',
             scrollbar_light: '#CED0D1',
             link: '#53bdeb',
+            sideBarOverlayHeaderLightBg: '#008069',
           },
         },
       },

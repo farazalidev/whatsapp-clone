@@ -1,4 +1,4 @@
-import React, { ForwardRefRenderFunction, forwardRef } from 'react';
+import React, { ForwardRefRenderFunction, forwardRef, useState } from 'react';
 import { InputProps } from './Input';
 import { VariantProps, cva } from 'class-variance-authority';
 import { cn } from '@/utils/cn';
@@ -50,9 +50,18 @@ const InputLabelVariants = cva(['text-base flex flex-col justify-center text-wha
 });
 
 const SearchInput: ForwardRefRenderFunction<HTMLInputElement, SearchInputProps> = (
-  { className, label, error, error_message, full_width, labelTextSize, icon_src, ...props },
+  { className, label, error, error_message, full_width, labelTextSize, icon_src, focus_down_icon_src, ...props },
   ref,
 ) => {
+  const [isFocused, setIsFocused] = useState(false);
+
+  const handleFocus = () => {
+    setIsFocused(true);
+  };
+  const handleBlur = () => {
+    setIsFocused(false);
+  };
+
   return (
     <div className={`${full_width ? 'w-full' : ''}`}>
       <label
@@ -72,6 +81,8 @@ const SearchInput: ForwardRefRenderFunction<HTMLInputElement, SearchInputProps> 
           id={props.id}
           autoComplete="true"
           ref={ref}
+          onFocus={handleFocus}
+          onBlur={handleBlur}
           className={cn(
             InputProps({
               inputsize: props.inputsize,
@@ -83,7 +94,11 @@ const SearchInput: ForwardRefRenderFunction<HTMLInputElement, SearchInputProps> 
           {...props}
         />
         <span className="absolute left-[20px] ">
-          <Image src={icon_src} alt="search" width={25} height={25} />
+          {isFocused ? (
+            <Image src={focus_down_icon_src} alt="focusDown" width={25} height={25} onClick={handleBlur} className="cursor-pointer" />
+          ) : (
+            <Image src={icon_src} alt="search" width={25} height={25} />
+          )}
         </span>
       </div>
       {error ? <span className="text-red-500 text-xs whitespace-pre-line">{error_message}</span> : null}

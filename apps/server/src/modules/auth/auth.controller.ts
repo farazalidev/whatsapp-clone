@@ -1,4 +1,4 @@
-import { Body, Controller, HttpCode, HttpException, HttpStatus, Post, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpException, HttpStatus, Post, Res, UseGuards } from '@nestjs/common';
 import { UserService } from '../user/user.service';
 import { RegisterUserDto } from '../user/DTO/user.dto';
 import { LoginDto } from './DTO/login.dto';
@@ -59,7 +59,7 @@ export class AuthController {
   // refresh token
   @UseGuards(RefreshGuard)
   @Public()
-  @Post('refresh')
+  @Get('refresh')
   async refresh(@GetRefreshData() refreshData, @Res() res) {
     const response = await this.authService.refreshTokenService(refreshData.refresh_user.user_id, refreshData.refresh);
     if (!isSuccess(response)) {

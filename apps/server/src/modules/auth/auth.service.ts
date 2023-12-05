@@ -117,6 +117,7 @@ export class AuthService {
         data: otp_token,
       };
     } catch (error) {
+      console.log('🚀 ~ file: auth.service.ts:120 ~ AuthService ~ RegisterUser ~ error:', error);
       return {
         success: false,
         error: {
@@ -274,6 +275,7 @@ export class AuthService {
         data: tokens,
       };
     } catch (error) {
+      console.log('🚀 ~ file: auth.service.ts:277 ~ AuthService ~ refreshTokenService ~ error:', error);
       return {
         success: false,
         error: {

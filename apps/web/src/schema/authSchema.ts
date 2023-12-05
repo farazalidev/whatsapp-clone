@@ -45,5 +45,11 @@ export const LoginSchema = z.object({
     .refine((value) => /^[^';"]*$/.test(value), 'Invalid input'),
 });
 
+export const CompeteProfileSchema = z.object({
+  name: z.string().min(1, 'Name is required').trim(),
+  about: z.string().min(1, 'About is required').trim(),
+});
+
 export type LoginSchemaType = z.infer<typeof LoginSchema>;
 export type RegisterSchemaType = z.infer<typeof RegisterSchema>;
+export type CompleteProfileType = z.infer<typeof CompeteProfileSchema>;

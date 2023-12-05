@@ -13,3 +13,9 @@ export type SuccessResponse = {
   success: true;
   message: string;
 };
+
+export type SuccessResponseType<TData = any> = {
+  success: true;
+  data?: TData;
+  successMessage: string;
+};

@@ -32,7 +32,6 @@ export class UploadService {
         data: response,
       };
     } catch (error) {
-      console.log('🚀 ~ file: upload.service.ts:27 ~ UploadService ~ uploadProfilePic ~ error:', error);
       return {
         success: false,
         error: { message: 'Error while uploading profile image.', statusCode: HttpStatus.INTERNAL_SERVER_ERROR },

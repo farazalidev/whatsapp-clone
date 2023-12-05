@@ -12,9 +12,12 @@ const nextConfig = {
     // See: https://github.com/gregberge/svgr
     svgr: false,
   },
-  redirects: async () => [
-    { source: '/', destination: '/user', permanent: true },
-  ],
+  serverRuntimeConfig: {
+    CLOUDINARY_NAME: 'dqgmwfomj',
+    CLOUDINARY_API_KEY: '779485947724676',
+    CLOUDINARY_API_SECRET: 'hWyKzST_hL_cI2iodFlqHpoX1-M',
+  },
+  redirects: async () => [{ source: '/', destination: '/user', permanent: true }],
 };
 
 const plugins = [
