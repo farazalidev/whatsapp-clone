@@ -2,9 +2,9 @@ import Typography from '@/Atoms/Typography/Typography';
 import Image from 'next/image';
 import React from 'react';
 
-const UserChat = () => {
+const ChatBanner = () => {
   return (
-    <div className="bg-whatsapp-light-secondary_bg dark:bg-whatsapp-dark-secondary_bg w-full h-full flex flex-col justify-center place-items-center gap-7">
+    <>
       <span>
         <Image src={'/icons/web.svg'} width={350} height={350} alt="whatsapp web" />
       </span>
@@ -19,8 +19,8 @@ const UserChat = () => {
           </Typography>
         </div>
       </span>
-    </div>
+    </>
   );
 };
 
-export default UserChat;
+export default ChatBanner;

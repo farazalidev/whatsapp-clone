@@ -1,7 +1,7 @@
 'use client';
 import Modal from '@/components/Misc/Modal';
 import UserSideBar from '@/components/User/Sidebar/UserSideBar';
-import UserChat from '@/components/User/UserChat';
+import UserChat from '@/components/User/chat/UserChat';
 import React, { FC } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../global/store';
@@ -25,6 +25,9 @@ const UserPage: FC<Props> = ({ searchParams }) => {
   //     redirect('/auth/completeprofile');
   //   }
   // }, [data?.is_profile_completed]);
+
+  // return <>Hellow</>;
+
   return (
     <div className="flex h-full">
       <aside className="flex-none flex-shrink-0 w-[30%] h-full">

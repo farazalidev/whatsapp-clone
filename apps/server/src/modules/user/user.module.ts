@@ -5,13 +5,12 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserEntity } from './entities/user.entity';
 import { JwtService } from '@nestjs/jwt';
 import { UserProfileEntity } from './entities/userprofile.entity';
-import { CloudinaryImageEntity } from '../upload/entities/cloudinaryimage.entity';
 import { ChatRequestEntity } from './entities/chatRequest.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([UserEntity, UserProfileEntity, CloudinaryImageEntity, ChatRequestEntity])],
+  imports: [TypeOrmModule.forFeature([UserEntity, UserProfileEntity, ChatRequestEntity])],
   providers: [UserService, JwtService],
   controllers: [UserController],
-  exports: [UserService, TypeOrmModule.forFeature([UserEntity, UserProfileEntity, CloudinaryImageEntity])],
+  exports: [UserService, TypeOrmModule.forFeature([UserEntity, UserProfileEntity])],
 })
 export class UserModule {}

@@ -32,7 +32,7 @@ export class AuthService {
   // get tokens function
   private async getTokens(user_id: string): Promise<AuthTokens> {
     const refresh_token = await this.jwtService.signAsync({ user_id }, { expiresIn: '7d', secret: process.env.REFRESH_TOKEN_SECRET });
-    const access_token = await this.jwtService.signAsync({ user_id }, { expiresIn: '1h', secret: process.env.ACCESS_TOKEN_SECRET });
+    const access_token = await this.jwtService.signAsync({ user_id }, { expiresIn: '30s', secret: process.env.ACCESS_TOKEN_SECRET });
     return { access_token, refresh_token };
   }
 
@@ -241,7 +241,8 @@ export class AuthService {
    */
   async refreshTokenService(user_id: string, refresh_token: string): Promise<ResponseType<AuthTokens>> {
     try {
-      const user = await this.userService.getUserProfileService(user_id);
+      const user = await this.userService.getUser(user_id);
+      console.log('🚀 ~ file: auth.service.ts:245 ~ AuthService ~ refreshTokenService ~ user:', user);
 
       if (!isSuccess(user)) {
         return {

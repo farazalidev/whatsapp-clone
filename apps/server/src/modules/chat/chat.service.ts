@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserEntity } from '../user/entities/user.entity';
 import { Repository } from 'typeorm';
@@ -12,13 +12,26 @@ export class ChatService {
     @InjectRepository(UserEntity) private userRepo: Repository<UserEntity>,
     @InjectRepository(UserChatEntity) private UserChatRepo: Repository<UserChatEntity>,
     @InjectRepository(MessageEntity) private UserMessageRepo: Repository<MessageEntity>,
-  ) {}
+  ) {
+    // get user chats service
+  }
+  async getUserChats(user_id: string): Promise<ResponseType<UserChatEntity[]>> {
+    try {
+      const user = await this.userRepo.findOne({ where: { user_id } });
+      if (!user) {
+        return {
+          success: false,
+          error: { message: 'User not found', statusCode: HttpStatus.NOT_FOUND },
+        };
+      }
 
-  // send message
-  // async sendMessageService(sender_id: string, receiver_id: string, content: string): Promise<ResponseType> {
-  //   const CanStartChat = await this.userRepo.findOne({ where: { chats: { user_id: receiver_id } } });
-
-  //   // sending message
-  //   this.UserChatRepo.create({});
-  // }
+      return {
+        data: user.chats,
+        success: true,
+        successMessage: 'Chat Found',
+      };
+    } catch (error) {
+      return { success: false, error: { message: 'Internal Server Error', statusCode: HttpStatus.INTERNAL_SERVER_ERROR } };
+    }
+  }
 }

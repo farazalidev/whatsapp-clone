@@ -3,7 +3,7 @@
   "compilerOptions": {
     "outDir": "../../dist/out-tsc",
     "module": "commonjs",
-    "types": ["node", "express"],
+    "types": ["node", "express", "Multer"],
     "emitDecoratorMetadata": true,
     "target": "es2021"
   },

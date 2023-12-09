@@ -5,7 +5,7 @@ import { UserChatEntity } from './userchat.entity';
 @Entity()
 export class MessageEntity {
   @PrimaryColumn()
-  @ManyToOne(() => UserChatEntity, (chat) => chat.user_id)
+  @ManyToOne(() => UserChatEntity, (chat) => chat.id)
   id: string = v4();
 
   @Column()

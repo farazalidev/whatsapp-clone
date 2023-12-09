@@ -3,10 +3,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { UserEntity } from './entities/user.entity';
 import { LessThan, Repository } from 'typeorm';
 import { ResponseType } from 'src/Misc/ResponseType.type';
-import { UserProfileDto } from './DTO/userprofile.dto';
 import { UserProfileEntity } from './entities/userprofile.entity';
-import { CloudinaryImageEntity } from '../upload/entities/cloudinaryimage.entity';
 import { ChatRequestEntity } from './entities/chatRequest.entity';
+import { UserProfileDto } from './DTO/userprofile.dto';
 
 @Injectable()
 export class UserService {
@@ -29,7 +28,22 @@ export class UserService {
   }
 
   // get user profile
-  async getUserProfileService(user_id: string): Promise<ResponseType<UserEntity>> {
+  async getUserProfileService(user_id: string): Promise<ResponseType<UserProfileEntity>> {
+    const user = await this.UserRepo.findOne({ where: { user_id } });
+    if (!user) {
+      return {
+        success: false,
+        error: { message: 'user not found', statusCode: HttpStatus.NOT_FOUND },
+      };
+    }
+    return {
+      success: true,
+      successMessage: 'user founded',
+      data: user.profile,
+    };
+  }
+  // get user profile
+  async getUser(user_id: string): Promise<ResponseType<UserEntity>> {
     const user = await this.UserRepo.findOne({ where: { user_id } });
     if (!user) {
       return {
@@ -51,57 +65,6 @@ export class UserService {
   }
 
   // complete user profile
-  async completeUserProfileService(user_id: string, profile: UserProfileDto): Promise<ResponseType> {
-    try {
-      const user = await this.UserRepo.findOne({ where: { user_id } });
-      if (!user) {
-        return {
-          success: false,
-          error: { message: 'Registration was not successful', statusCode: HttpStatus.BAD_REQUEST },
-        };
-      }
-
-      if (!user.profile) {
-        // If user.profile is null, create a new UserProfileEntity
-        const newProfile = new UserProfileEntity();
-        newProfile.about = profile.about;
-
-        // Create a new CloudinaryImageEntity and set its properties
-        const newCloudinaryImage = new CloudinaryImageEntity();
-        newCloudinaryImage.public_id = profile.profile_pic.public_id;
-        newCloudinaryImage.format = profile.profile_pic.format;
-
-        newProfile.profile_pic = newCloudinaryImage;
-
-        user.profile = newProfile;
-      } else {
-        // If user.profile is not null, update its properties
-        user.profile.about = profile.about;
-
-        // Check if profile_pic is null before setting its properties
-        if (!user.profile.profile_pic) {
-          user.profile.profile_pic = new CloudinaryImageEntity();
-        }
-        user.profile.profile_pic.format = profile.profile_pic.format;
-        user.profile.profile_pic.public_id = profile.profile_pic.public_id;
-      }
-
-      user.name = profile.name;
-      user.is_profile_completed = true;
-
-      await this.UserRepo.save(user);
-      return {
-        success: true,
-        successMessage: 'Profile saved',
-      };
-    } catch (error) {
-      console.log('🚀 ~ file: user.service.ts:99 ~ UserService ~ completeUserProfileService ~ error:', error);
-      return {
-        success: false,
-        error: { message: 'Error while saving profile', statusCode: HttpStatus.INTERNAL_SERVER_ERROR },
-      };
-    }
-  }
 
   // search user
   async searchUser(user_email: string): Promise<ResponseType<UserEntity>> {
@@ -157,6 +120,29 @@ export class UserService {
       };
     } catch (error) {
       console.log('🚀 ~ file: user.service.ts:153 ~ UserService ~ sendChatRequestService ~ error:', error);
+      return {
+        success: false,
+        error: { message: 'Internal Server Error', statusCode: HttpStatus.INTERNAL_SERVER_ERROR },
+      };
+    }
+  }
+
+  async completeProfile(user_id: string, profile: UserProfileDto): Promise<ResponseType> {
+    try {
+      const user = await this.UserRepo.findOne({ where: { user_id } });
+      const newProfile = new UserProfileEntity();
+      newProfile.about = profile.about;
+      newProfile.pic_path = profile.pic_path;
+      user.name = profile.name;
+      user.profile = newProfile;
+
+      await this.UserRepo.save(user);
+      return {
+        success: true,
+        successMessage: 'uploaded',
+      };
+    } catch (error) {
+      console.log('🚀 ~ file: user.service.ts:145 ~ UserService ~ completeProfile ~ error:', error);
       return {
         success: false,
         error: { message: 'Internal Server Error', statusCode: HttpStatus.INTERNAL_SERVER_ERROR },

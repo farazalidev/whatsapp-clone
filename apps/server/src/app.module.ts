@@ -9,8 +9,8 @@ import { APP_GUARD } from '@nestjs/core';
 import { AuthGuard } from './modules/auth/guards/auth.guard';
 import { JwtService } from '@nestjs/jwt';
 import { ScheduleModule } from '@nestjs/schedule';
-import { UploadModule } from './modules/upload/upload.module';
 import { ChatModule } from './modules/chat/chat.module';
+import { LocalUploadModule } from './modules/localupload/localupload.module';
 
 @Module({
   imports: [
@@ -29,7 +29,7 @@ import { ChatModule } from './modules/chat/chat.module';
     ScheduleModule.forRoot(),
     UserModule,
     AuthModule,
-    UploadModule,
+    LocalUploadModule,
     ChatModule,
   ],
   controllers: [AppController],

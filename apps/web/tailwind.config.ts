@@ -10,6 +10,10 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      backgroundImage: {
+        pattern: "url('/pattern.png')",
+        pattern_light: "url('/pattern-light.png')",
+      },
       colors: {
         whatsapp: {
           light: {
@@ -19,6 +23,7 @@ const config: Config = {
             secondary_bg: '#F0F2F5',
             text: '#000',
             bg: '#E0E0DD',
+            sender_bg: '#F0F2F5',
           },
           dark: {
             input_bg: '#202C33',
@@ -27,6 +32,7 @@ const config: Config = {
             secondary_bg: '#222E35',
             text: '#fff',
             bg: '#0b141a',
+            sender_bg: '#202C33',
           },
           default: {
             primary_green: '#00a884',
@@ -36,6 +42,7 @@ const config: Config = {
             scrollbar_light: '#CED0D1',
             link: '#53bdeb',
             sideBarOverlayHeaderLightBg: '#008069',
+            message_input: '#2A3942',
           },
         },
       },

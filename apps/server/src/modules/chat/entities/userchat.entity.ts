@@ -6,7 +6,7 @@ import { UserEntity } from 'src/modules/user/entities/user.entity';
 @Entity()
 export class UserChatEntity {
   @PrimaryColumn({ type: 'uuid' })
-  user_id: string = v4();
+  id: string = v4();
 
   @ManyToOne(() => UserEntity, (user) => user.chats)
   user: UserEntity;

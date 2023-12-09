@@ -3,12 +3,14 @@ import { VariantProps, cva } from 'class-variance-authority';
 import Image from 'next/image';
 import React, { ChangeEvent, FC, useState } from 'react';
 import { MdEdit } from 'react-icons/md';
+import Typography from '../Typography/Typography';
 
 interface UploadAtomProps
   extends React.DetailedHTMLProps<React.LabelHTMLAttributes<HTMLLabelElement>, HTMLLabelElement>,
     VariantProps<typeof uploadAtomVariants> {
   getImage: (image: File) => void;
   isLoading: boolean;
+  label?: string;
 }
 
 const uploadAtomVariants = cva('border-[2px] border-black dark:border-white flex place-items-center justify-center', {
@@ -29,7 +31,7 @@ const uploadAtomVariants = cva('border-[2px] border-black dark:border-white flex
   },
 });
 
-const Upload: FC<UploadAtomProps> = ({ layout, className, getImage, isLoading }) => {
+const Upload: FC<UploadAtomProps> = ({ layout, className, getImage, isLoading, label }) => {
   const [imageSrc, setImageSrc] = useState<File | undefined>(undefined);
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -44,6 +46,7 @@ const Upload: FC<UploadAtomProps> = ({ layout, className, getImage, isLoading })
 
   return (
     <div>
+      <Typography level={3}>{label}</Typography>
       <div className={cn('group relative overflow-hidden', uploadAtomVariants({ layout, className }))}>
         <Image src={imageSrc ? URL.createObjectURL(imageSrc as File) : '/icons/avatardefault.svg'} fill alt="avatar" />
         <span

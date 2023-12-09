@@ -7,11 +7,14 @@ const { composePlugins, withNx } = require('@nx/next');
  * @type {import('@nx/next/plugins/with-nx').WithNxOptions}
  **/
 const nextConfig = {
-  nx: {
-    // Set this to true if you would like to use SVGR
-    // See: https://github.com/gregberge/svgr
-    svgr: false,
+  images: {
+    dangerouslyAllowSVG: true,
+    remotePatterns: [{ hostname: 'res.cloudinary.com', protocol: 'https' }],
   },
+  nx: {
+    svgr: true,
+  },
+
   serverRuntimeConfig: {
     CLOUDINARY_NAME: 'dqgmwfomj',
     CLOUDINARY_API_KEY: '779485947724676',

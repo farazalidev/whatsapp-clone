@@ -12,7 +12,7 @@ const TypographyVariants = cva('text-base text-black opacity-80 dark:text-white'
       5: 'text-2xl ',
     },
     text_style: {
-      error: 'text-red-600 font-extralight dark:text-red-500',
+      error: ['text-red-600 font-extralight dark:text-red-500', 'bg-red-200 p-[2px] w-full text-center rounded-md'],
       success: 'text-green-600 font-extralight dark:text-green-500',
       default: 'text-whatsapp-light-text dark:text-whatsapp-dark-text',
     },

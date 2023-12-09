@@ -4,7 +4,7 @@ import { AuthTokens, OtpToken } from '../types';
 
 export const sendCookies = (res: Response, tokens: AuthTokens, response: ResponseType) => {
   return res
-    .cookie(process.env.REFRESH_TOKEN_NAME, tokens.refresh_token, { httpOnly: true })
+    .cookie(process.env.REFRESH_TOKEN_NAME, tokens.refresh_token, { httpOnly: true, sameSite: 'none', secure: true })
     .cookie(process.env.ACCESS_TOKEN_NAME, tokens.access_token)
     .json(response);
 };

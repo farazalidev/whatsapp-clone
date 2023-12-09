@@ -1,6 +1,7 @@
-import { ChatRequestEntity } from '@server/modules/user/entities/chat_requests.entity';
+import { ChatRequestEntity } from '@server/modules/user/entities/chatRequest.entity';
 import { apiSlice } from './ApiSlice';
 import { UserEntity } from '@server/modules/user/entities/user.entity';
+import { UserProfileEntity } from '@server/modules/user/entities/userprofile.entity';
 
 export const userApi = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
@@ -23,7 +24,19 @@ export const userApi = apiSlice.injectEndpoints({
         body,
       }),
     }),
+    getProfile: builder.query<UserProfileEntity, void>({
+      query: () => ({
+        url: 'user/profile',
+        method: 'GET',
+      }),
+    }),
+    getProfilePic: builder.query<string, { path: string }>({
+      query: (body) => {
+        return { url: `user/profile-image/${body.path}`, method: 'GET' };
+      },
+    }),
   }),
 });
 
-export const { useGetUserProfileQuery, useSearchUserQuery, useSendChatRequestMutation } = userApi;
+export const { useGetUserProfileQuery, useSearchUserQuery, useSendChatRequestMutation, useGetProfileQuery, useGetProfilePicQuery } =
+  userApi;
