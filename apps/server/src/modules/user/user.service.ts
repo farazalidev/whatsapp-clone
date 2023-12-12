@@ -2,18 +2,21 @@ import { HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserEntity } from './entities/user.entity';
 import { LessThan, Repository } from 'typeorm';
-import { ResponseType } from 'src/Misc/ResponseType.type';
 import { UserProfileEntity } from './entities/userprofile.entity';
-import { ChatRequestEntity } from './entities/chatRequest.entity';
 import { UserProfileDto } from './DTO/userprofile.dto';
+import { ContactEntity } from './entities/contact.entity';
+import { ResponseType } from '../../Misc/ResponseType.type';
 
 @Injectable()
 export class UserService {
-  constructor(@InjectRepository(UserEntity) private UserRepo: Repository<UserEntity>) {}
+  constructor(
+    @InjectRepository(UserEntity) private UserRepo: Repository<UserEntity>,
+    @InjectRepository(ContactEntity) private ContactRepo: Repository<ContactEntity>,
+  ) {}
 
   // find user by email
   async findByEmail(email: string): Promise<ResponseType<UserEntity>> {
-    const user = await this.UserRepo.findOne({ where: { email }, relations: { chats_requests: true } });
+    const user = await this.UserRepo.findOne({ where: { email } });
     if (!user) {
       return {
         success: false,
@@ -42,7 +45,7 @@ export class UserService {
       data: user.profile,
     };
   }
-  // get user profile
+  // get user
   async getUser(user_id: string): Promise<ResponseType<UserEntity>> {
     const user = await this.UserRepo.findOne({ where: { user_id } });
     if (!user) {
@@ -70,7 +73,6 @@ export class UserService {
   async searchUser(user_email: string): Promise<ResponseType<UserEntity>> {
     try {
       const user = await this.UserRepo.findOne({ where: { email: user_email, isVerified: true } });
-      console.log('🚀 ~ file: user.service.ts:111 ~ UserService ~ searchUser ~ user:', user);
       if (!user) {
         return {
           success: false,
@@ -84,56 +86,12 @@ export class UserService {
     }
   }
 
-  // send chat  request
-  async sendChatRequestService(requester_id: string, acceptor_email: string): Promise<ResponseType> {
-    try {
-      const Requester = await this.UserRepo.findOne({ where: { user_id: requester_id } });
-
-      if (!Requester) {
-        return {
-          success: false,
-          error: { message: 'Unable to send request.', statusCode: HttpStatus.BAD_REQUEST },
-        };
-      }
-
-      const Acceptor = await this.UserRepo.findOne({ where: { email: acceptor_email } });
-
-      if (!Acceptor) {
-        return {
-          success: false,
-          error: { message: 'Unable to send request.', statusCode: HttpStatus.BAD_REQUEST },
-        };
-      }
-
-      // sending chat request
-      const newChatRequest = new ChatRequestEntity();
-      newChatRequest.acceptor = Acceptor;
-      newChatRequest.requester_id = Requester;
-      newChatRequest.status = 'pending';
-      Acceptor.chats_requests = [...Acceptor.chats_requests, newChatRequest];
-
-      await this.UserRepo.save(Acceptor);
-      return {
-        success: true,
-        successMessage: 'Request sended',
-        data: newChatRequest,
-      };
-    } catch (error) {
-      console.log('🚀 ~ file: user.service.ts:153 ~ UserService ~ sendChatRequestService ~ error:', error);
-      return {
-        success: false,
-        error: { message: 'Internal Server Error', statusCode: HttpStatus.INTERNAL_SERVER_ERROR },
-      };
-    }
-  }
-
   async completeProfile(user_id: string, profile: UserProfileDto): Promise<ResponseType> {
     try {
       const user = await this.UserRepo.findOne({ where: { user_id } });
       const newProfile = new UserProfileEntity();
       newProfile.about = profile.about;
       newProfile.pic_path = profile.pic_path;
-      user.name = profile.name;
       user.profile = newProfile;
 
       await this.UserRepo.save(user);
@@ -142,7 +100,55 @@ export class UserService {
         successMessage: 'uploaded',
       };
     } catch (error) {
-      console.log('🚀 ~ file: user.service.ts:145 ~ UserService ~ completeProfile ~ error:', error);
+      return {
+        success: false,
+        error: { message: 'Internal Server Error', statusCode: HttpStatus.INTERNAL_SERVER_ERROR },
+      };
+    }
+  }
+
+  async addNewContact(user_id: string, requested_email: string): Promise<ResponseType> {
+    try {
+      const user = await this.UserRepo.findOne({ where: { user_id, isVerified: true } });
+
+      if (!user) {
+        return {
+          success: false,
+          error: { message: 'Internal Server Error', statusCode: HttpStatus.INTERNAL_SERVER_ERROR },
+        };
+      }
+
+      const contactForUser = await this.UserRepo.findOne({ where: { email: requested_email } });
+
+      const newContact = new ContactEntity();
+      newContact.contact_user = contactForUser;
+      newContact._user = user;
+
+      user.addNewContact(newContact);
+
+      await this.UserRepo.save(user);
+      return {
+        success: true,
+        successMessage: 'Contact added',
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: { message: 'Failed to add new Contact', statusCode: HttpStatus.INTERNAL_SERVER_ERROR },
+      };
+    }
+  }
+
+  // get user contacts
+  async getUserContacts(user_id: string): Promise<ResponseType<ContactEntity[]>> {
+    try {
+      const contacts = await this.ContactRepo.find({ where: { _user: { user_id } } });
+      return {
+        success: true,
+        successMessage: 'Contacts loaded',
+        data: contacts,
+      };
+    } catch (error) {
       return {
         success: false,
         error: { message: 'Internal Server Error', statusCode: HttpStatus.INTERNAL_SERVER_ERROR },

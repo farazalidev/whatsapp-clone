@@ -2,9 +2,9 @@ import { Controller, HttpException, Post, UploadedFile, UseInterceptors } from '
 import { LocalUploadService } from './localupload.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import 'multer';
-import { saveProfilePicStorage } from 'src/utils/storage/profile_pic.storage';
 import { Public } from '../auth/decorators/public.decorator';
-import { isSuccess } from 'src/utils/isSuccess.typeguard';
+import { saveProfilePicStorage } from '../../utils/storage/profile_pic.storage';
+import { isSuccess } from '../../utils/isSuccess.typeguard';
 
 @Controller('file')
 export class LocalUploadController {

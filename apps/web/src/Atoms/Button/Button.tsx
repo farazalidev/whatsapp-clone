@@ -1,6 +1,6 @@
 import { cn } from '@/utils/cn';
 import { VariantProps, cva } from 'class-variance-authority';
-import React, { FC, ForwardRefRenderFunction, forwardRef } from 'react';
+import React, { ForwardRefRenderFunction, forwardRef } from 'react';
 
 interface ButtonProps
   extends React.DetailedHTMLProps<React.ButtonHTMLAttributes<HTMLButtonElement>, HTMLButtonElement>,

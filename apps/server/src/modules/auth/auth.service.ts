@@ -2,8 +2,6 @@ import { HttpStatus, Injectable } from '@nestjs/common';
 import { LoginDto } from './DTO/login.dto';
 import { UserService } from '../user/user.service';
 import { UserEntity } from '../user/entities/user.entity';
-import { ResponseType } from 'src/Misc/ResponseType.type';
-import { isSuccess } from 'src/utils/isSuccess.typeguard';
 import { compare, hash } from 'bcryptjs';
 import { JwtService } from '@nestjs/jwt';
 import { RegisterUserDto } from '../user/DTO/user.dto';
@@ -11,7 +9,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { MoreThan, Not, Repository } from 'typeorm';
 import * as bcrypt from 'bcryptjs';
 import { AuthTokens, OtpToken } from '../types';
-import { generateOtp } from 'src/utils/generateOtp';
+import { ResponseType } from '../../Misc/ResponseType.type';
+import { generateOtp } from '../../utils/generateOtp';
+import { isSuccess } from '../../utils/isSuccess.typeguard';
 
 export type LoginResponse = {
   user: UserEntity;
@@ -32,7 +32,7 @@ export class AuthService {
   // get tokens function
   private async getTokens(user_id: string): Promise<AuthTokens> {
     const refresh_token = await this.jwtService.signAsync({ user_id }, { expiresIn: '7d', secret: process.env.REFRESH_TOKEN_SECRET });
-    const access_token = await this.jwtService.signAsync({ user_id }, { expiresIn: '30s', secret: process.env.ACCESS_TOKEN_SECRET });
+    const access_token = await this.jwtService.signAsync({ user_id }, { expiresIn: '5m', secret: process.env.ACCESS_TOKEN_SECRET });
     return { access_token, refresh_token };
   }
 
@@ -117,7 +117,6 @@ export class AuthService {
         data: otp_token,
       };
     } catch (error) {
-      console.log('🚀 ~ file: auth.service.ts:120 ~ AuthService ~ RegisterUser ~ error:', error);
       return {
         success: false,
         error: {
@@ -192,7 +191,7 @@ export class AuthService {
           success: false,
           error: {
             message: 'username or password is wrong',
-            statusCode: HttpStatus.FORBIDDEN,
+            statusCode: HttpStatus.NOT_FOUND,
           },
         };
       }
@@ -206,7 +205,7 @@ export class AuthService {
             success: false,
             error: {
               message: 'username or password is wrong',
-              statusCode: HttpStatus.FORBIDDEN,
+              statusCode: HttpStatus.BAD_REQUEST,
             },
           };
         }
@@ -242,7 +241,6 @@ export class AuthService {
   async refreshTokenService(user_id: string, refresh_token: string): Promise<ResponseType<AuthTokens>> {
     try {
       const user = await this.userService.getUser(user_id);
-      console.log('🚀 ~ file: auth.service.ts:245 ~ AuthService ~ refreshTokenService ~ user:', user);
 
       if (!isSuccess(user)) {
         return {
@@ -276,7 +274,6 @@ export class AuthService {
         data: tokens,
       };
     } catch (error) {
-      console.log('🚀 ~ file: auth.service.ts:277 ~ AuthService ~ refreshTokenService ~ error:', error);
       return {
         success: false,
         error: {

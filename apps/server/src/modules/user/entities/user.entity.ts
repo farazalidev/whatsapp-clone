@@ -1,8 +1,8 @@
-import { Column, CreateDateColumn, Entity, JoinColumn, OneToMany, OneToOne, PrimaryColumn, UpdateDateColumn } from 'typeorm';
+import { AfterLoad, Column, CreateDateColumn, Entity, JoinColumn, OneToMany, OneToOne, PrimaryColumn, UpdateDateColumn } from 'typeorm';
 import { v4 } from 'uuid';
 import { UserProfileEntity } from './userprofile.entity';
-import { UserChatEntity } from 'src/modules/chat/entities/userchat.entity';
-import { ChatRequestEntity } from './chatRequest.entity';
+import { ContactEntity } from './contact.entity';
+import { UserChatEntity } from '../../chat/entities/userchat.entity';
 
 @Entity({ name: 'user' })
 export class UserEntity {
@@ -26,9 +26,9 @@ export class UserEntity {
   @JoinColumn({ name: 'chats' })
   chats: UserChatEntity[];
 
-  @OneToMany(() => ChatRequestEntity, (chatRequest) => chatRequest.acceptor, { nullable: true, cascade: true })
-  @JoinColumn({ name: 'chat_requests' })
-  chats_requests: ChatRequestEntity[];
+  @OneToMany(() => ContactEntity, (contact) => contact._user, { eager: true, cascade: true })
+  @JoinColumn()
+  contacts: ContactEntity[];
 
   @Column({})
   password: string;
@@ -56,11 +56,12 @@ export class UserEntity {
   @UpdateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP', onUpdate: 'CURRENT_TIMESTAMP' })
   updated_at: Date;
 
-  addChatRequest(chat_request: ChatRequestEntity) {
-    if (!this.chats_requests) {
-      this.chats_requests = [];
-      return this.chats_requests.push(chat_request);
+  @AfterLoad()
+  addNewContact(contact: ContactEntity) {
+    if (!this.contacts || this.contacts.length === 0) {
+      this.contacts = [];
+      this.contacts.push(contact);
     }
-    return this.chats_requests.push(chat_request);
+    this.contacts.push(contact);
   }
 }

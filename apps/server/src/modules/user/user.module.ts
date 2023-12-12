@@ -5,10 +5,10 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserEntity } from './entities/user.entity';
 import { JwtService } from '@nestjs/jwt';
 import { UserProfileEntity } from './entities/userprofile.entity';
-import { ChatRequestEntity } from './entities/chatRequest.entity';
+import { ContactEntity } from './entities/contact.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([UserEntity, UserProfileEntity, ChatRequestEntity])],
+  imports: [TypeOrmModule.forFeature([UserEntity, UserProfileEntity, ContactEntity])],
   providers: [UserService, JwtService],
   controllers: [UserController],
   exports: [UserService, TypeOrmModule.forFeature([UserEntity, UserProfileEntity])],

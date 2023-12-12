@@ -1,4 +1,3 @@
-'use client';
 import React, { FC } from 'react';
 import Avatar from '../Avatar';
 import { motion } from 'framer-motion';
@@ -6,7 +5,7 @@ import { cn } from '@/utils/cn';
 import SideBarUserCardOptions from './SideBarUserCardOptions';
 
 interface SideBarUserCardProps {
-  avatar_src?: string;
+  avatar_src?: string | Blob | undefined;
   name: string;
   last_message?: string;
   last_message_date?: string;

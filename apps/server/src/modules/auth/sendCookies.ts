@@ -1,6 +1,6 @@
 import { Response } from 'express';
-import { ResponseType } from 'src/Misc/ResponseType.type';
 import { AuthTokens, OtpToken } from '../types';
+import { ResponseType } from '../../Misc/ResponseType.type';
 
 export const sendCookies = (res: Response, tokens: AuthTokens, response: ResponseType) => {
   return res

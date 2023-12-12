@@ -6,22 +6,19 @@ import { LoginSchema, LoginSchemaType, RegisterSchema, RegisterSchemaType } from
 import { zodResolver } from '@hookform/resolvers/zod';
 import Image from 'next/image';
 import Link from 'next/link';
-import React, { useEffect } from 'react';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import FormLayout from './FormLayout';
 import { useRouter } from 'next/navigation';
-import { useLoginApiMutation, useRegisterApiMutation } from '@/global/apis/AuthApi';
+import { Mutation } from '@/utils/fetcher';
+import { AxiosError } from 'axios';
+import { toast } from 'sonner';
+import { RegisterUserDto } from '@server/modules/user/DTO/user.dto';
 
 export const LoginForm = () => {
+  const [isLoading, setIsLoading] = useState(false);
+
   const router = useRouter();
-
-  const [loginUser, { isError, error, isSuccess, isLoading, data }] = useLoginApiMutation();
-
-  useEffect(() => {
-    if (isSuccess) {
-      router.refresh();
-    }
-  }, [isSuccess, router]);
 
   const {
     register,
@@ -32,18 +29,27 @@ export const LoginForm = () => {
   });
 
   const handleLogin = async (data: LoginSchemaType) => {
-    await loginUser(data);
+    try {
+      setIsLoading(true);
+      await Mutation('auth/login', data).then(async () => {
+        setTimeout(() => {
+          router.push('/user');
+        }, 1500);
+      });
+      toast.success('Login successful', { position: 'top-right' });
+    } catch (error) {
+      toast.error(((error as AxiosError<{ message: string }>).response?.data.message as string) || 'Login failed', {
+        position: 'top-right',
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
     <FormLayout className="lg:grid lg:grid-cols-2">
       {/* Login */}
       <form className="p-4 w-full md:w-[80%] mx-auto max-h-[90%] mt-0 md:mt-10 flex flex-col gap-2" onSubmit={handleSubmit(handleLogin)}>
-        <Typography level={4} bold className="mb-4">
-          Welcome Back
-          {isError && error ? <Typography text_style={'error'}>{(error as any)?.data?.message}</Typography> : null}
-          {isSuccess ? <Typography text_style={'success'}>{data?.successMessage}</Typography> : null}
-        </Typography>
         <Input
           inputsize={'large'}
           placeholder="Enter Your Email"
@@ -86,8 +92,7 @@ export const LoginForm = () => {
 
 export const RegisterForm = () => {
   const router = useRouter();
-
-  const [registerUser, { isError, isLoading, isSuccess, data, error }] = useRegisterApiMutation();
+  const [isLoading, setIsLoading] = useState(false);
 
   const {
     register,
@@ -100,17 +105,22 @@ export const RegisterForm = () => {
     resolver: zodResolver(RegisterSchema),
   });
 
-  useEffect(() => {
-    if (isSuccess) {
-      const timeoutId = setTimeout(() => {
-        router.push('/auth/otp');
-      }, 2000);
-      return () => clearTimeout(timeoutId);
-    }
-  }, [isSuccess]);
-
   const handleRegister = async (data: RegisterSchemaType) => {
-    await registerUser(data);
+    try {
+      setIsLoading(true);
+      await Mutation<RegisterUserDto>('auth/register', data).then(() => {
+        setTimeout(() => {
+          router.push('/auth/otp');
+        }, 1500);
+      });
+      toast.success('Registration successful', { position: 'top-right' });
+    } catch (error) {
+      toast.error(((error as AxiosError<{ message: string }>).response?.data.message as string) || 'Registration failed', {
+        position: 'top-right',
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -123,8 +133,6 @@ export const RegisterForm = () => {
       >
         <Typography level={4} bold className="mb-4">
           Register for Account
-          {isError && error ? <Typography text_style={'error'}>{(error as any)?.data?.message}</Typography> : null}
-          {isSuccess ? <Typography text_style={'success'}>{data?.successMessage}</Typography> : null}
         </Typography>
         <Input
           inputsize={'large'}

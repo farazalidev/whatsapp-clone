@@ -1,14 +1,14 @@
-import { Body, Controller, Get, HttpException, HttpStatus, Param, Post, Res } from '@nestjs/common';
+import { Body, Controller, Get, HttpException, Param, Post, Res } from '@nestjs/common';
 import { UserService } from './user.service';
-import { isSuccess } from 'src/utils/isSuccess.typeguard';
 import { GetUser } from '../auth/decorators/getuser.decorator';
 import { LoginPayload } from '../auth/auth.service';
-import { ResponseType } from 'src/Misc/ResponseType.type';
-import { Public } from '../auth/decorators/public.decorator';
 import { UserProfileEntity } from './entities/userprofile.entity';
 import { UserProfileDto } from './DTO/userprofile.dto';
 import { Response } from 'express';
 import * as fs from 'fs';
+import { ContactEntity } from './entities/contact.entity';
+import { isSuccess } from '../../utils/isSuccess.typeguard';
+import { searchUserResponse } from '../../Misc/successTypes/userSuccess.types';
 
 @Controller('user')
 export class UserController {
@@ -18,6 +18,16 @@ export class UserController {
   @Get('profile')
   async getUserProfile(@GetUser() user: LoginPayload): Promise<UserProfileEntity> {
     const response = await this.userSer.getUserProfileService(user.user_id);
+
+    if (!isSuccess(response)) {
+      throw new HttpException(response.error.message, response.error.statusCode);
+    }
+    return response.data;
+  }
+
+  @Get('me')
+  async getMe(@GetUser() user: LoginPayload) {
+    const response = await this.userSer.getUser(user.user_id);
 
     if (!isSuccess(response)) {
       throw new HttpException(response.error.message, response.error.statusCode);
@@ -41,21 +51,12 @@ export class UserController {
 
   // search user
   @Get('search-user/:user_email')
-  async searchUser(@Param() param): Promise<{ email: string }> {
+  async searchUser(@Param() param): Promise<searchUserResponse> {
     const response = await this.userSer.searchUser(param.user_email);
     if (!isSuccess(response)) {
       throw new HttpException(response.error.message, response.error.statusCode);
     }
-    return { email: response.data.email };
-  }
-
-  @Post('send-request')
-  async sendChatRequest(@GetUser() user: LoginPayload, @Body() body: { acceptor_email: string }): Promise<ResponseType> {
-    const response = await this.userSer.sendChatRequestService(user.user_id, body.acceptor_email);
-    if (!isSuccess(response)) {
-      throw new HttpException(response?.error.message, response?.error.statusCode);
-    }
-    return response;
+    return { name: response.data.name, pic_path: response.data.profile.pic_path, user_id: response.data.user_id };
   }
 
   @Post('complete-profile')
@@ -67,17 +68,23 @@ export class UserController {
     return response;
   }
 
-  @Public()
-  @Post('email')
-  async email(@Body() body) {
-    const user = await this.userSer.findByEmail(body.email);
-    return user;
+  // add new contact
+  @Post('add-contact/:email')
+  async addNewContact(@GetUser() user: LoginPayload, @Param() param: { email: string }) {
+    const response = await this.userSer.addNewContact(user.user_id, param.email);
+    if (!isSuccess(response)) {
+      throw new HttpException(response.error.message, response.error.statusCode);
+    }
+    return response;
   }
 
-  @Public()
-  @Get('id')
-  async id(@Body() body) {
-    const user = await this.userSer.getUserProfileService(body.id);
-    return user;
+  // get user contacts
+  @Get('contacts')
+  async getUserContacts(@GetUser() user: LoginPayload): Promise<ContactEntity[]> {
+    const response = await this.userSer.getUserContacts(user.user_id);
+    if (!isSuccess(response)) {
+      throw new HttpException(response.error.message, response.error.statusCode);
+    }
+    return response.data;
   }
 }

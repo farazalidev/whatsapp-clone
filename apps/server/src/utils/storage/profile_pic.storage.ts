@@ -11,8 +11,6 @@ export type validMimeType = 'image/png' | 'image/jpg' | 'image/jpeg';
 export const validProfilePicExtension: validFileExtension[] = ['jpeg', 'jpg', 'png'];
 export const validProfilePicMimeType: validMimeType[] = ['image/jpeg', 'image/jpg', 'image/png'];
 
-console.log(__dirname + '/src/user_files/profile_pics/');
-
 export const saveProfilePicStorage: MulterOptions = {
   storage: diskStorage({
     destination: `apps/server/uploads/profile_pics/`,

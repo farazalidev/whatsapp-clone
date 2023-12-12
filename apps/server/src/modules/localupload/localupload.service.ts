@@ -1,6 +1,6 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
-import { ResponseType } from 'src/Misc/ResponseType.type';
-import { isFileExtSafe, removeFile } from 'src/utils/storage/profile_pic.storage';
+import { isFileExtSafe, removeFile } from '../../utils/storage/profile_pic.storage';
+import { ResponseType } from '../../Misc/ResponseType.type';
 
 @Injectable()
 export class LocalUploadService {

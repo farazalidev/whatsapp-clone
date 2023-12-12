@@ -3,7 +3,6 @@ import { UserService } from '../user/user.service';
 import { RegisterUserDto } from '../user/DTO/user.dto';
 import { LoginDto } from './DTO/login.dto';
 import { AuthService, LoginPayload } from './auth.service';
-import { isSuccess } from 'src/utils/isSuccess.typeguard';
 import { Public } from './decorators/public.decorator';
 import { GetUser } from './decorators/getuser.decorator';
 import { RefreshGuard } from './guards/refreshToken.guard';
@@ -11,6 +10,7 @@ import { GetRefreshData } from './decorators/getrefreshData.decorator';
 import { sendCookies, sendOtpCookies } from './sendCookies';
 import { otpGuard } from './guards/otp.guard';
 import { Response } from 'express';
+import { isSuccess } from '../../utils/isSuccess.typeguard';
 
 @Controller('auth')
 export class AuthController {

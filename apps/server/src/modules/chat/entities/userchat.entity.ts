@@ -1,7 +1,7 @@
 import { Column, Entity, ManyToOne, OneToMany, PrimaryColumn } from 'typeorm';
 import { v4 } from 'uuid';
 import { MessageEntity } from './message.entity';
-import { UserEntity } from 'src/modules/user/entities/user.entity';
+import { UserEntity } from '../../user/entities/user.entity';
 
 @Entity()
 export class UserChatEntity {

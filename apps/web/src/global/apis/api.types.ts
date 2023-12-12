@@ -16,6 +16,5 @@ export interface VerifyUserPayload {
 
 export type CompleteProfileBody = {
   pic_path: string;
-  name: string;
   about: string;
 };

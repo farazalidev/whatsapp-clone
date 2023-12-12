@@ -7,9 +7,9 @@ import Typography from '@/Atoms/Typography/Typography';
 import { useForm } from 'react-hook-form';
 import { AddNewContactSchemaType, addNewContactSchema } from '@/schema/forms';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useSendChatRequestMutation, userApi } from '@/global/apis/UserApi';
-import { store } from '@/global/store';
-import { TbSend } from 'react-icons/tb';
+import { fetcher } from '@/utils/fetcher';
+import { searchUserResponse } from '@server/Misc/successTypes/userSuccess.types';
+import RequestCard from '@/Atoms/Cards/RequestCard';
 
 const AddNewContactModalContent = () => {
   const {
@@ -19,34 +19,33 @@ const AddNewContactModalContent = () => {
   } = useForm<AddNewContactSchemaType>({ resolver: zodResolver(addNewContactSchema) });
 
   const [searchQueryState, setSearchQueryState] = useState<{ isError: boolean; error: string | null }>({ error: null, isError: false });
-  const [foundedUser, setFoundedUser] = useState<string | null>(null);
+  const [foundedUser, setFoundedUser] = useState<searchUserResponse | undefined>(undefined);
   const [SearchIsLoading, setSearchIsLoading] = useState(false);
 
   const handleSearch = async (data: AddNewContactSchemaType) => {
     try {
       setSearchIsLoading(true);
-      const user = await store.dispatch(userApi.endpoints.searchUser.initiate({ user_email: data.email })).unwrap();
-      console.log('🚀 ~ file: AddNewContactModalContent.tsx:28 ~ handleSearch ~ user:', user);
-      setFoundedUser(user.email);
+      await fetcher<searchUserResponse>(`/user/search-user/${data.email}`).then(async (data) => {
+        console.log(data?.pic_path);
+
+        const picBlob = await fetcher(`/user/profile-image/${data?.pic_path}`, undefined, 'blob');
+        setFoundedUser({ ...data, pic_path: picBlob });
+      });
       setSearchQueryState({ error: null, isError: false });
     } catch (error) {
-      setSearchQueryState({ error: (error as any).data.message, isError: true });
+      setSearchQueryState({ error: (error as any).data?.message, isError: true });
       console.log(error);
     } finally {
       setSearchIsLoading(false);
     }
   };
 
-  const [sendRequest, { isLoading, error, data, isError }] = useSendChatRequestMutation();
-  console.log('🚀 ~ file: AddNewContactModalContent.tsx:41 ~ AddNewContactModalContent ~ data:', data);
-  console.log('🚀 ~ file: AddNewContactModalContent.tsx:41 ~ AddNewContactModalContent ~ error:', error);
+  // const handleSendRequest = async () => {
+  //   // if (foundedUser) {
+  //   // }
+  // };
 
-  const handleSendRequest = async () => {
-    if (foundedUser) {
-      await sendRequest({ acceptor_email: foundedUser });
-    }
-  };
-
+  console.log(foundedUser?.name);
   return (
     <div
       className={cn(
@@ -57,8 +56,8 @@ const AddNewContactModalContent = () => {
     >
       <ModalHeader heading="Add a new contact" />
       <form className="flex gap-4 flex-col px-10 justify-center py-4" onSubmit={handleSubmit(handleSearch)}>
-        {searchQueryState.error ? <Typography text_style={'error'}>{searchQueryState.error}</Typography> : null}
-        {isError ? <Typography text_style={'error'}>{(error as any)?.data.message}</Typography> : null}
+        {searchQueryState.error ? <Typography text_style={'error'}>{searchQueryState.error || 'Internal Server Error'}</Typography> : null}
+        {/* {isError ? <Typography text_style={'error'}>{(error as any)?.data.message || 'Internal Server Error'}</Typography> : null} */}
         <Input
           placeholder="Search contact"
           inputsize={'medium'}
@@ -73,16 +72,11 @@ const AddNewContactModalContent = () => {
         </Button>
       </form>
       {foundedUser ? (
-        <div className="flex w-full px-10 py-2 justify-between place-items-center bg-whatsapp-light-secondary_bg dark:bg-whatsapp-dark-secondary_bg">
-          <div className="flex flex-col">
-            <span>{foundedUser}</span>
-            <span className="text-whatsapp-default-primary_green">User Founded</span>
-          </div>
-          <Button className="flex gap-2 place-items-center justify-center" size={'lg'} onClick={handleSendRequest} loading={isLoading}>
-            <TbSend /> <span>Send Request</span>
-          </Button>
+        <div className="mx-4">
+          <RequestCard name={foundedUser?.name} avatar_src={foundedUser.pic_path} />
         </div>
       ) : null}
+
       <Typography className="font-extralight text-center absolute bottom-4 px-10">
         After Adding the contact, Your request will be sended to requested contact.
       </Typography>

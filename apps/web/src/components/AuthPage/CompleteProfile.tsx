@@ -1,65 +1,23 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import FormLayout from './FormLayout';
 import Upload from '@/Atoms/Input/Upload';
 import Input from '@/Atoms/Input/Input';
 import Button from '@/Atoms/Button/Button';
 import { useForm } from 'react-hook-form';
 import { CompleteProfileType } from '@/schema/authSchema';
-import { redirect } from 'next/navigation';
 import Typography from '@/Atoms/Typography/Typography';
-import { useCompleteProfileMutation, useUploadProfilePicMutation } from '@/global/apis/AuthApi';
+import { Mutation } from '@/utils/fetcher';
+import { toast } from 'sonner';
+import { CompleteProfileBody } from '../../global/apis/api.types';
+import { AxiosError } from 'axios';
+import { useRouter } from 'next/navigation';
 
 const CompleteProfile = () => {
-  const [
-    uploadImage,
-    {
-      isSuccess: profilePicIsSuccess,
-      data: profilePicData,
-      isLoading: profilePicIsLoading,
-      isError: profilePicIsError,
-      error: profilePicError,
-    },
-  ] = useUploadProfilePicMutation();
-
-  const [
-    completeProfile,
-    {
-      isLoading: CompleteProfileIsLoading,
-      isSuccess: CompleteProfileIsSuccess,
-      isError: CompleteProfileIsError,
-      error: CompleteProfileError,
-    },
-  ] = useCompleteProfileMutation();
+  const router = useRouter();
 
   const [image, setImage] = useState<File | undefined>(undefined);
 
-  const [profileData, setProfileData] = useState<CompleteProfileType>({ about: '', name: '' });
-
-  // redirection user
-  useEffect(() => {
-    if (CompleteProfileIsSuccess) {
-      redirect('/user');
-    }
-  }, [CompleteProfileIsSuccess]);
-
-  // handling profile completion
-  useEffect(() => {
-    const completeProfileHandler = async () => {
-      console.log(profilePicData);
-
-      await completeProfile({
-        about: profileData.about,
-        name: profileData.about,
-        profile_pic: { format: profilePicData?.data?.format as string, public_id: profilePicData?.data?.public_id as string },
-      });
-    };
-
-    if (profilePicIsSuccess) {
-      completeProfileHandler();
-    }
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [profilePicIsSuccess]);
+  const [isLoading, setIsLoading] = useState(false);
 
   // handling image
   const handleImage = (image: File) => {
@@ -69,22 +27,29 @@ const CompleteProfile = () => {
   const { register, handleSubmit } = useForm<CompleteProfileType>({});
 
   const submitHandler = async (data: CompleteProfileType) => {
-    setProfileData(data);
     const fmData = new FormData();
     fmData.append('profile_pic', image as any);
-    await uploadProfilePic(fmData);
 
-    if (profilePicIsSuccess) {
-      await completeProfile({
-        about: data.about,
-        name: data.name,
-        profile_pic: { format: profilePicData?.data?.format as string, public_id: profilePicData?.data?.public_id as string },
-      });
-    }
-  };
-
-  const uploadProfilePic = async (fmData: FormData) => {
-    await uploadImage(fmData);
+    // uploading profile pic
+    await Mutation<FormData, { file_path: string }>('file/upload/profile-pic', fmData)
+      .then(async (profile_pic) => {
+        setIsLoading(true);
+        toast.success('profile pic uploaded');
+        await Mutation<CompleteProfileBody>('user/complete-profile', { pic_path: profile_pic.file_path, about: data.about })
+          .then(() => {
+            toast.success('Profile completion successful');
+            setTimeout(() => {
+              router.push('/user');
+            }, 1500);
+          })
+          .catch((error) => {
+            toast.error((error as AxiosError<{ message: string }>).response?.data.message || 'Failed to save profile');
+          });
+      })
+      .catch((error) => {
+        toast.error((error as AxiosError<{ message: string }>).response?.data.message || 'Failed to upload profile Pic');
+      })
+      .finally(() => setIsLoading(false));
   };
 
   return (
@@ -93,15 +58,11 @@ const CompleteProfile = () => {
         Complete Profile
       </Typography>
       <form onSubmit={handleSubmit(submitHandler)} className="flex flex-col place-items-center gap-2">
-        {profilePicIsError ? <Typography text_style={'error'}>{(profilePicError as any)?.data.message}</Typography> : null}
-        {CompleteProfileIsError ? <Typography text_style={'error'}>{(CompleteProfileError as any)?.data.message}</Typography> : null}
-
         <div className="w-[60%] flex flex-col place-items-center justify-center">
-          <Upload size={'lg'} getImage={handleImage} isLoading={profilePicIsLoading} />
+          <Upload size={'lg'} getImage={handleImage} isLoading={isLoading} />
           <div className="flex flex-col gap-2">
-            <Input placeholder="Enter Name" inputsize={'medium'} label="Name" {...register('name')} />
             <Input placeholder="About" inputsize={'medium'} label="About" {...register('about')} />
-            <Button size={'md'} type="submit" loading={CompleteProfileIsLoading} disabled={profilePicIsLoading || CompleteProfileIsLoading}>
+            <Button size={'md'} type="submit" loading={isLoading} disabled={isLoading}>
               Save
             </Button>
           </div>

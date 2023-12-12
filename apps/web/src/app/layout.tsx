@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import LocalFont from 'next/font/local';
 import './globals.css';
 import StoreProvider from '@/utils/storeProvider';
+import { Toaster } from 'sonner';
 
 const Roboto = LocalFont({
   src: '../../fonts/Helvetica-Font/Helvetica.ttf',
@@ -17,7 +18,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body className={Roboto.className}>
-        <StoreProvider>{children}</StoreProvider>
+        <StoreProvider>
+          <Toaster richColors theme="system" />
+          {children}
+        </StoreProvider>
       </body>
     </html>
   );

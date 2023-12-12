@@ -1,3 +1,4 @@
+'use client';
 import { BaseQueryFn, createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { getCookie } from '@/utils/getCookie';
 

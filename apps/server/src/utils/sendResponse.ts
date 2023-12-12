@@ -1,4 +1,4 @@
-import { ResponseType, SuccessResponse } from 'src/Misc/ResponseType.type';
+import { ResponseType, SuccessResponse } from '../Misc/ResponseType.type';
 import { isSuccess } from './isSuccess.typeguard';
 import { HttpException } from '@nestjs/common';
 

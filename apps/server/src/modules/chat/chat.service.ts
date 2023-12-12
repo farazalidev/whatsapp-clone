@@ -4,7 +4,7 @@ import { UserEntity } from '../user/entities/user.entity';
 import { Repository } from 'typeorm';
 import { UserChatEntity } from './entities/userchat.entity';
 import { MessageEntity } from './entities/message.entity';
-import { ResponseType } from 'src/Misc/ResponseType.type';
+import { ResponseType } from '../../Misc/ResponseType.type';
 
 @Injectable()
 export class ChatService {
@@ -33,5 +33,25 @@ export class ChatService {
     } catch (error) {
       return { success: false, error: { message: 'Internal Server Error', statusCode: HttpStatus.INTERNAL_SERVER_ERROR } };
     }
+  }
+
+  // get chat by id service
+  async getChatByIdService(user_id: string, chat_id: string): Promise<ResponseType<UserChatEntity>> {
+    const userChat = await this.userRepo.findOne({ where: { user_id } });
+
+    if (!userChat) {
+      return {
+        success: false,
+        error: { message: 'Internal server error', statusCode: HttpStatus.INTERNAL_SERVER_ERROR },
+      };
+    }
+
+    const chat = userChat.chats.find((chat) => chat.id === chat_id);
+
+    return {
+      success: true,
+      successMessage: 'Chat fetched',
+      data: chat,
+    };
   }
 }

@@ -46,7 +46,6 @@ export const LoginSchema = z.object({
 });
 
 export const CompeteProfileSchema = z.object({
-  name: z.string().min(1, 'Name is required').trim(),
   about: z.string().min(1, 'About is required').trim(),
 });
 

@@ -9,7 +9,15 @@ export const ChatApi = apiSlice.injectEndpoints({
         method: 'GET',
       }),
     }),
+
+    // get chat by id
+    getChatById: builder.query<UserChatEntity, { chat_id: string }>({
+      query: ({ chat_id }) => ({
+        url: `user/${chat_id}`,
+        method: 'GET',
+      }),
+    }),
   }),
 });
 
-export const { useGetChatsQuery } = ChatApi;
+export const { useGetChatsQuery, useGetChatByIdQuery } = ChatApi;

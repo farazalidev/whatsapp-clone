@@ -1,7 +1,6 @@
 import { Exclude, Expose } from 'class-transformer';
 import { UserProfileEntity } from '../entities/userprofile.entity';
-import { UserChatEntity } from 'src/modules/chat/entities/userchat.entity';
-import { ChatRequestEntity } from '../entities/chatRequest.entity';
+import { UserChatEntity } from '../../chat/entities/userchat.entity';
 
 @Exclude()
 export class UserOccasionalDto {
@@ -25,9 +24,6 @@ export class UserOccasionalDto {
 
   @Expose({ groups: ['with_chats'] })
   chats: UserChatEntity[];
-
-  @Expose({ groups: ['with_chat_requests'] })
-  chats_requests: ChatRequestEntity[];
 
   @Expose({ groups: ['with_isVerified'] })
   isVerified: boolean = false;

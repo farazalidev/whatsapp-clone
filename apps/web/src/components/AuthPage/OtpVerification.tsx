@@ -1,41 +1,43 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import FormLayout from './FormLayout';
 import Typography from '@/Atoms/Typography/Typography';
 import OtpInput from '@/Atoms/Input/OtpInput';
 import Button from '@/Atoms/Button/Button';
-import { useRouter } from 'next/navigation';
-import { useVerifyUserMutation } from '@/global/apis/AuthApi';
+import { Mutation } from '@/utils/fetcher';
+import { toast } from 'sonner';
+import { AxiosError } from 'axios';
+import { redirect } from 'next/navigation';
 
 const OtpVerification = () => {
-  const router = useRouter();
-  const [verifyUser, { isError, isLoading, isSuccess, error, data }] = useVerifyUserMutation();
-
   const [otpValue, setOtpValue] = useState<string>('');
+
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleValues = (otp: string) => {
     setOtpValue(otp);
   };
 
   const handleVerify = async () => {
-    await verifyUser({ registration_otp: otpValue });
-  };
-
-  useEffect(() => {
-    if (isSuccess) {
-      const timeoutId = setTimeout(() => {
-        router.push('/auth/completeprofile');
-      }, 2000);
-      return () => clearTimeout(timeoutId);
+    try {
+      setIsLoading(true);
+      await Mutation('auth/verify-user', otpValue).then(() => {
+        setTimeout(() => {
+          redirect('/auth/completeprofile');
+        }, 1500);
+      });
+      toast.success('Verification successful');
+    } catch (error) {
+      toast.error((error as AxiosError<{ message: string }>).response?.data.message || 'Failed to verify');
+    } finally {
+      setIsLoading(false);
     }
-  }, [isSuccess]);
+  };
 
   return (
     <FormLayout className="dark:text-white lg:grid-cols-none flex w-full lg:place-items-center justify-center ">
       <div className="md:border-[2px] w-[500px] h-[300px] p-5 mt-[30%] md:shadow-lg rounded-md lg:mt-0 ">
         <Typography level={5} bold className="mb-4">
           Verify your Account
-          {isError ? <Typography text_style={'error'}>{(error as any)?.data?.message}</Typography> : null}
-          {isSuccess ? <Typography text_style={'success'}>{data?.successMessage}</Typography> : null}
         </Typography>
         <Typography className="w-full mb-4">
           Please Enter code that has been sended to your mail <strong className="text-right">farazalidev@gmail.com</strong> to complete the

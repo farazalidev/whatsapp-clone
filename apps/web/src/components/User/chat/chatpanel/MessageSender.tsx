@@ -10,7 +10,6 @@ const MessageSender = () => {
   };
   const handleSendMessage = (e: FormEvent) => {
     e.preventDefault();
-    console.log(messageValue);
     setMessageValue('');
   };
 

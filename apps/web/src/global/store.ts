@@ -2,12 +2,16 @@ import { configureStore } from '@reduxjs/toolkit';
 import { apiSlice } from './apis/ApiSlice';
 import { sideBarOverlaySlice } from './features/SideBarOverlaySlice';
 import { modalSlice } from './features/ModalSlice';
+import { UserSlice } from './features/UserSlice';
+import { ChatSlice } from './features/ChatSlice';
 
 export const store = configureStore({
   reducer: {
     [apiSlice.reducerPath]: apiSlice.reducer,
     sideBarOverlaySlice: sideBarOverlaySlice.reducer,
     modalSlice: modalSlice.reducer,
+    UserSlice: UserSlice.reducer,
+    ChatSlice: ChatSlice.reducer,
   },
   middleware: (getDefaultMiddleware) => {
     return getDefaultMiddleware().concat(apiSlice.middleware);

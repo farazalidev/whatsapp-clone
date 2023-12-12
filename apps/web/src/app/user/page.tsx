@@ -1,5 +1,5 @@
 'use client';
-import Modal from '@/components/Misc/Modal';
+// import Modal from '@/components/Misc/Modal';
 import UserSideBar from '@/components/User/Sidebar/UserSideBar';
 import UserChat from '@/components/User/chat/UserChat';
 import React, { FC } from 'react';
@@ -7,26 +7,26 @@ import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../global/store';
 import { toggleAddContactModal } from '@/global/features/ModalSlice';
 import AddNewContactModalContent from '@/components/Misc/ModalContent/AddNewContactModal/AddNewContactModalContent';
+import Modal from '@/components/Misc/Modal';
+import useUser from '@/hooks/useUser';
 
 type Props = {
   searchParams: Record<string, string> | null | undefined;
 };
 
 const UserPage: FC<Props> = ({ searchParams }) => {
-  const { AddContactModalIsOpen } = useSelector((state: RootState) => state.modalSlice);
-  console.log('🚀 ~ file: page.tsx:15 ~ AddContactModalIsOpen:', AddContactModalIsOpen);
-
   const dispatch = useDispatch();
+  const { AddContactModalIsOpen } = useSelector((state: RootState) => state.modalSlice);
 
-  // const { isError, isLoading, data } = useGetUserProfileQuery();
+  const { isLoading, error } = useUser();
 
-  // useEffect(() => {
-  //   if (!data?.is_profile_completed) {
-  //     redirect('/auth/completeprofile');
-  //   }
-  // }, [data?.is_profile_completed]);
+  if (isLoading) {
+    return <h1>Loading...</h1>;
+  }
 
-  // return <>Hellow</>;
+  if (error) {
+    return <h1>Error</h1>;
+  }
 
   return (
     <div className="flex h-full">
