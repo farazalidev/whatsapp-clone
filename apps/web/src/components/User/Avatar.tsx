@@ -9,20 +9,19 @@ interface AvatarProps {
   width?: number;
 }
 
-const Avatar: FC<AvatarProps> = ({ avatar_src = '/icons/avatardefault.svg', name, height = 55, width = 50 }) => {
+const Avatar: FC<AvatarProps> = ({ avatar_src = '/icons/avatardefault.svg', name, height = 55, width = 55 }) => {
   console.log(avatar_src instanceof Blob);
 
   const src = isBlob(avatar_src) ? URL.createObjectURL(avatar_src as Blob) : avatar_src;
 
   return (
-    <div className="relative border-2 border-red-300">
+    <div className="relative  h-[55px] w-[55px]">
       <Image
         src={src as string}
-        height={height}
-        width={width}
-        className="rounded-full"
+        fill
+        className="rounded-full h-[55px] w-[55px]"
         objectFit="cover"
-        objectPosition="center"
+        // objectPosition="center"
         alt={name ? name : 'user'}
       />
     </div>
