@@ -1,5 +1,4 @@
 'use client';
-// import Modal from '@/components/Misc/Modal';
 import UserSideBar from '@/components/User/Sidebar/UserSideBar';
 import UserChat from '@/components/User/chat/UserChat';
 import React, { FC } from 'react';
@@ -18,15 +17,16 @@ const UserPage: FC<Props> = ({ searchParams }) => {
   const dispatch = useDispatch();
   const { AddContactModalIsOpen } = useSelector((state: RootState) => state.modalSlice);
 
-  const { isLoading, error } = useUser();
+  const { isLoading, error, data } = useUser();
+  console.log('🚀 ~ file: page.tsx:22 ~ data:', data);
 
-  // if (isLoading) {
-  //   return <h1>Loading...</h1>;
-  // }
+  if (isLoading) {
+    return <h1>Loading...</h1>;
+  }
 
-  // if (error) {
-  //   return <h1>Error</h1>;
-  // }
+  if (error) {
+    return <h1>Error</h1>;
+  }
 
   return (
     <div className="flex h-full">

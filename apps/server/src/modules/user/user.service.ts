@@ -107,9 +107,10 @@ export class UserService {
     }
   }
 
-  async addNewContact(user_id: string, requested_email: string): Promise<ResponseType> {
+  async addNewContact(user_id: string, requested_user_id: string): Promise<ResponseType> {
     try {
       const user = await this.UserRepo.findOne({ where: { user_id, isVerified: true } });
+      console.log('🚀 ~ file: user.service.ts:113 ~ UserService ~ addNewContact ~ user:', user);
 
       if (!user) {
         return {
@@ -117,21 +118,36 @@ export class UserService {
           error: { message: 'Internal Server Error', statusCode: HttpStatus.INTERNAL_SERVER_ERROR },
         };
       }
+      const isAlreadyContact = await this.ContactRepo.findOne({
+        where: { contact: { user_id: requested_user_id }, contactOf: { user_id: user_id } },
+      });
+      if (isAlreadyContact) {
+        return {
+          success: false,
+          error: { message: 'Contact already added!', statusCode: HttpStatus.CONFLICT },
+        };
+      }
 
-      const contactForUser = await this.UserRepo.findOne({ where: { email: requested_email } });
+      const contactForUser = await this.UserRepo.findOne({ where: { user_id: requested_user_id, isVerified: true } });
+      console.log('🚀 ~ file: user.service.ts:132 ~ UserService ~ addNewContact ~ contactForUser:', contactForUser);
+      if (!contactForUser) {
+        return {
+          success: false,
+          error: { message: 'Internal Server Error', statusCode: HttpStatus.INTERNAL_SERVER_ERROR },
+        };
+      }
 
       const newContact = new ContactEntity();
-      newContact.contact_user = contactForUser;
-      newContact._user = user;
+      newContact.contact = contactForUser;
+      newContact.contactOf = user;
 
-      user.addNewContact(newContact);
-
-      await this.UserRepo.save(user);
+      await this.ContactRepo.save(newContact);
       return {
         success: true,
         successMessage: 'Contact added',
       };
     } catch (error) {
+      console.log('🚀 ~ file: user.service.ts:146 ~ UserService ~ addNewContact ~ error:', error);
       return {
         success: false,
         error: { message: 'Failed to add new Contact', statusCode: HttpStatus.INTERNAL_SERVER_ERROR },
@@ -142,13 +158,14 @@ export class UserService {
   // get user contacts
   async getUserContacts(user_id: string): Promise<ResponseType<ContactEntity[]>> {
     try {
-      const contacts = await this.ContactRepo.find({ where: { _user: { user_id } } });
+      const contacts = await this.ContactRepo.find({ where: { contactOf: { user_id } } });
       return {
         success: true,
         successMessage: 'Contacts loaded',
         data: contacts,
       };
     } catch (error) {
+      console.log('🚀 ~ file: user.service.ts:152 ~ UserService ~ getUserContacts ~ error:', error);
       return {
         success: false,
         error: { message: 'Internal Server Error', statusCode: HttpStatus.INTERNAL_SERVER_ERROR },

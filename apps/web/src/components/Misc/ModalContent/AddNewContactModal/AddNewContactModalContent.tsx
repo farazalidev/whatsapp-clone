@@ -7,11 +7,12 @@ import Typography from '@/Atoms/Typography/Typography';
 import { useForm } from 'react-hook-form';
 import { AddNewContactSchemaType, addNewContactSchema } from '@/schema/forms';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { fetcher } from '@/utils/fetcher';
+import { Mutation, fetcher } from '@/utils/fetcher';
 import { searchUserResponse } from '@server/Misc/successTypes/userSuccess.types';
 import RequestCard from '@/Atoms/Cards/RequestCard';
 import { toast } from 'sonner';
 import { AxiosError } from 'axios';
+import { mutate } from 'swr';
 
 const AddNewContactModalContent = () => {
   const {
@@ -36,6 +37,7 @@ const AddNewContactModalContent = () => {
       setSearchQueryState({ error: null, isError: false });
     } catch (error) {
       setSearchQueryState({ error: (error as any).data?.message, isError: true });
+      setFoundedUser(undefined);
       console.log(error);
       toast.error((error as AxiosError<{ message: string }>).response?.data.message || 'Internal Server Error', { position: 'top-right' });
     } finally {
@@ -43,10 +45,19 @@ const AddNewContactModalContent = () => {
     }
   };
 
-  // const handleSendRequest = async () => {
-  //   // if (foundedUser) {
-  //   // }
-  // };
+  const handleSendRequest = async () => {
+    if (foundedUser) {
+      try {
+        await Mutation(`user/add-contact/${foundedUser.user_id}`, undefined);
+        await mutate('api/user');
+        toast.success('Contact Added!', { position: 'top-right' });
+      } catch (error) {
+        toast.error((error as AxiosError<{ message: string }>).response?.data.message || 'Internal Server Error', {
+          position: 'top-right',
+        });
+      }
+    }
+  };
 
   console.log(foundedUser?.name);
   return (
@@ -76,7 +87,7 @@ const AddNewContactModalContent = () => {
       </form>
       {foundedUser ? (
         <div className="mx-4">
-          <RequestCard name={foundedUser?.name} avatar_src={foundedUser.pic_path} />
+          <RequestCard name={foundedUser?.name} avatar_src={foundedUser.pic_path} onButtonClick={handleSendRequest} />
         </div>
       ) : null}
 

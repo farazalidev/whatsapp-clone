@@ -1,7 +1,6 @@
-import { AfterLoad, Column, CreateDateColumn, Entity, JoinColumn, OneToMany, OneToOne, PrimaryColumn, UpdateDateColumn } from 'typeorm';
+import { Column, CreateDateColumn, Entity, JoinColumn, OneToMany, OneToOne, PrimaryColumn, UpdateDateColumn } from 'typeorm';
 import { v4 } from 'uuid';
 import { UserProfileEntity } from './userprofile.entity';
-import { ContactEntity } from './contact.entity';
 import { UserChatEntity } from '../../chat/entities/userchat.entity';
 
 @Entity({ name: 'user' })
@@ -25,10 +24,6 @@ export class UserEntity {
   @OneToMany(() => UserChatEntity, (chat) => chat.user, { eager: true, cascade: true })
   @JoinColumn({ name: 'chats' })
   chats: UserChatEntity[];
-
-  @OneToMany(() => ContactEntity, (contact) => contact._user, { eager: true, cascade: true })
-  @JoinColumn()
-  contacts: ContactEntity[];
 
   @Column({})
   password: string;
@@ -55,13 +50,4 @@ export class UserEntity {
   // Automatically set to the current timestamp when the entity is updated
   @UpdateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP', onUpdate: 'CURRENT_TIMESTAMP' })
   updated_at: Date;
-
-  @AfterLoad()
-  addNewContact(contact: ContactEntity) {
-    if (!this.contacts || this.contacts.length === 0) {
-      this.contacts = [];
-      this.contacts.push(contact);
-    }
-    this.contacts.push(contact);
-  }
 }

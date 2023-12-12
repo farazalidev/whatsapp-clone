@@ -1,3 +1,4 @@
+'use client';
 import axiosWithAuth from '@/middlewares/axiosInterceptor';
 import { AxiosResponseTransformer } from 'axios';
 import { ResponseType } from 'axios';

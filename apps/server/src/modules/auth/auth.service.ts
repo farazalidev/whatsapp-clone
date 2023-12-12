@@ -32,7 +32,7 @@ export class AuthService {
   // get tokens function
   private async getTokens(user_id: string): Promise<AuthTokens> {
     const refresh_token = await this.jwtService.signAsync({ user_id }, { expiresIn: '7d', secret: process.env.REFRESH_TOKEN_SECRET });
-    const access_token = await this.jwtService.signAsync({ user_id }, { expiresIn: '5m', secret: process.env.ACCESS_TOKEN_SECRET });
+    const access_token = await this.jwtService.signAsync({ user_id }, { expiresIn: '30m', secret: process.env.ACCESS_TOKEN_SECRET });
     return { access_token, refresh_token };
   }
 

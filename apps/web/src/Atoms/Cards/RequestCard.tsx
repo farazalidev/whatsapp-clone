@@ -4,15 +4,14 @@ import React, { FC } from 'react';
 import Button from '../Button/Button';
 
 interface IRequestCard {
-  onClick?: () => void;
+  onButtonClick?: () => void;
   avatar_src: string | Blob;
   name: string;
 }
 
-const RequestCard: FC<IRequestCard> = ({ avatar_src, name, onClick }) => {
+const RequestCard: FC<IRequestCard> = ({ avatar_src, name, onButtonClick }) => {
   return (
     <div
-      onClick={onClick}
       className={cn(
         'group relative flex px-2 dark:bg-whatsapp-dark-primary_bg dark:text-white',
         ' hover:bg-whatsapp-light-secondary_bg dark:hover:bg-whatsapp-dark-secondary_bg cursor-pointer',
@@ -26,7 +25,7 @@ const RequestCard: FC<IRequestCard> = ({ avatar_src, name, onClick }) => {
           <span className="text-sm md:text-base">{name}</span>
         </div>
         <div>
-          <Button size={'md'} className="whitespace-nowrap">
+          <Button size={'md'} className="whitespace-nowrap" onClick={onButtonClick}>
             Add Contact
           </Button>
         </div>

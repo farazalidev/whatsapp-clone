@@ -69,9 +69,9 @@ export class UserController {
   }
 
   // add new contact
-  @Post('add-contact/:email')
-  async addNewContact(@GetUser() user: LoginPayload, @Param() param: { email: string }) {
-    const response = await this.userSer.addNewContact(user.user_id, param.email);
+  @Post('add-contact/:user_id')
+  async addNewContact(@GetUser() user: LoginPayload, @Param() param: { user_id: string }) {
+    const response = await this.userSer.addNewContact(user.user_id, param.user_id);
     if (!isSuccess(response)) {
       throw new HttpException(response.error.message, response.error.statusCode);
     }
