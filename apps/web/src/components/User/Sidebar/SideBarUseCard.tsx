@@ -1,11 +1,10 @@
 import React, { FC } from 'react';
-import Avatar from '../Avatar';
+import Avatar, { AvatarProps } from '../Avatar';
 import { motion } from 'framer-motion';
 import { cn } from '@/utils/cn';
 import SideBarUserCardOptions from './SideBarUserCardOptions';
 
-interface SideBarUserCardProps {
-  avatar_src?: string | Blob | undefined;
+interface SideBarUserCardProps extends AvatarProps {
   name: string;
   last_message?: string;
   last_message_date?: string;
@@ -13,7 +12,14 @@ interface SideBarUserCardProps {
   onClick?: () => void;
 }
 
-const SideBarUserCard: FC<SideBarUserCardProps> = ({ avatar_src, name, last_message, last_message_date, show_options = true, onClick }) => {
+const SideBarUserCard: FC<SideBarUserCardProps> = ({
+  avatar_path,
+  name,
+  last_message,
+  last_message_date,
+  show_options = true,
+  onClick,
+}) => {
   return (
     <div
       onClick={onClick}
@@ -23,7 +29,7 @@ const SideBarUserCard: FC<SideBarUserCardProps> = ({ avatar_src, name, last_mess
       )}
     >
       <span className="py-4">
-        <Avatar avatar_src={avatar_src} name={name} height={55} width={55} />
+        <Avatar avatar_path={avatar_path} name={name} height={55} width={55} />
       </span>
       <div className="flex w-full place-items-center justify-between px-3  border-b-[1px] border-whatsapp-light-secondary_bg dark:border-whatsapp-dark-secondary_bg">
         <div className="flex flex-col justify-evenly">

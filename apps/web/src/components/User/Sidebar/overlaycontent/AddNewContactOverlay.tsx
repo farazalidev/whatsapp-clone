@@ -8,6 +8,8 @@ import { toggleAddContactModal } from '@/global/features/ModalSlice';
 import Typography from '@/Atoms/Typography/Typography';
 import useUser from '@/hooks/useUser';
 import FallBackLoadingSpinner from '@/Atoms/Loading/FallBackLoadingSpinner';
+import { setUserChatEntity } from '@/global/features/ChatSlice';
+import { setSelectedOverlay, setShow } from '@/global/features/SideBarOverlaySlice';
 
 const AddNewContactOverlay = () => {
   const dispatch = useDispatch();
@@ -24,6 +26,28 @@ const AddNewContactOverlay = () => {
     dispatch(toggleAddContactModal());
   };
 
+  const chatStartHandler = (user_id: string) => {
+    const isChatStarted = data?.chats.some((chat) => chat.user.user_id === user_id);
+
+    if (isChatStarted) {
+      /** is the chat is already started
+       * Means that is the user have chats with the clicked contact
+       * then loads the chat and go to the chat panel
+       * **/
+      dispatch(setUserChatEntity({ user_id, chatIsStarted: true }));
+      // closing overlay
+      dispatch(setShow(false));
+      // setting overlay
+      dispatch(setSelectedOverlay(0));
+    } else if (!isChatStarted) {
+      dispatch(setUserChatEntity({ user_id, chatIsStarted: false }));
+      // closing overlay
+      dispatch(setShow(false));
+      // setting overlay
+      dispatch(setSelectedOverlay(0));
+    }
+  };
+
   return (
     <div>
       <SearchInput
@@ -35,8 +59,14 @@ const AddNewContactOverlay = () => {
         className="mx-2 mt-[1px] mb-[4px]"
       />
       <div>
-        <SideBarUserCard name="Add New Contact" avatar_src="/icons/add-contact.svg" show_options={false} onClick={handleAddNewContact} />
-        <SideBarUserCard name="Add New Group" avatar_src="/icons/add-group.svg" show_options={false} />
+        <SideBarUserCard
+          name="Add New Contact"
+          isAbsolute
+          avatar_path="/icons/add-contact.svg"
+          show_options={false}
+          onClick={handleAddNewContact}
+        />
+        <SideBarUserCard name="Add New Group" isAbsolute avatar_path="/icons/add-group.svg" show_options={false} />
         <AddNewContactHeading heading="Contacts on whatsapp" />
 
         <Suspense fallback={<FallBackLoadingSpinner />}>
@@ -45,8 +75,9 @@ const AddNewContactOverlay = () => {
               <SideBarUserCard
                 key={contact.Contact.id}
                 name={contact.Contact.contact.name}
-                avatar_src={contact.profile_blob}
+                avatar_path={contact.Contact.contact.profile.pic_path}
                 show_options={false}
+                onClick={() => chatStartHandler(contact.Contact.contact.user_id)}
               />
             ))
           ) : error ? (

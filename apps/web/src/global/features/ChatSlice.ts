@@ -1,14 +1,13 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { UserChatEntity } from '@server/modules/chat/entities/userchat.entity';
 
 interface InitialStateType {
-  chat_entity: UserChatEntity | null;
-  avatar: string | null;
+  user_id: string | null;
+  chatIsStarted: boolean;
 }
 
 const initialState: InitialStateType = {
-  chat_entity: null,
-  avatar: null,
+  user_id: null,
+  chatIsStarted: false,
 };
 
 export const ChatSlice = createSlice({
