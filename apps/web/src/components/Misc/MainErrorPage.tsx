@@ -14,9 +14,9 @@ const MainErrorPage: FC<IMainLoading> = () => {
           <div className="flex place-items-center justify-center w-full">
             <Image src={'/icons/Error_svg.svg'} width={300} height={300} alt="Error" priority />
           </div>
-          <div className="w-[50%] h-full text-center">
+          <div className="w-[90%] md:w-[30%] line h-full text-center">
             <Typography level={5}>Error 500</Typography>
-            <Typography text_style={'error'}>
+            <Typography text_style={'error'} className="text-justify">
               Our servers are on strike, demanding better working conditions. We've tried negotiating with cookies, but they're holding out
               for brownies. We appreciate your patience as we bake a resolution.
             </Typography>
