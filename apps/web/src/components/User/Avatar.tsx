@@ -19,8 +19,7 @@ const Avatar: FC<AvatarProps> = ({ avatar_src = '/icons/avatardefault.svg', name
       <Image
         src={src as string}
         fill
-        className="rounded-full h-[55px] w-[55px]"
-        objectFit="cover"
+        className="rounded-full h-[55px] w-[55px] object-cover"
         // objectPosition="center"
         alt={name ? name : 'user'}
       />

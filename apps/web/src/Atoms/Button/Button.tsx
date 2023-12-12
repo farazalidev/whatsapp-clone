@@ -8,24 +8,27 @@ interface ButtonProps
   children: React.ReactNode;
   loading?: boolean;
 }
-const ButtonVariants = cva('px-2 py-[2px] rounded-md bg-whatsapp-default-primary_green disabled:bg-opacity-60', {
-  variants: {
-    size: {
-      sm: 'text-base px-[2px] py-[4px]',
-      md: 'text-lg px-[4px] py-[4px]',
-      lg: 'text-xl px-[6px] py-[10px]',
+const ButtonVariants = cva(
+  'px-2 py-[2px] rounded-md  transition-colors duration-200 bg-whatsapp-default-primary_green disabled:bg-opacity-60',
+  {
+    variants: {
+      size: {
+        sm: 'text-xs font-extralight px-[4px] py-[6px]',
+        md: 'text-sm font-extralight px-[6px] py-[6px]',
+        lg: 'text-lg px-[8px] py-[10px]',
+      },
+      color_variant: {
+        primary: 'bg-whatsapp-default-primary_green text-white dark:text-black',
+        secondary:
+          'bg-whatsapp-light-secondary_bg text-whatsapp-light-text border-[1px] border-gray-800 dark:bg-whatsapp-dark-secondary_bg dark:text-whatsapp-dark-text',
+      },
     },
-    color_variant: {
-      primary: 'bg-whatsapp-default-primary_green text-white dark:text-black',
-      secondary:
-        'bg-whatsapp-light-secondary_bg text-whatsapp-light-text border-[1px] border-gray-800 dark:bg-whatsapp-dark-secondary_bg dark:text-whatsapp-dark-text',
+    defaultVariants: {
+      size: 'sm',
+      color_variant: 'primary',
     },
   },
-  defaultVariants: {
-    size: 'sm',
-    color_variant: 'primary',
-  },
-});
+);
 
 const Button: ForwardRefRenderFunction<HTMLButtonElement, ButtonProps> = ({ children, loading, ...props }, ref) => {
   return (

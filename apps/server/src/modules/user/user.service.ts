@@ -1,7 +1,7 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserEntity } from './entities/user.entity';
-import { LessThan, Repository } from 'typeorm';
+import { LessThan, Not, Repository } from 'typeorm';
 import { UserProfileEntity } from './entities/userprofile.entity';
 import { UserProfileDto } from './DTO/userprofile.dto';
 import { ContactEntity } from './entities/contact.entity';
@@ -70,9 +70,9 @@ export class UserService {
   // complete user profile
 
   // search user
-  async searchUser(user_email: string): Promise<ResponseType<UserEntity>> {
+  async searchUser(user_email: string, user_id: string): Promise<ResponseType<UserEntity>> {
     try {
-      const user = await this.UserRepo.findOne({ where: { email: user_email, isVerified: true } });
+      const user = await this.UserRepo.findOne({ where: { user_id: Not(user_id), email: user_email, isVerified: true } });
       if (!user) {
         return {
           success: false,

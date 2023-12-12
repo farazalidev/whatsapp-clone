@@ -10,6 +10,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { fetcher } from '@/utils/fetcher';
 import { searchUserResponse } from '@server/Misc/successTypes/userSuccess.types';
 import RequestCard from '@/Atoms/Cards/RequestCard';
+import { toast } from 'sonner';
+import { AxiosError } from 'axios';
 
 const AddNewContactModalContent = () => {
   const {
@@ -35,6 +37,7 @@ const AddNewContactModalContent = () => {
     } catch (error) {
       setSearchQueryState({ error: (error as any).data?.message, isError: true });
       console.log(error);
+      toast.error((error as AxiosError<{ message: string }>).response?.data.message || 'Internal Server Error', { position: 'top-right' });
     } finally {
       setSearchIsLoading(false);
     }

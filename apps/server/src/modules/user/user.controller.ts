@@ -51,8 +51,8 @@ export class UserController {
 
   // search user
   @Get('search-user/:user_email')
-  async searchUser(@Param() param): Promise<searchUserResponse> {
-    const response = await this.userSer.searchUser(param.user_email);
+  async searchUser(@Param() param, @GetUser() user: LoginPayload): Promise<searchUserResponse> {
+    const response = await this.userSer.searchUser(param.user_email, user.user_id);
     if (!isSuccess(response)) {
       throw new HttpException(response.error.message, response.error.statusCode);
     }
