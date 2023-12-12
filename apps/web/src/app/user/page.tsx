@@ -20,13 +20,13 @@ const UserPage: FC<Props> = ({ searchParams }) => {
 
   const { isLoading, error } = useUser();
 
-  if (isLoading) {
-    return <h1>Loading...</h1>;
-  }
+  // if (isLoading) {
+  //   return <h1>Loading...</h1>;
+  // }
 
-  if (error) {
-    return <h1>Error</h1>;
-  }
+  // if (error) {
+  //   return <h1>Error</h1>;
+  // }
 
   return (
     <div className="flex h-full">
