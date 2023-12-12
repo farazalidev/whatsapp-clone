@@ -32,7 +32,7 @@ const UserPage: FC<Props> = ({ searchParams }) => {
     );
   }
 
-  if ((error as AxiosError).response?.status === 401) {
+  if ((error as AxiosError)?.response?.status === 401) {
     return (
       <Fragment>
         <SessionExpiredErrorPage />
