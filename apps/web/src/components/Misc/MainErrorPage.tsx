@@ -4,12 +4,10 @@ import Typography from '@/Atoms/Typography/Typography';
 import Image from 'next/image';
 import React, { FC } from 'react';
 
-interface IMainLoading {
-  isError: boolean;
-}
+interface IMainLoading {}
 
-const MainErrorPage: FC<IMainLoading> = ({ isError }) => {
-  return isError ? (
+const MainErrorPage: FC<IMainLoading> = () => {
+  return (
     <>
       <div className="w-full h-full flex flex-col place-items-center justify-center bg-whatsapp-light-secondary_bg dark:bg-whatsapp-dark-secondary_bg">
         <div className="relative flex flex-col place-items-center justify-center gap-4">
@@ -26,7 +24,7 @@ const MainErrorPage: FC<IMainLoading> = ({ isError }) => {
         </div>
       </div>
     </>
-  ) : null;
+  );
 };
 
 export default MainErrorPage;

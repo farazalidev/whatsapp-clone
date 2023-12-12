@@ -11,6 +11,8 @@ import useUser from '@/hooks/useUser';
 import UserPageLayout from './UserPageLayout';
 import MainErrorPage from '@/components/Misc/MainErrorPage';
 import MainLoadingPage from '@/components/Misc/MainLoadingPage';
+import { AxiosError } from 'axios';
+import SessionExpiredErrorPage from '@/components/Misc/SessionExpiredErrorPage';
 
 type Props = {
   searchParams: Record<string, string> | null | undefined;
@@ -20,14 +22,20 @@ const UserPage: FC<Props> = ({ searchParams }) => {
   const dispatch = useDispatch();
   const { AddContactModalIsOpen } = useSelector((state: RootState) => state.modalSlice);
 
-  const { isLoading, error, data } = useUser();
-  console.log('🚀 ~ file: page.tsx:22 ~ data:', data);
+  const { isLoading, error } = useUser();
 
   if (isLoading) {
     return (
       <Fragment>
-        {/* <MainLoadingPage isLoading={true} /> */}
-        <MainLoadingPage isLoading={isLoading} />
+        <MainLoadingPage />
+      </Fragment>
+    );
+  }
+
+  if ((error as AxiosError).response?.status === 401) {
+    return (
+      <Fragment>
+        <SessionExpiredErrorPage />
       </Fragment>
     );
   }
@@ -35,7 +43,7 @@ const UserPage: FC<Props> = ({ searchParams }) => {
   if (error) {
     return (
       <Fragment>
-        <MainErrorPage isError={error} />
+        <MainErrorPage />
       </Fragment>
     );
   }
