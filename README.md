@@ -1,5 +1,9 @@
 # Real-Time Chat Application with Next.js and Nest.js
 
+<p align="center">
+<img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/WhatsApp.svg/512px-WhatsApp.svg.png" alt="drawing" width="200"/>
+</p>
+
 ## Overview
 
 This repository contains the source code for a real-time chat application built with Next.js and Nest.js. The application utilizes WebSockets for instant messaging, PostgreSQL as the database with TypeORM for ORM, and also exposes a REST API for various functionalities.
