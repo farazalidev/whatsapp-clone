@@ -1,9 +1,10 @@
-import { Controller, Get, HttpException, Param } from '@nestjs/common';
+import { Body, Controller, Get, HttpException, Param, Post } from '@nestjs/common';
 import { GetUser } from '../auth/decorators/getuser.decorator';
 import { LoginPayload } from '../auth/auth.service';
 import { ChatService } from './chat.service';
 import { UserChatEntity } from './entities/userchat.entity';
 import { isSuccess } from '../../utils/isSuccess.typeguard';
+import { MessageDto } from './DTO/message.dto';
 
 @Controller('chat')
 export class ChatController {
@@ -27,5 +28,14 @@ export class ChatController {
       throw new HttpException(response.error.message, response.error.statusCode);
     }
     return response.data;
+  }
+
+  @Post('message/:chat_id/:receiver_id')
+  async sendMessage(@GetUser() user: LoginPayload, @Param() param: { receiver_id: string; chat_id: string }, @Body() body: MessageDto) {
+    const response = await this.chatSer.sendMessage(param.chat_id, user.user_id, param.receiver_id, body);
+    if (!isSuccess(response)) {
+      throw new HttpException(response.error.message, response.error.statusCode);
+    }
+    return response;
   }
 }

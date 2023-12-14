@@ -1,7 +1,6 @@
 import { Column, CreateDateColumn, Entity, JoinColumn, OneToMany, OneToOne, PrimaryColumn, UpdateDateColumn } from 'typeorm';
 import { v4 } from 'uuid';
 import { UserProfileEntity } from './userprofile.entity';
-import { UserChatEntity } from '../../chat/entities/userchat.entity';
 
 @Entity({ name: 'user' })
 export class UserEntity {
@@ -20,10 +19,6 @@ export class UserEntity {
   @OneToOne(() => UserProfileEntity, (profile) => profile.id, { eager: true, cascade: true, nullable: true })
   @JoinColumn({ name: 'profileId' })
   profile: UserProfileEntity;
-
-  @OneToMany(() => UserChatEntity, (chat) => chat.user, { eager: true, cascade: true })
-  @JoinColumn({ name: 'chats' })
-  chats: UserChatEntity[];
 
   @Column({})
   password: string;

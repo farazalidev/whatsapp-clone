@@ -1,28 +1,32 @@
-import { Column, Entity, ManyToOne, PrimaryColumn } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm';
 import { v4 } from 'uuid';
+import { UserEntity } from '../../user/entities/user.entity';
 import { UserChatEntity } from './userchat.entity';
 
 @Entity()
 export class MessageEntity {
   @PrimaryColumn()
-  @ManyToOne(() => UserChatEntity, (chat) => chat.id)
   id: string = v4();
 
-  @Column()
-  sender_id: string;
-
-  @Column()
-  reciter_id: string;
+  @ManyToOne(() => UserEntity, (user) => user.user_id, { eager: true })
+  @JoinColumn({ name: 'from' })
+  from: UserEntity;
 
   @Column()
   content: string;
 
-  @Column()
+  @ManyToOne(() => UserEntity, { nullable: true })
+  clear_for: UserEntity;
+
+  @ManyToOne(() => UserChatEntity, (chat) => chat.messages)
+  chat: UserChatEntity;
+
+  @Column({ nullable: true })
   is_seen: boolean;
 
-  @Column()
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   sended_at: Date;
 
-  @Column()
+  @Column({ nullable: true })
   seen_at: Date;
 }

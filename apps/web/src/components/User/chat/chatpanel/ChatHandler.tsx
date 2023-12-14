@@ -1,6 +1,8 @@
 import { MessageEntity } from '@server/modules/chat/entities/message.entity';
 import React, { FC } from 'react';
 import {} from 'class-transformer';
+import MessagePreview from '@/Atoms/chat/MessagePreview';
+import useUser from '@/hooks/useUser';
 
 interface MessageType extends MessageEntity {}
 
@@ -9,7 +11,23 @@ interface ChatHandlerProps {
 }
 
 const ChatHandler: FC<ChatHandlerProps> = ({ messages }) => {
-  return <div className="w-full h-full">{messages ? messages.map((message) => <div key={message.id}>{message.content}</div>) : null}</div>;
+  const user = useUser();
+
+  return (
+    <div className="flex h-full w-full flex-col gap-4 overflow-y-scroll border-2 border-red-300 px-4 py-2">
+      {messages
+        ? messages
+            .sort((a, b) => {
+              const dateA = new Date(a.sended_at).getTime();
+              const dateB = new Date(b.sended_at).getTime();
+              return dateA - dateB;
+            })
+            .map((message) => (
+              <MessagePreview isFromMe={user.data?.Me.user_id === message?.from?.user_id} message={message} key={message.id} />
+            ))
+        : null}
+    </div>
+  );
 };
 
 export default ChatHandler;

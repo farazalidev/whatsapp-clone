@@ -1,4 +1,4 @@
-import { Column, Entity, ManyToOne, OneToMany, PrimaryColumn } from 'typeorm';
+import { Entity, JoinColumn, ManyToOne, OneToMany, PrimaryColumn } from 'typeorm';
 import { v4 } from 'uuid';
 import { MessageEntity } from './message.entity';
 import { UserEntity } from '../../user/entities/user.entity';
@@ -8,12 +8,13 @@ export class UserChatEntity {
   @PrimaryColumn({ type: 'uuid' })
   id: string = v4();
 
-  @ManyToOne(() => UserEntity, (user) => user.chats)
-  user: UserEntity;
+  @ManyToOne(() => UserEntity, { eager: true })
+  @JoinColumn()
+  chat_for: UserEntity;
 
-  @Column()
-  is_online: boolean;
+  @ManyToOne(() => UserEntity, (user) => user.user_id, { eager: true })
+  chat_with: UserEntity;
 
-  @OneToMany(() => MessageEntity, (message) => message.id, { cascade: true, eager: true })
+  @OneToMany(() => MessageEntity, (message) => message.chat, { cascade: true, eager: true })
   messages: MessageEntity[];
 }

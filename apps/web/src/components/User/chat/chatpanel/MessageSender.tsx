@@ -1,22 +1,30 @@
 import React, { ChangeEvent, FormEvent, useState } from 'react';
 import OptionIcon from '../../Sidebar/OptionIcon';
 import MessageInput from '@/Atoms/Input/MessageInput';
+import { Mutation } from '@/utils/fetcher';
+import { mutate } from 'swr';
 
-const MessageSender = () => {
+const MessageSender = ({ receiver_id, chat_id }: { receiver_id: string; chat_id: string | undefined }) => {
   const [messageValue, setMessageValue] = useState<string>();
 
   const handleMessageChange = (e: ChangeEvent<HTMLInputElement>) => {
     setMessageValue(e.target.value);
   };
-  const handleSendMessage = (e: FormEvent) => {
+  const handleSendMessage = async (e: FormEvent) => {
     e.preventDefault();
-    setMessageValue('');
+    try {
+      await Mutation(`chat/message/${chat_id}/${receiver_id}`, { content: messageValue });
+      mutate('api/user');
+      setMessageValue('');
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (
     <form
       onSubmit={(e) => handleSendMessage(e)}
-      className="flex place-items-center justify-between gap-[16px] px-[20px] py-[5px] bg-whatsapp-light-sender_bg dark:bg-whatsapp-dark-sender_bg"
+      className="bg-whatsapp-light-sender_bg dark:bg-whatsapp-dark-sender_bg flex place-items-center justify-between gap-[16px] px-[20px] py-[5px]"
     >
       <span>
         <OptionIcon src="/icons/attach-menu-plus.svg" tooltip="attach" />

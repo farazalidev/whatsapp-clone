@@ -29,10 +29,7 @@ const AddNewContactModalContent = () => {
     try {
       setSearchIsLoading(true);
       await fetcher<searchUserResponse>(`/user/search-user/${data.email}`).then(async (data) => {
-        console.log(data?.pic_path);
-
-        const picBlob = await fetcher(`/user/profile-image/${data?.pic_path}`, undefined, 'blob');
-        setFoundedUser({ ...data, pic_path: picBlob });
+        setFoundedUser({ ...data, pic_path: data.pic_path });
       });
       setSearchQueryState({ error: null, isError: false });
     } catch (error) {
@@ -59,7 +56,6 @@ const AddNewContactModalContent = () => {
     }
   };
 
-  console.log(foundedUser?.name);
   return (
     <div
       className={cn(

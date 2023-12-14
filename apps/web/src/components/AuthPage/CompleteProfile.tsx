@@ -53,12 +53,12 @@ const CompleteProfile = () => {
   };
 
   return (
-    <FormLayout className="relative dark:text-white grid-cols-none flex flex-col w-full justify-center place-items-center h-fit">
-      <Typography className="absolute top-4 left-4" level={5}>
+    <FormLayout className="relative flex h-fit w-full grid-cols-none flex-col place-items-center justify-center dark:text-white">
+      <Typography className="absolute left-4 top-4" level={5}>
         Complete Profile
       </Typography>
       <form onSubmit={handleSubmit(submitHandler)} className="flex flex-col place-items-center gap-2">
-        <div className="w-[60%] flex flex-col place-items-center justify-center">
+        <div className="flex w-[60%] flex-col place-items-center justify-center">
           <Upload size={'lg'} getImage={handleImage} isLoading={isLoading} />
           <div className="flex flex-col gap-2">
             <Input placeholder="About" inputsize={'medium'} label="About" {...register('about')} />

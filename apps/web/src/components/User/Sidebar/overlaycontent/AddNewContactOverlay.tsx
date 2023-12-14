@@ -10,40 +10,40 @@ import useUser from '@/hooks/useUser';
 import FallBackLoadingSpinner from '@/Atoms/Loading/FallBackLoadingSpinner';
 import { setUserChatEntity } from '@/global/features/ChatSlice';
 import { setSelectedOverlay, setShow } from '@/global/features/SideBarOverlaySlice';
+import SideBarOptionCard from '@/Atoms/Cards/SideBarOptionCard';
 
 const AddNewContactOverlay = () => {
   const dispatch = useDispatch();
 
-  const { data, error, isLoading } = useUser();
-
-  console.log('🚀 ~ file: AddNewContactOverlay.tsx:28 ~ AddNewContactOverlay ~ data:', data);
-
-  if (isLoading) {
-    return <h1>Loading...</h1>;
-  }
+  const { data, error } = useUser();
 
   const handleAddNewContact = () => {
     dispatch(toggleAddContactModal());
   };
 
-  const chatStartHandler = (user_id: string) => {
-    const isChatStarted = data?.chats.some((chat) => chat.user.user_id === user_id);
+  const chatStartHandler = async (user_id: string) => {
+    // checking if the chat is started
+    const isChatStarted = data?.chats.some((chat) => chat.chat_with.user_id === user_id || chat.chat_for.user_id === user_id);
 
-    if (isChatStarted) {
+    if (!isChatStarted) {
       /** is the chat is already started
        * Means that is the user have chats with the clicked contact
        * then loads the chat and go to the chat panel
        * **/
-      dispatch(setUserChatEntity({ user_id, chatIsStarted: true }));
+      dispatch(setUserChatEntity({ id: user_id, started_from: 'contact' }));
       // closing overlay
       dispatch(setShow(false));
-      // setting overlay
+      // resetting overlay
       dispatch(setSelectedOverlay(0));
-    } else if (!isChatStarted) {
-      dispatch(setUserChatEntity({ user_id, chatIsStarted: false }));
+      return;
+    } else {
+      const chat = data?.chats.find((chat) => {
+        return chat.chat_with.user_id === user_id || chat.chat_for.user_id === user_id;
+      });
+      dispatch(setUserChatEntity({ id: chat?.id as string, started_from: 'chat' }));
       // closing overlay
       dispatch(setShow(false));
-      // setting overlay
+      // resetting overlay
       dispatch(setSelectedOverlay(0));
     }
   };
@@ -56,34 +56,28 @@ const AddNewContactOverlay = () => {
         placeholder="Search Name or Email"
         full_width
         mx-2
-        className="mx-2 mt-[1px] mb-[4px]"
+        className="mx-2 mb-[4px] mt-[1px]"
       />
       <div>
-        <SideBarUserCard
-          name="Add New Contact"
-          isAbsolute
-          avatar_path="/icons/add-contact.svg"
-          show_options={false}
-          onClick={handleAddNewContact}
-        />
-        <SideBarUserCard name="Add New Group" isAbsolute avatar_path="/icons/add-group.svg" show_options={false} />
+        <SideBarOptionCard title="Add New Contact" icon_path="/icons/add-contact.svg" onClick={handleAddNewContact} />
+        <SideBarOptionCard title="Add New Group" icon_path="/icons/add-group.svg" />
         <AddNewContactHeading heading="Contacts on whatsapp" />
 
         <Suspense fallback={<FallBackLoadingSpinner />}>
           {data?.contacts && !error ? (
-            data.contacts?.map(async (contact) => (
+            data.contacts?.map((contact) => (
               <SideBarUserCard
-                key={contact.Contact.id}
-                name={contact.Contact.contact.name}
-                avatar_path={contact.Contact.contact.profile.pic_path}
+                key={contact.id}
+                name={contact.contact?.name}
+                avatar_path={contact.contact?.profile.pic_path}
                 show_options={false}
-                onClick={() => chatStartHandler(contact.Contact.contact.user_id)}
+                onClick={() => chatStartHandler(contact.contact?.user_id)}
               />
             ))
           ) : error ? (
-            <Typography className="w-full h-full flex place-items-center justify-center">Error while loading Contacts</Typography>
+            <Typography className="flex h-full w-full place-items-center justify-center">Error while loading Contacts</Typography>
           ) : (
-            <Typography className="w-full h-full flex place-items-center justify-center"> Nothing here...</Typography>
+            <Typography className="flex h-full w-full place-items-center justify-center"> Nothing here...</Typography>
           )}
         </Suspense>
       </div>

@@ -5,7 +5,7 @@ import Button from '../Button/Button';
 
 interface IRequestCard {
   onButtonClick?: () => void;
-  avatar_src: string | Blob;
+  avatar_src: string;
   name: string;
 }
 
@@ -18,7 +18,7 @@ const RequestCard: FC<IRequestCard> = ({ avatar_src, name, onButtonClick }) => {
       )}
     >
       <span className="py-4">
-        <Avatar avatar_src={avatar_src} name={name} height={55} width={55} />
+        <Avatar avatar_path={avatar_src} name={name} height={55} width={55} />
       </span>
       <div className="flex w-full place-items-center justify-between px-3  border-b-[1px] border-whatsapp-light-secondary_bg dark:border-whatsapp-dark-secondary_bg">
         <div className="flex flex-col justify-evenly">

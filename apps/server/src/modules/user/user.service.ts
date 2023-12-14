@@ -110,7 +110,6 @@ export class UserService {
   async addNewContact(user_id: string, requested_user_id: string): Promise<ResponseType> {
     try {
       const user = await this.UserRepo.findOne({ where: { user_id, isVerified: true } });
-      console.log('🚀 ~ file: user.service.ts:113 ~ UserService ~ addNewContact ~ user:', user);
 
       if (!user) {
         return {
@@ -119,7 +118,7 @@ export class UserService {
         };
       }
       const isAlreadyContact = await this.ContactRepo.findOne({
-        where: { contact: { user_id: requested_user_id }, contactOf: { user_id: user_id } },
+        where: { contact: { user_id: requested_user_id }, contact_for: { user_id: user_id } },
       });
       if (isAlreadyContact) {
         return {
@@ -129,7 +128,6 @@ export class UserService {
       }
 
       const contactForUser = await this.UserRepo.findOne({ where: { user_id: requested_user_id, isVerified: true } });
-      console.log('🚀 ~ file: user.service.ts:132 ~ UserService ~ addNewContact ~ contactForUser:', contactForUser);
       if (!contactForUser) {
         return {
           success: false,
@@ -139,7 +137,7 @@ export class UserService {
 
       const newContact = new ContactEntity();
       newContact.contact = contactForUser;
-      newContact.contactOf = user;
+      newContact.contact_for = user;
 
       await this.ContactRepo.save(newContact);
       return {
@@ -158,7 +156,7 @@ export class UserService {
   // get user contacts
   async getUserContacts(user_id: string): Promise<ResponseType<ContactEntity[]>> {
     try {
-      const contacts = await this.ContactRepo.find({ where: { contactOf: { user_id } } });
+      const contacts = await this.ContactRepo.find({ where: { contact_for: { user_id } } });
       return {
         success: true,
         successMessage: 'Contacts loaded',

@@ -12,6 +12,6 @@ export class ContactEntity {
   contact: UserEntity;
 
   @ManyToOne(() => UserEntity, { eager: true })
-  @JoinColumn({ name: 'contact_of' })
-  contactOf: UserEntity;
+  @JoinColumn({ name: 'contact_for' })
+  contact_for: UserEntity;
 }
