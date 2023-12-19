@@ -37,7 +37,7 @@ export const isFileExtSafe = async (filePath: string): Promise<boolean> => {
 export const removeFile = (filePath) => {
   try {
     fs.unlinkSync(filePath);
-  } catch (error) {
-    console.log(error);
+  } catch (error: any) {
+    throw new Error(error);
   }
 };

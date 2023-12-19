@@ -10,5 +10,6 @@ declare namespace NodeJS {
     NEXT_PUBLIC_CLOUDINARY_NAME: string;
     NEXT_PUBLIC_CLOUDINARY_API_KEY: string;
     NEXT_PUBLIC_CLOUDINARY_API_SECRET: string;
+    NEXT_PUBLIC_SOCKET_URL: string;
   }
 }

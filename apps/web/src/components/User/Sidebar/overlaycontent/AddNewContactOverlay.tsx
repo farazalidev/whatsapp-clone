@@ -11,6 +11,9 @@ import FallBackLoadingSpinner from '@/Atoms/Loading/FallBackLoadingSpinner';
 import { setUserChatEntity } from '@/global/features/ChatSlice';
 import { setSelectedOverlay, setShow } from '@/global/features/SideBarOverlaySlice';
 import SideBarOptionCard from '@/Atoms/Cards/SideBarOptionCard';
+import { fetcher } from '@/utils/fetcher';
+import { SuccessResponseType } from '@server/Misc/ResponseType.type';
+import { UserChatEntity } from '@server/modules/chat/entities/userchat.entity';
 
 const AddNewContactOverlay = () => {
   const dispatch = useDispatch();
@@ -23,13 +26,13 @@ const AddNewContactOverlay = () => {
 
   const chatStartHandler = async (user_id: string) => {
     // checking if the chat is started
-    const isChatStarted = data?.chats.some((chat) => chat.chat_with.user_id === user_id || chat.chat_for.user_id === user_id);
+    const isChatStarted = await fetcher<SuccessResponseType<UserChatEntity>>(`chat/is-chat/${user_id}`);
 
-    if (!isChatStarted) {
-      /** is the chat is already started
-       * Means that is the user have chats with the clicked contact
-       * then loads the chat and go to the chat panel
-       * **/
+    if (!isChatStarted.success) {
+      /**
+       * If the chat is not started with user
+       * then loads user info from the contact
+       */
       dispatch(setUserChatEntity({ id: user_id, started_from: 'contact' }));
       // closing overlay
       dispatch(setShow(false));
@@ -37,10 +40,12 @@ const AddNewContactOverlay = () => {
       dispatch(setSelectedOverlay(0));
       return;
     } else {
-      const chat = data?.chats.find((chat) => {
-        return chat.chat_with.user_id === user_id || chat.chat_for.user_id === user_id;
-      });
-      dispatch(setUserChatEntity({ id: chat?.id as string, started_from: 'chat' }));
+      /** is the chat is already started
+       * Means that is the user have chats with the clicked contact
+       * then loads the chat and go to the chat panel
+       * **/
+
+      dispatch(setUserChatEntity({ id: isChatStarted.data?.id as string, started_from: 'chat' }));
       // closing overlay
       dispatch(setShow(false));
       // resetting overlay

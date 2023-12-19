@@ -7,7 +7,6 @@ import { RootState } from '@/global/store';
 
 const UserChat = () => {
   const { id } = useSelector((state: RootState) => state.ChatSlice);
-  console.log('🚀 ~ file: UserChat.tsx:10 ~ UserChat ~ id:', id);
 
   return (
     <div className="bg-whatsapp-light-secondary_bg dark:bg-whatsapp-dark-secondary_bg flex h-full w-full flex-col place-items-center justify-center gap-7">

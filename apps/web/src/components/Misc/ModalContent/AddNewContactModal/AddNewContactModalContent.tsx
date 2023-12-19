@@ -35,7 +35,6 @@ const AddNewContactModalContent = () => {
     } catch (error) {
       setSearchQueryState({ error: (error as any).data?.message, isError: true });
       setFoundedUser(undefined);
-      console.log(error);
       toast.error((error as AxiosError<{ message: string }>).response?.data.message || 'Internal Server Error', { position: 'top-right' });
     } finally {
       setSearchIsLoading(false);
@@ -59,13 +58,13 @@ const AddNewContactModalContent = () => {
   return (
     <div
       className={cn(
-        'w-full h-[450px] relative',
+        'relative h-[450px] w-full',
         'bg-whatsapp-light-primary_bg dark:bg-whatsapp-dark-primary_bg  ',
         'text-whatsapp-light-text dark:text-whatsapp-dark-text',
       )}
     >
       <ModalHeader heading="Add a new contact" />
-      <form className="flex gap-4 flex-col px-10 justify-center py-4" onSubmit={handleSubmit(handleSearch)}>
+      <form className="flex flex-col justify-center gap-4 px-10 py-4" onSubmit={handleSubmit(handleSearch)}>
         {searchQueryState.error ? <Typography text_style={'error'}>{searchQueryState.error || 'Internal Server Error'}</Typography> : null}
         {/* {isError ? <Typography text_style={'error'}>{(error as any)?.data.message || 'Internal Server Error'}</Typography> : null} */}
         <Input
@@ -87,7 +86,7 @@ const AddNewContactModalContent = () => {
         </div>
       ) : null}
 
-      <Typography className="font-extralight text-center absolute bottom-4 px-10">
+      <Typography className="absolute bottom-4 px-10 text-center font-extralight">
         After Adding the contact, Your request will be sended to requested contact.
       </Typography>
     </div>

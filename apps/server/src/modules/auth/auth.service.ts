@@ -12,6 +12,7 @@ import { AuthTokens, OtpToken } from '../types';
 import { ResponseType } from '../../Misc/ResponseType.type';
 import { generateOtp } from '../../utils/generateOtp';
 import { isSuccess } from '../../utils/isSuccess.typeguard';
+import { getTokens } from '../../utils/getTokens';
 
 export type LoginResponse = {
   user: UserEntity;
@@ -29,13 +30,6 @@ export class AuthService {
     @InjectRepository(UserEntity) private UserRepo: Repository<UserEntity>,
   ) {}
 
-  // get tokens function
-  private async getTokens(user_id: string): Promise<AuthTokens> {
-    const refresh_token = await this.jwtService.signAsync({ user_id }, { expiresIn: '7d', secret: process.env.REFRESH_TOKEN_SECRET });
-    const access_token = await this.jwtService.signAsync({ user_id }, { expiresIn: '30m', secret: process.env.ACCESS_TOKEN_SECRET });
-    return { access_token, refresh_token };
-  }
-
   private async getOptToken(user_id: string): Promise<OtpToken> {
     const otp_token = await this.jwtService.signAsync({ user_id }, { expiresIn: '5m', secret: process.env.OTP_TOKEN_SECRET });
     return { otp_token };
@@ -50,7 +44,7 @@ export class AuthService {
   }
 
   // update refresh token hash in users db
-  private async updateRefreshTokenHash(user_id: string, refresh_token: string) {
+  public async updateRefreshTokenHash(user_id: string, refresh_token: string) {
     const user = await this.UserRepo.findOne({ where: { user_id } });
     const hashedRefreshToken = await hash(refresh_token, 10);
     user.refresh_hash = hashedRefreshToken;
@@ -150,7 +144,7 @@ export class AuthService {
       }
 
       // getting token
-      const tokens = await this.getTokens(user.user_id);
+      const tokens = await getTokens(user.user_id, this.jwtService);
 
       // removing otp from user table
       user.registration_otp = null;
@@ -211,7 +205,7 @@ export class AuthService {
         }
 
         // generating access and refresh tokens
-        const tokens = await this.getTokens(response.data.user_id);
+        const tokens = await getTokens(response.data.user_id, this.jwtService);
 
         // updating refresh hash
         await this.updateRefreshTokenHash(response.data.user_id, tokens.refresh_token);
@@ -263,7 +257,7 @@ export class AuthService {
       }
 
       // getting new tokens
-      const tokens = await this.getTokens(user.data.user_id);
+      const tokens = await getTokens(user.data.user_id, this.jwtService);
 
       // updating refresh token hash
       await this.updateRefreshTokenHash(user.data.user_id, tokens.refresh_token);

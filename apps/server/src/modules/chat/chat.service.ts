@@ -21,6 +21,7 @@ export class ChatService {
       const user = await this.UserChatRepo.find({
         where: [{ chat_for: { user_id } }, { chat_with: { user_id } }],
         relations: { messages: { from: true } },
+        order: { messages: { sended_at: 'DESC' } },
       });
       if (!user) {
         return {
@@ -35,7 +36,6 @@ export class ChatService {
         successMessage: 'Chat Found',
       };
     } catch (error) {
-      console.log('🚀 ~ file: chat.service.ts:38 ~ ChatService ~ getUserChats ~ error:', error);
       return { success: false, error: { message: 'Internal Server Error', statusCode: HttpStatus.INTERNAL_SERVER_ERROR } };
     }
   }
@@ -110,8 +110,35 @@ export class ChatService {
     };
   }
 
+  async isChatStarted(sender_id: string, receiver_id: string): Promise<ResponseType<UserChatEntity>> {
+    try {
+      const chat = await this.UserChatRepo.findOne({
+        where: [
+          { chat_for: { user_id: sender_id }, chat_with: { user_id: receiver_id } },
+          { chat_for: { user_id: receiver_id }, chat_with: { user_id: sender_id } },
+        ],
+      });
+
+      if (!chat) {
+        return {
+          success: false,
+          error: { message: 'chat not found', statusCode: HttpStatus.NOT_FOUND },
+        };
+      }
+      return {
+        success: true,
+        successMessage: 'chat founded',
+        data: chat,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: { message: 'Internal Server Error', statusCode: HttpStatus.INTERNAL_SERVER_ERROR },
+      };
+    }
+  }
+
   async sendMessage(chat_id: string, sender_id: string, receiver_id: string, message: MessageDto): Promise<ResponseType> {
-    console.log('🚀 ~ file: chat.service.ts:114 ~ ChatService ~ sendMessage ~ chat_id:', chat_id);
     /**
      * In this service the user can send messages
      * There will be three possibilities
@@ -128,77 +155,86 @@ export class ChatService {
      * else false
      *
      */
-    const isChatStarted = await this.UserChatRepo.findOne({
-      where: [
-        { chat_for: { user_id: sender_id }, chat_with: { user_id: receiver_id } },
-        { chat_for: { user_id: receiver_id }, chat_with: { user_id: sender_id } },
-      ],
-    });
+    try {
+      const isChatStarted = await this.UserChatRepo.findOne({
+        where: [
+          { chat_for: { user_id: sender_id }, chat_with: { user_id: receiver_id } },
+          { chat_for: { user_id: receiver_id }, chat_with: { user_id: sender_id } },
+        ],
+      });
 
-    // sender of the message
-    const sender = await this.userRepo.findOne({ where: { user_id: sender_id } });
-    // receiver of the message
-    const receiver = await this.userRepo.findOne({ where: { user_id: receiver_id } });
+      // sender of the message
+      const sender = await this.userRepo.findOne({ where: { user_id: sender_id } });
+      // receiver of the message
+      const receiver = await this.userRepo.findOne({ where: { user_id: receiver_id } });
 
-    // creating a new message
-    const newMessage = this.UserMessageRepo.create({
-      from: sender,
-      content: message.content,
-    });
+      // creating a new message
+      const newMessage = this.UserMessageRepo.create({
+        from: sender,
+        content: message.content,
+      });
 
-    /**
-     * If the chat id is undefined or not provided at all
-     * then new chat will be started
-     */
-    if (!chat_id || chat_id === 'undefined') {
       /**
-       * 1
-       * If the chat is already started but the user select the chat
-       * from the contacts.
-       * Then we will push messages into the user messages array
+       * If the chat id is undefined or not provided at all
+       * then new chat will be started
        */
-      if (isChatStarted) {
-        isChatStarted.messages.push(newMessage);
-        await this.UserChatRepo.save(isChatStarted);
+      if (!chat_id || chat_id === 'undefined') {
+        /**
+         * 1
+         * If the chat is already started but the user select the chat
+         * from the contacts.
+         * Then we will push messages into the user messages array
+         */
+        if (isChatStarted) {
+          isChatStarted.messages.push(newMessage);
+          await this.UserChatRepo.save(isChatStarted);
+          return {
+            success: true,
+            successMessage: 'message sended',
+            data: isChatStarted.id,
+          };
+        }
+
+        /**
+         * 2
+         * If the user does not have any chat with the other user
+         * then a new chat will be created and message sended
+         */
+
+        const newChat = this.UserChatRepo.create({
+          chat_for: sender,
+          chat_with: receiver,
+          messages: [newMessage],
+        });
+
+        await this.UserChatRepo.save(newChat);
         return {
           success: true,
           successMessage: 'message sended',
+          data: newChat.id,
         };
       }
 
       /**
-       * 2
-       * If the user does not have any chat with the other user
-       * then a new chat will be created and message sended
+       * 3
+       * This code will run when the user provided the chat_id
+       * Means that the user selected chat from the chats
+       * now we are just pushing new messages in the messages array.
        */
+      const chat = await this.UserChatRepo.findOne({ where: { id: chat_id } });
+      chat.messages.push(newMessage);
 
-      const newChat = this.UserChatRepo.create({
-        chat_for: sender,
-        chat_with: receiver,
-        messages: [newMessage],
-      });
+      await this.UserChatRepo.save(chat);
 
-      await this.UserChatRepo.save(newChat);
       return {
         success: true,
         successMessage: 'message sended',
       };
+    } catch (error) {
+      return {
+        success: false,
+        error: { message: 'Internal Server Error', statusCode: HttpStatus.INTERNAL_SERVER_ERROR },
+      };
     }
-
-    /**
-     * 3
-     * This code will run when the user provided the chat_id
-     * Means that the user selected chat from the chats
-     * now we are just pushing new messages in the messages array.
-     */
-    const chat = await this.UserChatRepo.findOne({ where: { id: chat_id } });
-    chat.messages.push(newMessage);
-
-    await this.UserChatRepo.save(chat);
-
-    return {
-      success: true,
-      successMessage: 'message sended',
-    };
   }
 }

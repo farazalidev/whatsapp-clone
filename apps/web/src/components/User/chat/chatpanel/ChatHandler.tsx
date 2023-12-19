@@ -14,19 +14,22 @@ const ChatHandler: FC<ChatHandlerProps> = ({ messages }) => {
   const user = useUser();
 
   return (
-    <div className="flex h-full w-full flex-col gap-4 overflow-y-scroll border-2 border-red-300 px-4 py-2">
-      {messages
-        ? messages
-            .sort((a, b) => {
-              const dateA = new Date(a.sended_at).getTime();
-              const dateB = new Date(b.sended_at).getTime();
-              return dateA - dateB;
-            })
-            .map((message) => (
-              <MessagePreview isFromMe={user.data?.Me.user_id === message?.from?.user_id} message={message} key={message.id} />
-            ))
-        : null}
-    </div>
+    <>
+      {/* {isInMyContacts ? null : <NewContactActions />} */}
+      <div className="relative flex h-full w-full flex-col gap-4 overflow-y-scroll px-4 py-2">
+        {messages
+          ? messages
+              .sort((a, b) => {
+                const dateA = new Date(a.sended_at).getTime();
+                const dateB = new Date(b.sended_at).getTime();
+                return dateA - dateB;
+              })
+              .map((message) => (
+                <MessagePreview isFromMe={user.data?.Me.user_id === message?.from?.user_id} message={message} key={message.id} />
+              ))
+          : null}
+      </div>
+    </>
   );
 };
 

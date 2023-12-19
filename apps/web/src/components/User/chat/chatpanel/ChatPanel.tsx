@@ -6,14 +6,14 @@ import { useSelector } from 'react-redux';
 import { RootState } from '@/global/store';
 import useUser from '@/hooks/useUser';
 import FallBackLoadingSpinner from '@/Atoms/Loading/FallBackLoadingSpinner';
-import { getDetailsForChatPanel } from '@/utils/getDetailsForChatPanel';
+import { useUserChatDetails } from '@/hooks/useGetChatDetails';
 
 const ChatPanel = () => {
   const chatSlice = useSelector((state: RootState) => state.ChatSlice);
 
   const { data } = useUser();
 
-  const { avatar_path, messages, name, receiver_id, chat_id } = getDetailsForChatPanel(chatSlice, data);
+  const { avatar_path, messages, name, receiver_id, chat_id } = useUserChatDetails(chatSlice, data);
 
   return (
     <div className="bg-pattern h-full  w-full">

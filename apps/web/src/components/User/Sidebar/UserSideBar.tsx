@@ -9,11 +9,10 @@ import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '@/global/store';
 import SideBarUserCard from './SideBarUseCard';
 import Typography from '@/Atoms/Typography/Typography';
-import useUser from '@/hooks/useUser';
 import SidebarChatsSkeleton from '@/skeletons/Components/SidebarChatsSkeleton';
 import { getDayOrFormattedDate } from '@/utils/getDateOrFormat';
 import { setUserChatEntity } from '@/global/features/ChatSlice';
-import { isIamReceiver } from '../../../utils/isIamReciever';
+import { isIamReceiver } from '../../../utils/isIamReceiver';
 import { getLatestMessage } from '@/utils/getLatestMessage';
 
 const UserSideBar = () => {
@@ -21,14 +20,15 @@ const UserSideBar = () => {
 
   const { selectedOverlay, show } = useSelector((state: RootState) => state.sideBarOverlaySlice);
 
-  const { data } = useUser();
-  console.log('🚀 ~ file: UserSideBar.tsx:19 ~ UserSideBar ~ data:', data);
+  const { id } = useSelector((state: RootState) => state.ChatSlice);
+
+  const { chats, Me } = useSelector((state: RootState) => state.UserSlice);
+
+  // const { data } = useUser();
 
   const handleChat = (chat_id: string) => {
     dispatch(setUserChatEntity({ id: chat_id, started_from: 'chat' }));
   };
-
-  const receiver = isIamReceiver(data);
 
   return (
     <div className="dark:bg-whatsapp-dark-primary_bg relative flex h-full flex-col overflow-x-hidden border-r-[2px] border-r-gray-300 bg-white dark:border-r-gray-600">
@@ -40,14 +40,15 @@ const UserSideBar = () => {
       </div>
       <Suspense fallback={<SidebarChatsSkeleton />}>
         <div className="dark:bg-whatsapp-dark-primary_bg h-[100%] overflow-y-scroll ">
-          {data?.chats && data?.chats.length !== 0 ? (
-            data.chats?.map((chat) => (
+          {chats && Me && chats?.length !== 0 ? (
+            chats?.map((chat) => (
               <SideBarUserCard
                 key={chat.id}
-                name={receiver ? chat.chat_for.name : chat?.chat_with.name}
+                name={isIamReceiver(chat, Me.user_id) ? chat.chat_for.name : chat?.chat_with.name}
                 last_message={getLatestMessage(chat?.messages)?.content}
                 last_message_date={getDayOrFormattedDate(chat.messages[chat.messages.length - 1].sended_at)}
-                avatar_path={receiver ? chat.chat_for.profile.pic_path : chat?.chat_with.profile.pic_path}
+                active={chat.id === id}
+                avatar_path={isIamReceiver(chat, Me.user_id) ? chat.chat_for.profile.pic_path : chat?.chat_with.profile.pic_path}
                 onClick={() => handleChat(chat.id)}
               />
             ))

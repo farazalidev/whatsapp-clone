@@ -1,3 +1,4 @@
+import { cn } from '@/utils/cn';
 import { fetcher } from '@/utils/fetcher';
 import Image from 'next/image';
 import React, { FC, Suspense } from 'react';
@@ -22,11 +23,11 @@ const Avatar: FC<AvatarProps> = ({ avatar_path, isAbsolute, name, height = 55, w
 
   return (
     <Suspense fallback={'loading'}>
-      <div className="relative  h-[55px] w-[55px]">
+      <div className={cn('relative')} style={{ height, width }}>
         <Image
           src={(isAbsolute ? avatar_path : (data as string)) || '/icons/avatardefault.svg'}
           fill
-          className="rounded-full h-[55px] w-[55px] object-cover"
+          className="h-[55px] w-[55px] rounded-full object-cover"
           // objectPosition="center"
           alt={name ? name : 'user'}
         />

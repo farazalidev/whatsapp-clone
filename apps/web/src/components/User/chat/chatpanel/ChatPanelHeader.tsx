@@ -8,9 +8,9 @@ interface ChatPanelHeaderProps extends AvatarProps {
 
 const ChatPanelHeader: FC<ChatPanelHeaderProps> = ({ header_name = 'Name', ...props }) => {
   return (
-    <div className="w-full inline-flex justify-between place-items-center px-4 py-2  bg-whatsapp-light-secondary_bg dark:bg-whatsapp-dark-secondary_bg border-l-[1px] border-l-gray-100 dark:border-l-gray-800">
-      <div className="flex gap-4 place-items-center">
-        <Avatar {...props} />
+    <div className="bg-whatsapp-light-secondary_bg dark:bg-whatsapp-dark-secondary_bg inline-flex w-full place-items-center justify-between  border-l-[1px] border-l-gray-100 px-4 py-2 dark:border-l-gray-800">
+      <div className="flex place-items-center gap-4">
+        <Avatar {...props} height={40} width={40} />
         <span className="text-whatsapp-light-text dark:text-whatsapp-dark-text">{header_name}</span>
       </div>
       <div>

@@ -1,17 +1,22 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { UserChatEntity } from '@server/modules/chat/entities/userchat.entity';
 import { UserEntity } from '@server/modules/user/entities/user.entity';
+import { ContactEntity } from '@server/modules/user/entities/contact.entity';
 
 interface UserSliceInitialStateType {
-  user: UserEntity | null;
-  user_profile_img_src: string | null;
-  chats: UserChatEntity[];
+  Me: UserEntity | undefined;
+  chats: UserChatEntity[] | undefined;
+  contacts: ContactEntity[] | undefined;
+  isLoading: boolean;
+  isError: boolean;
 }
 
 const initialState: UserSliceInitialStateType = {
-  chats: [],
-  user: null,
-  user_profile_img_src: null,
+  Me: undefined,
+  chats: undefined,
+  contacts: undefined,
+  isLoading: true,
+  isError: false,
 };
 
 export const UserSlice = createSlice({

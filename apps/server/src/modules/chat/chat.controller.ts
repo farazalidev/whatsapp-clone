@@ -30,12 +30,22 @@ export class ChatController {
     return response.data;
   }
 
+  @Get('is-chat/:receiver_id')
+  async isChatStarted(@GetUser() user: LoginPayload, @Param() param: { receiver_id: string }) {
+    const response = await this.chatSer.isChatStarted(user.user_id, param.receiver_id);
+    if (!isSuccess(response)) {
+      return response;
+    }
+    return response;
+  }
+
   @Post('message/:chat_id/:receiver_id')
   async sendMessage(@GetUser() user: LoginPayload, @Param() param: { receiver_id: string; chat_id: string }, @Body() body: MessageDto) {
     const response = await this.chatSer.sendMessage(param.chat_id, user.user_id, param.receiver_id, body);
     if (!isSuccess(response)) {
       throw new HttpException(response.error.message, response.error.statusCode);
     }
+
     return response;
   }
 }

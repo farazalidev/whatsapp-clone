@@ -8,6 +8,7 @@ interface SideBarUserCardProps extends AvatarProps {
   last_message?: string;
   last_message_date?: string;
   show_options?: boolean;
+  active?: boolean;
   onClick?: () => void;
 }
 
@@ -17,6 +18,7 @@ const SideBarUserCard: FC<SideBarUserCardProps> = ({
   last_message,
   last_message_date,
   show_options = true,
+  active = false,
   onClick,
 }) => {
   return (
@@ -24,7 +26,9 @@ const SideBarUserCard: FC<SideBarUserCardProps> = ({
       onClick={onClick}
       className={cn(
         'dark:bg-whatsapp-dark-primary_bg group relative flex w-full px-2 dark:text-white',
-        ' hover:bg-whatsapp-light-secondary_bg dark:hover:bg-whatsapp-dark-secondary_bg cursor-pointer',
+        active
+          ? 'bg-whatsapp-light-secondary_bg dark:bg-whatsapp-dark-secondary_bg cursor-pointer'
+          : ' hover:bg-whatsapp-light-secondary_bg dark:hover:bg-whatsapp-dark-secondary_bg cursor-pointer',
       )}
     >
       <span className="py-4">

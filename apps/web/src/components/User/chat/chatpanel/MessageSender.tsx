@@ -3,8 +3,13 @@ import OptionIcon from '../../Sidebar/OptionIcon';
 import MessageInput from '@/Atoms/Input/MessageInput';
 import { Mutation } from '@/utils/fetcher';
 import { mutate } from 'swr';
+import { useDispatch } from 'react-redux';
+import { setUserChatEntity } from '@/global/features/ChatSlice';
+import { SuccessResponseType } from '@server/Misc/ResponseType.type';
 
 const MessageSender = ({ receiver_id, chat_id }: { receiver_id: string; chat_id: string | undefined }) => {
+  const dispatch = useDispatch();
+
   const [messageValue, setMessageValue] = useState<string>();
 
   const handleMessageChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -13,7 +18,14 @@ const MessageSender = ({ receiver_id, chat_id }: { receiver_id: string; chat_id:
   const handleSendMessage = async (e: FormEvent) => {
     e.preventDefault();
     try {
-      await Mutation(`chat/message/${chat_id}/${receiver_id}`, { content: messageValue });
+      await Mutation<{ content: string | undefined }, SuccessResponseType<string>>(`chat/message/${chat_id}/${receiver_id}`, {
+        content: messageValue,
+      }).then((data) => {
+        if (!chat_id || chat_id === 'undefined') {
+          dispatch(setUserChatEntity({ id: data.data as string, started_from: 'chat' }));
+        }
+      });
+
       mutate('api/user');
       setMessageValue('');
     } catch (error) {
