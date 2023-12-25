@@ -58,55 +58,19 @@ export class ChatService {
     };
   }
 
-  // send message
-  async sendMessageService(sender_id: string, receiver_id: string, message: MessageDto): Promise<ResponseType> {
-    /**
-     * finding if the user chat is already started then
-     * sending message in the chat
-     */
+  async getChatByChatId(chat_id: string, user_id: string): Promise<ResponseType<UserChatEntity>> {
+    const chat = await this.UserChatRepo.findOne({ where: [{ id: chat_id }, { chat_for: { user_id }, chat_with: { user_id } }] });
 
-    const sender = await this.userRepo.findOne({ where: { user_id: sender_id } });
-    const receiver = await this.userRepo.findOne({ where: { user_id: receiver_id } });
-
-    if (!sender || !receiver) {
+    if (!chat) {
       return {
         success: false,
-        error: { message: 'Internal server Error', statusCode: HttpStatus.INTERNAL_SERVER_ERROR },
+        error: { message: 'Chat not Found', statusCode: 404 },
       };
     }
-
-    const chatIsInit = await this.UserChatRepo.findOne({
-      where: { chat_for: { user_id: sender_id }, chat_with: { user_id: receiver_id } },
-    });
-    if (chatIsInit) {
-      const newMessage = new MessageEntity();
-      newMessage.content = message.content;
-      newMessage.from = sender;
-
-      chatIsInit.messages.push(newMessage);
-      await this.UserChatRepo.save(chatIsInit);
-      return {
-        success: true,
-        successMessage: 'message sended',
-      };
-    }
-
-    /**
-     * if the chat is not init then
-     * initializing a new chat and then sending message
-     */
-
-    const newChat = this.UserChatRepo.create({
-      chat_for: sender,
-      chat_with: receiver,
-      messages: [{ content: message.content, from: sender }],
-    });
-
-    await this.UserChatRepo.save(newChat);
-
     return {
       success: true,
-      successMessage: 'chat started and message sended',
+      successMessage: 'chat founded',
+      data: chat,
     };
   }
 
@@ -138,7 +102,12 @@ export class ChatService {
     }
   }
 
-  async sendMessage(chat_id: string, sender_id: string, receiver_id: string, message: MessageDto): Promise<ResponseType> {
+  async sendMessage(
+    chat_id: string,
+    sender_id: string,
+    receiver_id: string,
+    message: MessageDto,
+  ): Promise<ResponseType<{ newMessage: MessageEntity; chat_id: string }>> {
     /**
      * In this service the user can send messages
      * There will be three possibilities
@@ -191,7 +160,7 @@ export class ChatService {
           return {
             success: true,
             successMessage: 'message sended',
-            data: isChatStarted.id,
+            data: { chat_id: isChatStarted.id, newMessage },
           };
         }
 
@@ -211,7 +180,7 @@ export class ChatService {
         return {
           success: true,
           successMessage: 'message sended',
-          data: newChat.id,
+          data: { chat_id: newChat.id, newMessage },
         };
       }
 
@@ -225,15 +194,37 @@ export class ChatService {
       chat.messages.push(newMessage);
 
       await this.UserChatRepo.save(chat);
-
       return {
         success: true,
         successMessage: 'message sended',
+        data: { chat_id: chat.id, newMessage },
       };
     } catch (error) {
       return {
         success: false,
         error: { message: 'Internal Server Error', statusCode: HttpStatus.INTERNAL_SERVER_ERROR },
+      };
+    }
+  }
+
+  async getMessagesByChatId(chat_id: string): Promise<ResponseType<MessageEntity[]>> {
+    try {
+      const chat = await this.UserChatRepo.findOne({ where: { id: chat_id } });
+      if (!chat) {
+        return {
+          success: false,
+          error: { message: 'chat not found', statusCode: 404 },
+        };
+      }
+      return {
+        success: true,
+        successMessage: 'chat founded',
+        data: chat.messages,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: { message: 'Internal server error', statusCode: 500 },
       };
     }
   }

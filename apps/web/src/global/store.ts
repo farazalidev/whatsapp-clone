@@ -4,6 +4,7 @@ import { sideBarOverlaySlice } from './features/SideBarOverlaySlice';
 import { modalSlice } from './features/ModalSlice';
 import { UserSlice } from './features/UserSlice';
 import { ChatSlice } from './features/ChatSlice';
+import { chatDetailsSlice } from '@/hooks/messagesSlice';
 
 export const store = configureStore({
   reducer: {
@@ -12,6 +13,7 @@ export const store = configureStore({
     modalSlice: modalSlice.reducer,
     UserSlice: UserSlice.reducer,
     ChatSlice: ChatSlice.reducer,
+    chatDetails: chatDetailsSlice.reducer,
   },
   middleware: (getDefaultMiddleware) => {
     return getDefaultMiddleware().concat(apiSlice.middleware);

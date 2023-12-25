@@ -23,7 +23,8 @@
     "paths": {
       "@/*": ["./src/*"],
       "@public/*": ["./public/*"],
-      "@server/*": ["../../apps/server/src/*"]
+      "@server/*": ["../../apps/server/src/*"],
+      "@shared/types": ["../../shared/types/index.ts"]
     }
   },
   "include": [

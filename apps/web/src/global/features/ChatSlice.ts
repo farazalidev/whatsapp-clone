@@ -7,14 +7,14 @@ export interface IChatSlice {
    * id will be user_id
    * else id will be chat_id
    */
-  id: string | null;
+  id: string | undefined;
 
   started_from: 'chat' | 'contact' | null;
 }
 
 const initialState: IChatSlice = {
   started_from: null,
-  id: null,
+  id: undefined,
 };
 
 export const ChatSlice = createSlice({

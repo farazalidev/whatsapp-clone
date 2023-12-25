@@ -13,7 +13,10 @@
     "lib": ["es2020", "dom"],
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
-    "baseUrl": "."
+    "baseUrl": ".",
+    "paths": {
+      "@shared/types": ["./shared/types/index.ts"]
+    }
   },
   "exclude": ["node_modules", "tmp"]
 }

@@ -48,4 +48,14 @@ export class ChatController {
 
     return response;
   }
+
+  @Get('messages/:chat_id')
+  async getChatMessages(@Param() param: { chat_id: string }) {
+    const response = await this.chatSer.getMessagesByChatId(param.chat_id);
+    if (!isSuccess(response)) {
+      throw new HttpException(response.error.message, response.error.statusCode);
+    }
+
+    return response.data;
+  }
 }

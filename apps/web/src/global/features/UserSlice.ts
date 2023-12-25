@@ -2,6 +2,7 @@ import { createSlice } from '@reduxjs/toolkit';
 import { UserChatEntity } from '@server/modules/chat/entities/userchat.entity';
 import { UserEntity } from '@server/modules/user/entities/user.entity';
 import { ContactEntity } from '@server/modules/user/entities/contact.entity';
+import { RootState } from '../store';
 
 interface UserSliceInitialStateType {
   Me: UserEntity | undefined;
@@ -23,7 +24,7 @@ export const UserSlice = createSlice({
   name: 'user_slice',
   initialState,
   reducers: {
-    setUserInfo: (state, { payload }: { payload: Partial<UserSliceInitialStateType> }) => {
+    setUser: (state, { payload }: { payload: Partial<UserSliceInitialStateType> | undefined }) => {
       return {
         ...state,
         ...payload,
@@ -32,4 +33,5 @@ export const UserSlice = createSlice({
   },
 });
 
-export const { setUserInfo } = UserSlice.actions;
+export const { setUser } = UserSlice.actions;
+export const selectUser = (state: RootState) => state.UserSlice;

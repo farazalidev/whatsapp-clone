@@ -45,6 +45,7 @@ export const SocketProvider = ({ children }: { children: ReactNode }) => {
 
       return () => {
         newSocket.disconnect();
+        setSocket(null);
       };
     } catch (error) {
       setIsLoading(false);

@@ -11,6 +11,7 @@ import { JwtService } from '@nestjs/jwt';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ChatModule } from './modules/chat/chat.module';
 import { LocalUploadModule } from './modules/localupload/localupload.module';
+import { MessageGateway } from './gateways/message.gatewat';
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { LocalUploadModule } from './modules/localupload/localupload.module';
   controllers: [AppController],
   providers: [
     AppService,
+    MessageGateway,
     {
       provide: APP_GUARD,
       useClass: AuthGuard,

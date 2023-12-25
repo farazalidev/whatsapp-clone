@@ -2,10 +2,11 @@ import React, { ChangeEvent, FormEvent, useState } from 'react';
 import OptionIcon from '../../Sidebar/OptionIcon';
 import MessageInput from '@/Atoms/Input/MessageInput';
 import { Mutation } from '@/utils/fetcher';
-import { mutate } from 'swr';
 import { useDispatch } from 'react-redux';
 import { setUserChatEntity } from '@/global/features/ChatSlice';
 import { SuccessResponseType } from '@server/Misc/ResponseType.type';
+import { MessageEntity } from '@server/modules/chat/entities/message.entity';
+import { createSocket } from '@/utils/createSocket';
 
 const MessageSender = ({ receiver_id, chat_id }: { receiver_id: string; chat_id: string | undefined }) => {
   const dispatch = useDispatch();
@@ -15,18 +16,26 @@ const MessageSender = ({ receiver_id, chat_id }: { receiver_id: string; chat_id:
   const handleMessageChange = (e: ChangeEvent<HTMLInputElement>) => {
     setMessageValue(e.target.value);
   };
+
   const handleSendMessage = async (e: FormEvent) => {
+    const { socket } = createSocket();
+
     e.preventDefault();
     try {
-      await Mutation<{ content: string | undefined }, SuccessResponseType<string>>(`chat/message/${chat_id}/${receiver_id}`, {
-        content: messageValue,
-      }).then((data) => {
-        if (!chat_id || chat_id === 'undefined') {
-          dispatch(setUserChatEntity({ id: data.data as string, started_from: 'chat' }));
-        }
-      });
+      const response = await Mutation<{ content: string | undefined }, SuccessResponseType<{ newMessage: MessageEntity; chat_id: string }>>(
+        `chat/message/${chat_id}/${receiver_id}`,
+        {
+          content: messageValue,
+        },
+      );
 
-      mutate('api/user');
+      if (!chat_id || chat_id === 'undefined') {
+        return dispatch(setUserChatEntity({ id: response.data?.chat_id, started_from: 'chat' }));
+      }
+
+      socket?.emit('send_message', { chat_id: response.data?.chat_id, message: response.data?.newMessage, receiverId: receiver_id });
+
+      // await mutate('api/user');
       setMessageValue('');
     } catch (error) {
       console.log(error);

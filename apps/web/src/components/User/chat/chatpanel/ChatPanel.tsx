@@ -13,14 +13,14 @@ const ChatPanel = () => {
 
   const { data } = useUser();
 
-  const { avatar_path, messages, name, receiver_id, chat_id } = useUserChatDetails(chatSlice, data);
+  const { avatar_path, name, receiver_id, chat_id } = useUserChatDetails(chatSlice, data);
 
   return (
     <div className="bg-pattern h-full  w-full">
       <div className="dark:bg-whatsapp-dark-primary_bg flex h-full w-full flex-col bg-[#F5DEB3] bg-opacity-25 dark:bg-opacity-95">
         <Suspense fallback={<FallBackLoadingSpinner />}>
           <ChatPanelHeader header_name={name as string} avatar_path={avatar_path} />
-          <ChatHandler messages={messages} />
+          <ChatHandler />
           <MessageSender receiver_id={receiver_id as string} chat_id={chat_id} />
         </Suspense>
       </div>

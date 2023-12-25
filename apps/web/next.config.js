@@ -14,6 +14,7 @@ const nextConfig = {
   nx: {
     svgr: true,
   },
+  reactStrictMode: false,
 
   serverRuntimeConfig: {
     CLOUDINARY_NAME: 'dqgmwfomj',

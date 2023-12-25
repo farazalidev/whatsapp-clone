@@ -5,13 +5,13 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserChatEntity } from './entities/userchat.entity';
 import { MessageEntity } from './entities/message.entity';
 import { UserModule } from '../user/user.module';
-import { MessageGateway } from './gateways/message.gateway';
 import { JwtService } from '@nestjs/jwt';
 import { AuthService } from '../auth/auth.service';
+import { ChatGateway } from '../../gateways/chat.gateway';
 
 @Module({
   imports: [UserModule, TypeOrmModule.forFeature([UserChatEntity, MessageEntity])],
   controllers: [ChatController],
-  providers: [JwtService, AuthService, ChatService, MessageGateway],
+  providers: [JwtService, AuthService, ChatService, ChatGateway],
 })
 export class ChatModule {}

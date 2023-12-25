@@ -14,6 +14,7 @@ import { getDayOrFormattedDate } from '@/utils/getDateOrFormat';
 import { setUserChatEntity } from '@/global/features/ChatSlice';
 import { isIamReceiver } from '../../../utils/isIamReceiver';
 import { getLatestMessage } from '@/utils/getLatestMessage';
+import useUser from '@/hooks/useUser';
 
 const UserSideBar = () => {
   const dispatch = useDispatch();
@@ -22,9 +23,7 @@ const UserSideBar = () => {
 
   const { id } = useSelector((state: RootState) => state.ChatSlice);
 
-  const { chats, Me } = useSelector((state: RootState) => state.UserSlice);
-
-  // const { data } = useUser();
+  const { data } = useUser();
 
   const handleChat = (chat_id: string) => {
     dispatch(setUserChatEntity({ id: chat_id, started_from: 'chat' }));
@@ -40,15 +39,15 @@ const UserSideBar = () => {
       </div>
       <Suspense fallback={<SidebarChatsSkeleton />}>
         <div className="dark:bg-whatsapp-dark-primary_bg h-[100%] overflow-y-scroll ">
-          {chats && Me && chats?.length !== 0 ? (
-            chats?.map((chat) => (
+          {data?.chats && data?.Me && data?.chats?.length !== 0 ? (
+            data?.chats?.map((chat) => (
               <SideBarUserCard
                 key={chat.id}
-                name={isIamReceiver(chat, Me.user_id) ? chat.chat_for.name : chat?.chat_with.name}
+                name={isIamReceiver(chat, data?.Me.user_id) ? chat.chat_for.name : chat?.chat_with.name}
                 last_message={getLatestMessage(chat?.messages)?.content}
-                last_message_date={getDayOrFormattedDate(chat.messages[chat.messages.length - 1].sended_at)}
+                last_message_date={getDayOrFormattedDate(chat.messages)}
                 active={chat.id === id}
-                avatar_path={isIamReceiver(chat, Me.user_id) ? chat.chat_for.profile.pic_path : chat?.chat_with.profile.pic_path}
+                avatar_path={isIamReceiver(chat, data?.Me.user_id) ? chat.chat_for.profile.pic_path : chat?.chat_with.profile.pic_path}
                 onClick={() => handleChat(chat.id)}
               />
             ))
