@@ -1,5 +1,4 @@
 import { configureStore } from '@reduxjs/toolkit';
-import { apiSlice } from './apis/ApiSlice';
 import { sideBarOverlaySlice } from './features/SideBarOverlaySlice';
 import { modalSlice } from './features/ModalSlice';
 import { UserSlice } from './features/UserSlice';
@@ -8,15 +7,11 @@ import { chatDetailsSlice } from '@/hooks/messagesSlice';
 
 export const store = configureStore({
   reducer: {
-    [apiSlice.reducerPath]: apiSlice.reducer,
     sideBarOverlaySlice: sideBarOverlaySlice.reducer,
     modalSlice: modalSlice.reducer,
     UserSlice: UserSlice.reducer,
     ChatSlice: ChatSlice.reducer,
     chatDetails: chatDetailsSlice.reducer,
-  },
-  middleware: (getDefaultMiddleware) => {
-    return getDefaultMiddleware().concat(apiSlice.middleware);
   },
   devTools: true,
 });
