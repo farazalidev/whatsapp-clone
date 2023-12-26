@@ -1,17 +1,17 @@
-import React, { FC, useEffect, useMemo, useRef, useState } from 'react';
+import React, { FC, useEffect, useRef, useState } from 'react';
 import {} from 'class-transformer';
 import MessagePreview from '@/Atoms/chat/MessagePreview';
 import useUser from '@/hooks/useUser';
 import { useSelector } from 'react-redux';
-import { createSocket } from '@/utils/createSocket';
 import axiosWithAuth from '@/middlewares/axiosInterceptor';
 import { RootState } from '@/global/store';
 import { MessageEntity } from '@server/modules/chat/entities/message.entity';
+import useSocket from '@/hooks/useSocket';
 
 interface ChatHandlerProps {}
 
 const ChatHandler: FC<ChatHandlerProps> = () => {
-  const { socket } = useMemo(() => createSocket(), []);
+  const { socket } = useSocket();
 
   const { id } = useSelector((state: RootState) => state.ChatSlice);
 

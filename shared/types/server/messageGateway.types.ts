@@ -14,13 +14,13 @@ export interface ClientToServerEvents {
   get_online_users: () => void;
 }
 
-interface sendMessagePayload {
+export interface sendMessagePayload {
   message: MessageEntity | undefined;
   chat_id: string | undefined;
   receiverId: string;
 }
 
-interface joinRoomPayload {
+export interface joinRoomPayload {
   chat_id: string | undefined;
 }
 

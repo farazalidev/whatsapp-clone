@@ -4,22 +4,33 @@ import { Socket, io } from 'socket.io-client';
 import { getCookie } from './getCookie';
 import { ClientToServerEvents, ServerToClientEvents } from '@shared/types';
 
+let socketInstance: Socket<ServerToClientEvents, ClientToServerEvents> | null = null;
+
 export const createSocket = () => {
+  if (socketInstance) {
+    return { socket: socketInstance, isError: false };
+  }
+
   let isError;
-  const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io(process.env.NEXT_PUBLIC_BACKEND_URL, {
+  socketInstance = io(process.env.NEXT_PUBLIC_BACKEND_URL, {
     auth: { accessToken: getCookie(process.env.NEXT_PUBLIC_ACCESS_TOKEN_NAME) },
   });
 
-  socket.on('connect_error', async (err) => {
+  socketInstance.on('connect_error', async (err) => {
     if (err.message === 'Forbidden') {
       try {
-        await axios.get('http://localhost:8000/auth/refresh', { withCredentials: true });
-        socket.auth = { accessToken: getCookie(process.env.NEXT_PUBLIC_ACCESS_TOKEN_NAME) };
-        socket.connect();
+        await axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/refresh`, { withCredentials: true });
+
+        if (socketInstance) {
+          // Perform a null check before using socketInstance
+          socketInstance.auth = { accessToken: getCookie(process.env.NEXT_PUBLIC_ACCESS_TOKEN_NAME) };
+          socketInstance.connect();
+        }
       } catch (error) {
         isError = true;
       }
     }
   });
-  return { socket, isError };
+
+  return { socket: socketInstance, isError };
 };

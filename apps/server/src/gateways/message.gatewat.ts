@@ -1,4 +1,4 @@
-import { SubscribeMessage, WebSocketGateway, WebSocketServer, OnGatewayInit, OnGatewayDisconnect } from '@nestjs/websockets';
+import { WebSocketGateway, WebSocketServer, OnGatewayInit, OnGatewayDisconnect } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { MessageEntity } from '../modules/chat/entities/message.entity';
 import { WsAuthMiddleware } from '../modules/auth/guards/socketio.guard';

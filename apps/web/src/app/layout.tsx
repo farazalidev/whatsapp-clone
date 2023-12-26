@@ -3,7 +3,6 @@ import LocalFont from 'next/font/local';
 import './globals.css';
 import StoreProvider from '@/utils/storeProvider';
 import { Toaster } from 'sonner';
-import { SocketProvider } from '@/hooks/SocketContext';
 
 const Roboto = LocalFont({
   src: '../../fonts/Helvetica-Font/Helvetica.ttf',
@@ -20,10 +19,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <body className={Roboto.className}>
         <StoreProvider>
-          <SocketProvider>
-            <Toaster richColors theme="system" />
-            {children}
-          </SocketProvider>
+          <Toaster richColors theme="system" />
+          {children}
         </StoreProvider>
       </body>
     </html>

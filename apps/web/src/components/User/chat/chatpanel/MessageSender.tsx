@@ -6,9 +6,11 @@ import { useDispatch } from 'react-redux';
 import { setUserChatEntity } from '@/global/features/ChatSlice';
 import { SuccessResponseType } from '@server/Misc/ResponseType.type';
 import { MessageEntity } from '@server/modules/chat/entities/message.entity';
-import { createSocket } from '@/utils/createSocket';
+import useSocket from '@/hooks/useSocket';
 
 const MessageSender = ({ receiver_id, chat_id }: { receiver_id: string; chat_id: string | undefined }) => {
+  const { socket } = useSocket();
+
   const dispatch = useDispatch();
 
   const [messageValue, setMessageValue] = useState<string>();
@@ -18,8 +20,6 @@ const MessageSender = ({ receiver_id, chat_id }: { receiver_id: string; chat_id:
   };
 
   const handleSendMessage = async (e: FormEvent) => {
-    const { socket } = createSocket();
-
     e.preventDefault();
     try {
       const response = await Mutation<{ content: string | undefined }, SuccessResponseType<{ newMessage: MessageEntity; chat_id: string }>>(
