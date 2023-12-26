@@ -1,1 +1,1 @@
-export * from '../types/server/messageGateway.types';
+export * from './messageGateway.types';

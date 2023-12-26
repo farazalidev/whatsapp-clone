@@ -3,7 +3,7 @@
   "tabWidth": 2,
   "bracketSpacing": true,
   "embeddedLanguageFormatting": "auto",
-  "printWidth": 140,
+  "printWidth": 160,
   "arrowParens": "always",
   "proseWrap": "preserve",
   "trailingComma": "all",

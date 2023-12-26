@@ -1,4 +1,4 @@
-import { MessageEntity } from '../../../apps/server/src/modules/chat/entities/message.entity';
+import { MessageEntity } from '../../apps/server/src/modules/chat/entities/message.entity';
 
 type ChatEventPattern = `user_${string}`;
 
