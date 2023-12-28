@@ -8,6 +8,7 @@ interface UserSliceInitialStateType {
   Me: UserEntity | undefined;
   chats: UserChatEntity[] | undefined;
   contacts: ContactEntity[] | undefined;
+  pid: string | undefined;
   isLoading: boolean;
   isError: boolean;
 }
@@ -18,6 +19,7 @@ const initialState: UserSliceInitialStateType = {
   contacts: undefined,
   isLoading: true,
   isError: false,
+  pid: undefined,
 };
 
 export const UserSlice = createSlice({

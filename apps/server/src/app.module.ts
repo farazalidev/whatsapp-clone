@@ -11,7 +11,12 @@ import { JwtService } from '@nestjs/jwt';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ChatModule } from './modules/chat/chat.module';
 import { LocalUploadModule } from './modules/localupload/localupload.module';
-import { MessageGateway } from './gateways/message.gatewat';
+import { MessageGateway } from './gateways/message.gateway';
+import { RedisModule } from '@nestjs-modules/ioredis';
+import { pubsubService } from './services/pubsub.service';
+import { RoomService } from './services/room.service';
+import { OnlineUsersService } from './services/onlineUsers.service';
+import { UserGateway } from './gateways/user.gateway';
 
 @Module({
   imports: [
@@ -27,6 +32,13 @@ import { MessageGateway } from './gateways/message.gatewat';
       autoLoadEntities: true,
       uuidExtension: 'pgcrypto',
     }),
+    RedisModule.forRoot({
+      type: 'single',
+      options: {
+        host: process.env.REDIS_HOST || 'localhost',
+        port: parseInt(process.env.REDIS_PORT) || 6379,
+      },
+    }),
     ScheduleModule.forRoot(),
     AuthModule,
     UserModule,
@@ -37,6 +49,10 @@ import { MessageGateway } from './gateways/message.gatewat';
   providers: [
     AppService,
     MessageGateway,
+    UserGateway,
+    pubsubService,
+    RoomService,
+    OnlineUsersService,
     {
       provide: APP_GUARD,
       useClass: AuthGuard,

@@ -7,11 +7,10 @@ import { MessageEntity } from './entities/message.entity';
 import { UserModule } from '../user/user.module';
 import { JwtService } from '@nestjs/jwt';
 import { AuthService } from '../auth/auth.service';
-import { ChatGateway } from '../../gateways/chat.gateway';
 
 @Module({
   imports: [UserModule, TypeOrmModule.forFeature([UserChatEntity, MessageEntity])],
   controllers: [ChatController],
-  providers: [JwtService, AuthService, ChatService, ChatGateway],
+  providers: [JwtService, AuthService, ChatService],
 })
 export class ChatModule {}

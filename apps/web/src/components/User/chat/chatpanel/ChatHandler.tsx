@@ -28,6 +28,7 @@ const ChatHandler: FC<ChatHandlerProps> = () => {
     socket.on('users', (users) => {
       console.log(users);
     });
+    socket.emit('init_room', { chat_id: id as string });
   }, [socket, id]);
 
   // joining room
@@ -35,12 +36,14 @@ const ChatHandler: FC<ChatHandlerProps> = () => {
     socket.emit('join_room', { chat_id: id as string });
     return () => {
       socket.emit('leave_room', { room_id: id as string });
+      socket.emit('remove_user_from_room', { chat_id: id as string });
     };
   }, [socket, id]);
 
   // receiving new message
   useEffect(() => {
     socket.on('newMessage', (message) => {
+      console.log('🚀 ~ file: ChatHandler.tsx:44 ~ socket.on ~ message:', message);
       setMessages((prev) => [...prev, message]);
     });
 
@@ -90,9 +93,7 @@ const ChatHandler: FC<ChatHandlerProps> = () => {
                 const dateB = new Date(b?.sended_at).getTime();
                 return dateA - dateB;
               })
-              .map((message) => (
-                <MessagePreview isFromMe={user.data?.Me.user_id === message?.from?.user_id} message={message} key={message?.id} />
-              ))
+              .map((message) => <MessagePreview isFromMe={user.data?.Me.user_id === message?.from?.user_id} message={message} key={message?.id} />)
           : null}
         <div ref={divRef} />
       </div>

@@ -1,5 +1,7 @@
 'use client';
+
 export function getCookie(cname: string) {
+  if (typeof window === 'undefined') return;
   const name = cname + '=';
   const decodedCookie = decodeURIComponent(document?.cookie);
   const ca = decodedCookie?.split(';');
@@ -14,3 +16,5 @@ export function getCookie(cname: string) {
   }
   return '';
 }
+
+export type getCookeType = typeof getCookie;

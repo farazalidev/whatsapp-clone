@@ -1,3 +1,4 @@
+'use client';
 import { createSocket } from '@/utils/createSocket';
 import { useCallback } from 'react';
 

@@ -8,7 +8,6 @@ import { CompleteProfileType } from '@/schema/authSchema';
 import Typography from '@/Atoms/Typography/Typography';
 import { Mutation } from '@/utils/fetcher';
 import { toast } from 'sonner';
-import { CompleteProfileBody } from '../../global/apis/api.types';
 import { AxiosError } from 'axios';
 import { useRouter } from 'next/navigation';
 
@@ -35,7 +34,7 @@ const CompleteProfile = () => {
       .then(async (profile_pic) => {
         setIsLoading(true);
         toast.success('profile pic uploaded');
-        await Mutation<CompleteProfileBody>('user/complete-profile', { pic_path: profile_pic.file_path, about: data.about })
+        await Mutation('user/complete-profile', { pic_path: profile_pic.file_path, about: data.about })
           .then(() => {
             toast.success('Profile completion successful');
             setTimeout(() => {

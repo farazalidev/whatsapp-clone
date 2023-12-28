@@ -1,11 +1,10 @@
 'use client';
 import axios from 'axios';
 import { Socket, io } from 'socket.io-client';
-import { getCookie } from './getCookie';
 import { ClientToServerEvents, ServerToClientEvents } from '@shared/types';
+import { getCookie } from './getCookie';
 
 let socketInstance: Socket<ServerToClientEvents, ClientToServerEvents> | null = null;
-
 export const createSocket = () => {
   if (socketInstance) {
     return { socket: socketInstance, isError: false };
@@ -19,7 +18,7 @@ export const createSocket = () => {
   socketInstance.on('connect_error', async (err) => {
     if (err.message === 'Forbidden') {
       try {
-        await axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/refresh`, { withCredentials: true });
+        await axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}auth/refresh`, { withCredentials: true });
 
         if (socketInstance) {
           // Perform a null check before using socketInstance
