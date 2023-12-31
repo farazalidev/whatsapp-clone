@@ -5,6 +5,7 @@ import { ChatService } from './chat.service';
 import { UserChatEntity } from './entities/userchat.entity';
 import { isSuccess } from '../../utils/isSuccess.typeguard';
 import { MessageDto } from './DTO/message.dto';
+import { UserEntity } from '../user/entities/user.entity';
 
 @Controller('chat')
 export class ChatController {
@@ -18,6 +19,16 @@ export class ChatController {
       throw new HttpException(response.error.message, response.error.statusCode);
     }
     return response.data;
+  }
+
+  // create a new Chat
+  @Post('new-chat')
+  async createChat(@GetUser() user: UserEntity, @Body() body: { chat_with: string }) {
+    const response = await this.chatSer.createAnewChat(user.user_id, body.chat_with);
+    if (!isSuccess(response)) {
+      throw new HttpException(response.error.message, response.error.statusCode);
+    }
+    return response;
   }
 
   // get user_chat by id

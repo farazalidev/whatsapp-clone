@@ -5,12 +5,18 @@ import { WsIoException } from '../utils/WsIoException';
 import { onEvent } from '../utils/onEvent';
 import { Server } from 'socket.io';
 import { WsAuthMiddleware } from '../modules/auth/guards/socketio.guard';
+import { InjectRepository } from '@nestjs/typeorm';
+import { UserEntity } from '../modules/user/entities/user.entity';
+import { Repository } from 'typeorm';
 
 @WebSocketGateway({ cors: { origin: process.env.FRONT_END_URL, credentials: true } })
 export class UserGateway implements OnGatewayDisconnect, OnGatewayConnection, OnGatewayInit {
-  constructor(private onlineUsersService: OnlineUsersService) {}
+  constructor(
+    private onlineUsersService: OnlineUsersService,
+    @InjectRepository(UserEntity) private userRepo: Repository<UserEntity>,
+  ) {}
   afterInit(server: Server) {
-    server.use(WsAuthMiddleware());
+    server.use(WsAuthMiddleware(this.userRepo));
   }
   handleConnection(client: ISocket) {
     client.emit('get_pid', process.env.PID);

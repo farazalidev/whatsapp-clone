@@ -14,6 +14,7 @@ const ChatPanel = () => {
   const { data } = useUser();
 
   const { avatar_path, name, receiver_id, chat_id } = useUserChatDetails(chatSlice, data);
+  console.log('🚀 ~ file: ChatPanel.tsx:17 ~ ChatPanel ~ receiver_id:', receiver_id);
 
   return (
     <div className="bg-pattern h-full  w-full">

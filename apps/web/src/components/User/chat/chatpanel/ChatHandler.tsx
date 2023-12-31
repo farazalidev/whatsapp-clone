@@ -36,7 +36,6 @@ const ChatHandler: FC<ChatHandlerProps> = () => {
     socket.emit('join_room', { chat_id: id as string });
     return () => {
       socket.emit('leave_room', { room_id: id as string });
-      socket.emit('remove_user_from_room', { chat_id: id as string });
     };
   }, [socket, id]);
 

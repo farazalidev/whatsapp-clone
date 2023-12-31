@@ -6,6 +6,8 @@ import { UserChatEntity } from './entities/userchat.entity';
 import { MessageEntity } from './entities/message.entity';
 import { ResponseType } from '../../Misc/ResponseType.type';
 import { MessageDto } from './DTO/message.dto';
+import { INewMessages } from '@shared/types';
+import { UnReadMessagesEntity } from './entities/unreadMessages.entity';
 
 @Injectable()
 export class ChatService {
@@ -13,9 +15,36 @@ export class ChatService {
     @InjectRepository(UserEntity) private userRepo: Repository<UserEntity>,
     @InjectRepository(UserChatEntity) private UserChatRepo: Repository<UserChatEntity>,
     @InjectRepository(MessageEntity) private UserMessageRepo: Repository<MessageEntity>,
+    @InjectRepository(UnReadMessagesEntity) private UnreadMessagesRepo: Repository<UnReadMessagesEntity>,
   ) {
     // get user chats service
   }
+
+  // create a new chat
+  async createAnewChat(user_id: string, chat_with_id: string): Promise<ResponseType<{ chat_id: string }>> {
+    try {
+      const chat_for = await this.userRepo.findOne({ where: { user_id } });
+      const chat_with = await this.userRepo.findOne({ where: { user_id: chat_with_id } });
+
+      const newChat = this.UserChatRepo.create({
+        chat_for,
+        chat_with,
+        messages: [],
+      });
+      await this.UserChatRepo.save(newChat);
+      return {
+        success: true,
+        successMessage: 'new chat created',
+        data: { chat_id: newChat.id },
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: { message: 'Error while creating a new chat', statusCode: 500 },
+      };
+    }
+  }
+
   async getUserChats(user_id: string): Promise<ResponseType<UserChatEntity[]>> {
     try {
       const user = await this.UserChatRepo.find({
@@ -227,5 +256,32 @@ export class ChatService {
         error: { message: 'Internal server error', statusCode: 500 },
       };
     }
+  }
+  async getUnreadMessages(user_id: string): Promise<INewMessages[]> {
+    console.log('🚀 ~ file: chat.service.ts:261 ~ ChatService ~ getUnreadMessages ~ user_id:', user_id);
+    const unreadMessages = await this.UnreadMessagesRepo.find({ where: { user_id } });
+    console.log('🚀 ~ file: chat.service.ts:262 ~ ChatService ~ getUnreadMessages ~ unreadMessages:', unreadMessages);
+    if (unreadMessages.length === 0) return [];
+
+    return unreadMessages;
+  }
+
+  async saveUnReadMessage(message: MessageEntity, chat_id: string, user_id: string) {
+    console.log('🚀 ~ file: chat.service.ts:269 ~ ChatService ~ saveUnReadMessage ~ user_id:', user_id);
+    console.log('🚀 ~ file: chat.service.ts:269 ~ ChatService ~ saveUnReadMessage ~ chat_id:', chat_id);
+    console.log('🚀 ~ file: chat.service.ts:269 ~ ChatService ~ saveUnReadMessage ~ message:', message);
+    const unreadMessages = await this.UnreadMessagesRepo.findOne({ where: { chat_id } });
+    if (unreadMessages) {
+      unreadMessages.messages?.push(message);
+      await this.UnreadMessagesRepo.save(unreadMessages);
+    }
+
+    // creating a new unread messages repo
+    const newUnreadMessages = this.UnreadMessagesRepo.create({
+      chat_id,
+      messages: [message],
+      user_id,
+    });
+    await this.UnreadMessagesRepo.save(newUnreadMessages);
   }
 }
