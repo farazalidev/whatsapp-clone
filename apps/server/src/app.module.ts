@@ -17,17 +17,19 @@ import { pubsubService } from './services/pubsub.service';
 import { RoomService } from './services/room.service';
 import { OnlineUsersService } from './services/onlineUsers.service';
 import { UserGateway } from './gateways/user.gateway';
+import { KafkaModule } from './modules/kafka/kafka.module';
+import { MessageConsumer } from './services/message.consumer';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env' }),
     TypeOrmModule.forRoot({
       type: 'postgres',
-      host: 'localhost',
-      port: 5432,
-      username: 'postgres',
-      password: '223366',
-      database: 'whatsapp',
+      host: process.env.POSTGRES_HOST,
+      port: parseInt(process.env.POSTGRES_PORT),
+      username: process.env.POSTGRES_USER_NAME,
+      password: process.env.POSTGRES_PASSWORD,
+      database: process.env.DATA_BASE_NAME,
       synchronize: true,
       autoLoadEntities: true,
       uuidExtension: 'pgcrypto',
@@ -39,6 +41,7 @@ import { UserGateway } from './gateways/user.gateway';
         port: parseInt(process.env.REDIS_PORT) || 6379,
       },
     }),
+    KafkaModule,
     ScheduleModule.forRoot(),
     AuthModule,
     UserModule,
@@ -53,6 +56,7 @@ import { UserGateway } from './gateways/user.gateway';
     pubsubService,
     RoomService,
     OnlineUsersService,
+    MessageConsumer,
     {
       provide: APP_GUARD,
       useClass: AuthGuard,
