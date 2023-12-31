@@ -171,4 +171,14 @@ export class RoomService {
       }
     });
   }
+  async removeAllUserRooms(user_id: string) {
+    const roomKeys = await this.redis.keys('room:*');
+
+    const promises = roomKeys.map(async (roomKey) => {
+      const room_id = roomKey.split(':')[1];
+      await this.removeUserFromRoom(room_id, user_id);
+    });
+
+    await Promise.all(promises);
+  }
 }
