@@ -258,18 +258,13 @@ export class ChatService {
     }
   }
   async getUnreadMessages(user_id: string): Promise<INewMessages[]> {
-    console.log('🚀 ~ file: chat.service.ts:261 ~ ChatService ~ getUnreadMessages ~ user_id:', user_id);
     const unreadMessages = await this.UnreadMessagesRepo.find({ where: { user_id } });
-    console.log('🚀 ~ file: chat.service.ts:262 ~ ChatService ~ getUnreadMessages ~ unreadMessages:', unreadMessages);
     if (unreadMessages.length === 0) return [];
 
     return unreadMessages;
   }
 
   async saveUnReadMessage(message: MessageEntity, chat_id: string, user_id: string) {
-    console.log('🚀 ~ file: chat.service.ts:269 ~ ChatService ~ saveUnReadMessage ~ user_id:', user_id);
-    console.log('🚀 ~ file: chat.service.ts:269 ~ ChatService ~ saveUnReadMessage ~ chat_id:', chat_id);
-    console.log('🚀 ~ file: chat.service.ts:269 ~ ChatService ~ saveUnReadMessage ~ message:', message);
     const unreadMessages = await this.UnreadMessagesRepo.findOne({ where: { chat_id } });
     if (unreadMessages) {
       unreadMessages.messages?.push(message);

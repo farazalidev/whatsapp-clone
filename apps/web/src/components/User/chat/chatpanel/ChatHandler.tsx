@@ -23,14 +23,6 @@ const ChatHandler: FC<ChatHandlerProps> = () => {
 
   const divRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    socket.emit('get_online_users');
-    socket.on('users', (users) => {
-      console.log(users);
-    });
-    socket.emit('init_room', { chat_id: id as string });
-  }, [socket, id]);
-
   // joining room
   useEffect(() => {
     socket.emit('join_room', { chat_id: id as string });
@@ -39,10 +31,14 @@ const ChatHandler: FC<ChatHandlerProps> = () => {
     };
   }, [socket, id]);
 
+  useEffect(() => {
+    socket.emit('init_room', { chat_id: id as string });
+    return () => {};
+  }, [socket, id]);
+
   // receiving new message
   useEffect(() => {
     socket.on('newMessage', (message) => {
-      console.log('🚀 ~ file: ChatHandler.tsx:44 ~ socket.on ~ message:', message);
       setMessages((prev) => [...prev, message]);
     });
 

@@ -2,7 +2,6 @@ import { OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit, WebSocketGatew
 import { ISocket } from '@shared/types';
 import { OnlineUsersService } from '../services/onlineUsers.service';
 import { WsIoException } from '../utils/WsIoException';
-import { onEvent } from '../utils/onEvent';
 import { Server } from 'socket.io';
 import { WsAuthMiddleware } from '../modules/auth/guards/socketio.guard';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -27,17 +26,11 @@ export class UserGateway implements OnGatewayDisconnect, OnGatewayConnection, On
         throw new WsIoException('Error', 500);
       }
       if (removed) {
-        console.log('removed');
+        console.log('user removed from online users list');
       }
     });
   }
 
   @WebSocketServer()
   server: ISocket;
-
-  @onEvent('make_user_online')
-  async handleUserConnection(client: ISocket) {
-    await this.onlineUsersService.addUserToRedis(client.user.user_id, process.env.PID);
-    client.emit('get_pid', process.env.PID);
-  }
 }

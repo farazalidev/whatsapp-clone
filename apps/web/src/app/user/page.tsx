@@ -27,8 +27,6 @@ const UserPage: FC<Props> = () => {
 
   // getting pid from the socket
   useEffect(() => {
-    console.log('setting user oline');
-
     socket.on('get_pid', (pid) => {
       dispatch(setUser({ pid }));
     });

@@ -1,7 +1,7 @@
 import { WebSocketGateway, WebSocketServer, OnGatewayDisconnect, OnGatewayConnection, OnGatewayInit } from '@nestjs/websockets';
 import { MessageEntity } from '../modules/chat/entities/message.entity';
 import { JwtService } from '@nestjs/jwt';
-import { ISocket, leaveRoomPayload, sendMessagePayload } from '@shared/types';
+import { ISocket, getUserOnlineStatusPayload, leaveRoomPayload, sendMessagePayload, typingPayload } from '@shared/types';
 import { onEvent } from '../utils/onEvent';
 import { pubsubService } from '../services/pubsub.service';
 import { InjectRedis } from '@nestjs-modules/ioredis';
@@ -38,13 +38,15 @@ export class MessageGateway implements OnGatewayDisconnect, OnGatewayConnection,
     server.use(WsAuthMiddleware(this.userRepo));
   }
   handleConnection(client: ISocket) {
-    console.log(client.user.user_id);
+    // making user online status true
+    this.server.emit(`status_user_${client.user.user_id}`, true);
   }
 
   async handleDisconnect(client: ISocket) {
     const user_id = client.user.user_id;
     await this.roomService.removeAllUserRooms(user_id);
-    console.log('user removed from the room');
+    // updating user online status
+    this.server.emit(`status_user_${client.user.user_id}`, false);
   }
 
   @WebSocketServer()
@@ -53,19 +55,36 @@ export class MessageGateway implements OnGatewayDisconnect, OnGatewayConnection,
   @onEvent('join_room')
   async joinRoom(client: ISocket, payload: { chat_id: string }) {
     await this.roomService.joinOrCreateRoom(payload.chat_id, client.user.user_id, process.env.PID);
+    // when the user joins the room update its online status
+    this.server.emit(`status_user_${client.user.user_id}`, true);
 
     client.join(payload.chat_id);
-  }
-
-  @onEvent('init_room')
-  async InitRoom(client: ISocket) {
-    console.log(client.user.user_id);
   }
 
   @onEvent('get_unread_messages')
   async getNewMessages(client: ISocket) {
     const user_id = client.user.user_id;
     client.emit(`unread_messages_${user_id}`, await this.chatService.getUnreadMessages(user_id));
+  }
+
+  @onEvent('get_user_online_status')
+  async getUserOnlineStatus(client: ISocket, payload: getUserOnlineStatusPayload) {
+    // TODO: before sending some user online status, check the user and the finder relation
+    let user_pid;
+    await this.onlineUsersService.getUserPid(payload.user_id, (err, pid) => {
+      if (err) {
+        return;
+      }
+      user_pid = pid;
+    });
+    // if the user is online then send true status
+
+    if (user_pid) {
+      this.server.emit(`status_user_${payload.user_id}`, true);
+      return;
+    }
+    // if not then send the false status
+    this.server.emit(`status_user_${payload.user_id}`, false);
   }
 
   @onEvent('send_message')
@@ -110,11 +129,21 @@ export class MessageGateway implements OnGatewayDisconnect, OnGatewayConnection,
     client.to(payload.chat_id).emit('newMessage', newMessage);
   }
 
+  @onEvent('typing')
+  async typing(client: ISocket, payload: typingPayload) {
+    this.server.emit(`typing_${payload.chat_id}_${payload.user_id}`);
+  }
+
+  @onEvent('stop_typing')
+  async stopTyping(client: ISocket, payload: typingPayload) {
+    this.server.emit(`stop_typing_${payload.chat_id}_${payload.user_id}`);
+  }
+
   @onEvent('leave_room')
   async leaveRoom(client: ISocket, payload: leaveRoomPayload) {
     client.leave(payload.room_id);
-    console.log(`user leaves room ${payload.room_id} user ${client.user.user_id}`);
-
+    // when the user leaves room update its online status
+    this.server.emit(`status_user_${client.user.user_id}`, false);
     await this.roomService.removeUserFromRoom(payload.room_id, client.user.user_id);
   }
 
@@ -167,5 +196,10 @@ export class MessageGateway implements OnGatewayDisconnect, OnGatewayConnection,
       // the receiver is completely offline
       return { message, isUserInTheRoom: false, isUserOnline: false };
     }
+  }
+
+  @onEvent('make_user_online')
+  async makeUserOnline(client: ISocket) {
+    this.onlineUsersService.addUserToRedis(client.user.user_id, process.env.PID);
   }
 }

@@ -9,13 +9,25 @@ export interface ISocket extends Socket<ClientToServerEvents, ServerToClientEven
 
 type ChatEventPattern = `user_${string}`;
 type NewMessagesEventPattern = `unread_messages_${string}`;
+/**
+ * First string is room id and second string is user id
+ */
+type TypingIndicatorEventPattern = `typing_${string}_${string}`;
+/**
+ * First string is room id and second string is user id
+ */
+type stopTypingIndicatorEventPattern = `stop_typing_${string}_${string}`;
+
+type user_online_statusPattern = `status_user_${string}`;
 
 export interface ServerToClientEvents {
   newMessage: (message: MessageEntity) => void;
-  users: (users: any) => void;
   get_pid: (pid: string) => void;
   [event: ChatEventPattern]: (message: MessageEntity) => void;
-  [new_messages: NewMessagesEventPattern]: (messages: INewMessages[]) => void;
+  [event: NewMessagesEventPattern]: (messages: INewMessages[]) => void;
+  [event: TypingIndicatorEventPattern]: () => void;
+  [event: stopTypingIndicatorEventPattern]: () => void;
+  [event: user_online_statusPattern]: (status: boolean) => void;
 }
 export interface ClientToServerEvents {
   send_message: (payload: sendMessagePayload) => void;
@@ -25,6 +37,9 @@ export interface ClientToServerEvents {
   make_user_online: () => void;
   init_room: (payload: { chat_id: string }) => void;
   get_unread_messages: () => void;
+  typing: (payload: typingPayload) => void;
+  stop_typing: (payload: typingPayload) => {};
+  get_user_online_status: (payload: getUserOnlineStatusPayload) => void;
 }
 
 export interface sendMessagePayload {
@@ -52,4 +67,17 @@ export interface RemoveUserFromRoomPayload {
 export interface INewMessages {
   chat_id: string;
   messages: MessageEntity[];
+}
+
+export interface typingPayload {
+  user_id: string;
+  chat_id: string;
+}
+
+export interface getUserOnlineStatusPayload {
+  user_id: string;
+}
+
+export interface userOnlinePayload {
+  status: boolean;
 }

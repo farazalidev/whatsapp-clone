@@ -11,7 +11,11 @@ import { UserChatEntity } from '@server/modules/chat/entities/userchat.entity';
 const MessageSender = ({ receiver_id, chat_id }: { receiver_id: string; chat_id: string | undefined }) => {
   const { id, started_from } = useSelector((state: RootState) => state.ChatSlice);
 
+  const { Me } = useSelector((state: RootState) => state.UserSlice);
+
   const { socket } = useSocket();
+
+  const [typing, setTyping] = useState(false);
 
   // const dispatch = useDispatch();
 
@@ -19,6 +23,21 @@ const MessageSender = ({ receiver_id, chat_id }: { receiver_id: string; chat_id:
 
   const handleMessageChange = (e: ChangeEvent<HTMLInputElement>) => {
     setMessageValue(e.target.value);
+    if (!typing) {
+      setTyping(true);
+
+      socket.emit('typing', { chat_id: chat_id as string, user_id: Me?.user_id as string });
+    }
+    const lastTypingTime = new Date().getTime();
+    const timerLength = 3000;
+    setTimeout(() => {
+      const timeNow = new Date().getTime();
+      const timeDiff = timeNow - lastTypingTime;
+      if (timeDiff >= timerLength && typing) {
+        socket.emit(`stop_typing`, { chat_id: chat_id as string, user_id: Me?.user_id as string });
+        setTyping(false);
+      }
+    }, timerLength);
   };
 
   const handleSendMessage = async (e: FormEvent) => {
@@ -37,7 +56,6 @@ const MessageSender = ({ receiver_id, chat_id }: { receiver_id: string; chat_id:
         }
 
         const response = await Mutation<{ chat_with: string }, SuccessResponseType<{ chat_id: string }>>('chat/new-chat', { chat_with: receiver_id });
-        console.log('🚀 ~ file: MessageSender.tsx:41 ~ handleSendMessage ~ response:', response.data);
         socket?.emit('send_message', { chat_id: response.data?.chat_id, message: { content: messageValue }, receiverId: receiver_id });
         setMessageValue('');
         return;
@@ -45,7 +63,7 @@ const MessageSender = ({ receiver_id, chat_id }: { receiver_id: string; chat_id:
       socket?.emit('send_message', { chat_id: id, message: { content: messageValue }, receiverId: receiver_id });
       setMessageValue('');
     } catch (error) {
-      console.log(error);
+      console.error('Error while sending message');
     }
   };
 
