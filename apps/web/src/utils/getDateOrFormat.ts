@@ -2,7 +2,7 @@ import dayjs from 'dayjs';
 import { MessageEntity } from '@server/modules/chat/entities/message.entity';
 
 export function getDayOrFormattedDate(messages: MessageEntity[]): string {
-  if (!messages) return '';
+  if (!messages || messages.length === 0) return '';
 
   const message = messages?.reduce((a, b) => {
     return new Date(a.sended_at) > new Date(a.sended_at) ? a : b;

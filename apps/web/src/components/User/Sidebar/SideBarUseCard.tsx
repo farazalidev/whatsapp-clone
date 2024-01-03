@@ -2,6 +2,7 @@ import React, { FC } from 'react';
 import Avatar, { AvatarProps } from '../Avatar';
 import { cn } from '@/utils/cn';
 import SideBarUserCardOptions from './SideBarUserCardOptions';
+import UnreadCount from './UnreadCount';
 
 interface SideBarUserCardProps extends AvatarProps {
   name: string;
@@ -10,6 +11,7 @@ interface SideBarUserCardProps extends AvatarProps {
   show_options?: boolean;
   active?: boolean;
   onClick?: () => void;
+  unread_message_count?: number;
 }
 
 const SideBarUserCard: FC<SideBarUserCardProps> = ({
@@ -20,7 +22,9 @@ const SideBarUserCard: FC<SideBarUserCardProps> = ({
   show_options = true,
   active = false,
   onClick,
+  unread_message_count,
 }) => {
+  console.log(unread_message_count);
   return (
     <div
       onClick={onClick}
@@ -46,9 +50,14 @@ const SideBarUserCard: FC<SideBarUserCardProps> = ({
         {show_options ? (
           <span className="relative flex h-[60%] flex-col gap-3">
             <div className="text-xs font-extralight text-gray-600 dark:text-gray-400">{last_message_date}</div>
-            <span className="absolute bottom-0 right-0 hidden group-hover:block">
-              <SideBarUserCardOptions />
-            </span>
+            <div className="relative flex h-full place-items-center justify-evenly overflow-hidden">
+              <span className="absolute left-[50%] transition-all duration-300 group-hover:left-0">
+                {unread_message_count ? <UnreadCount count={unread_message_count} /> : null}
+              </span>
+              <span className="absolute -right-full transition-all duration-300 group-hover:right-0">
+                <SideBarUserCardOptions />
+              </span>
+            </div>
           </span>
         ) : null}
       </div>

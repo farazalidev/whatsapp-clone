@@ -16,6 +16,7 @@ export class MessageConsumer implements OnModuleInit {
     @InjectRepository(MessageEntity) private UserMessageRepo: Repository<MessageEntity>,
   ) {}
   async onModuleInit() {
+    // saving messages to DB
     await this.consumerService?.consume({
       config: { groupId: 'messages-consumer' },
       topic: { topic: 'MESSAGE', fromBeginning: true },

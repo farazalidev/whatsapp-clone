@@ -1,5 +1,5 @@
 import { OnGatewayConnection, OnGatewayDisconnect, OnGatewayInit, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
-import { ISocket } from '@shared/types';
+import { ISocket, getUserOnlineStatusPayload } from '@shared/types';
 import { OnlineUsersService } from '../services/onlineUsers.service';
 import { WsIoException } from '../utils/WsIoException';
 import { Server } from 'socket.io';
@@ -7,11 +7,14 @@ import { WsAuthMiddleware } from '../modules/auth/guards/socketio.guard';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserEntity } from '../modules/user/entities/user.entity';
 import { Repository } from 'typeorm';
+import { onEvent } from '../utils/onEvent';
+import { RoomService } from '../services/room.service';
 
 @WebSocketGateway({ cors: { origin: process.env.FRONT_END_URL, credentials: true } })
 export class UserGateway implements OnGatewayDisconnect, OnGatewayConnection, OnGatewayInit {
   constructor(
     private onlineUsersService: OnlineUsersService,
+    private roomService: RoomService,
     @InjectRepository(UserEntity) private userRepo: Repository<UserEntity>,
   ) {}
   afterInit(server: Server) {
@@ -19,9 +22,11 @@ export class UserGateway implements OnGatewayDisconnect, OnGatewayConnection, On
   }
   handleConnection(client: ISocket) {
     client.emit('get_pid', process.env.PID);
+    this.server.emit(`status_user_${client.user.user_id}`, true);
   }
-  handleDisconnect(client: ISocket) {
-    this.onlineUsersService.removeUser(client.user.user_id, (err, removed) => {
+
+  async handleDisconnect(client: ISocket) {
+    await this.onlineUsersService.removeUser(client.user.user_id, (err, removed) => {
       if (err) {
         throw new WsIoException('Error', 500);
       }
@@ -29,6 +34,31 @@ export class UserGateway implements OnGatewayDisconnect, OnGatewayConnection, On
         console.log('user removed from online users list');
       }
     });
+
+    await this.roomService.removeAllUserRooms(client.user.user_id);
+
+    // updating user online status
+    this.server.emit(`status_user_${client.user.user_id}`, false);
+  }
+
+  @onEvent('get_user_online_status')
+  async getUserOnlineStatus(client: ISocket, payload: getUserOnlineStatusPayload) {
+    // TODO: before sending some user online status, check the user and the finder relation
+    let user_pid;
+    await this.onlineUsersService.getUserPid(payload.user_id, (err, pid) => {
+      if (err) {
+        return;
+      }
+      user_pid = pid;
+    });
+    // if the user is online then send true status
+
+    if (user_pid) {
+      this.server.emit(`status_user_${payload.user_id}`, true);
+      return;
+    }
+    // if not then send the false status
+    this.server.emit(`status_user_${payload.user_id}`, false);
   }
 
   @WebSocketServer()

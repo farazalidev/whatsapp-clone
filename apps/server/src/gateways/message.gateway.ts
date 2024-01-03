@@ -1,7 +1,7 @@
-import { WebSocketGateway, WebSocketServer, OnGatewayDisconnect, OnGatewayConnection, OnGatewayInit } from '@nestjs/websockets';
+import { WebSocketGateway, WebSocketServer, OnGatewayInit } from '@nestjs/websockets';
 import { MessageEntity } from '../modules/chat/entities/message.entity';
 import { JwtService } from '@nestjs/jwt';
-import { ISocket, getUserOnlineStatusPayload, leaveRoomPayload, sendMessagePayload, typingPayload } from '@shared/types';
+import { ISocket, leaveRoomPayload, sendMessagePayload, typingPayload } from '@shared/types';
 import { onEvent } from '../utils/onEvent';
 import { pubsubService } from '../services/pubsub.service';
 import { InjectRedis } from '@nestjs-modules/ioredis';
@@ -21,7 +21,7 @@ import { ChatService } from '../modules/chat/chat.service';
 // Define a helper function to extract event names
 
 @WebSocketGateway({ cors: { credentials: true, origin: [process.env.FRONT_END_URL] } })
-export class MessageGateway implements OnGatewayDisconnect, OnGatewayConnection, OnGatewayInit {
+export class MessageGateway implements OnGatewayInit {
   constructor(
     private jwt: JwtService,
     @InjectRedis() private redis: Redis,
@@ -34,24 +34,19 @@ export class MessageGateway implements OnGatewayDisconnect, OnGatewayConnection,
     @InjectRepository(MessageEntity) private messageRepo: Repository<MessageEntity>,
     @InjectRepository(UserEntity) private userRepo: Repository<UserEntity>,
   ) {}
+
   afterInit(server: Server) {
     server.use(WsAuthMiddleware(this.userRepo));
-  }
-  handleConnection(client: ISocket) {
-    // making user online status true
-    this.server.emit(`status_user_${client.user.user_id}`, true);
-  }
-
-  async handleDisconnect(client: ISocket) {
-    const user_id = client.user.user_id;
-    await this.roomService.removeAllUserRooms(user_id);
-    // updating user online status
-    this.server.emit(`status_user_${client.user.user_id}`, false);
   }
 
   @WebSocketServer()
   server: ISocket;
 
+  /**
+   *
+   * @param client client socket
+   * @param payload receiving payload to create or join room
+   */
   @onEvent('join_room')
   async joinRoom(client: ISocket, payload: { chat_id: string }) {
     await this.roomService.joinOrCreateRoom(payload.chat_id, client.user.user_id, process.env.PID);
@@ -61,32 +56,22 @@ export class MessageGateway implements OnGatewayDisconnect, OnGatewayConnection,
     client.join(payload.chat_id);
   }
 
+  /**
+   *
+   * @param client client socket
+   */
   @onEvent('get_unread_messages')
   async getNewMessages(client: ISocket) {
     const user_id = client.user.user_id;
-    client.emit(`unread_messages_${user_id}`, await this.chatService.getUnreadMessages(user_id));
+    client.emit(`unread_messages_${user_id}`, await this.chatService.getUnreadMessagesForUser(user_id));
   }
 
-  @onEvent('get_user_online_status')
-  async getUserOnlineStatus(client: ISocket, payload: getUserOnlineStatusPayload) {
-    // TODO: before sending some user online status, check the user and the finder relation
-    let user_pid;
-    await this.onlineUsersService.getUserPid(payload.user_id, (err, pid) => {
-      if (err) {
-        return;
-      }
-      user_pid = pid;
-    });
-    // if the user is online then send true status
-
-    if (user_pid) {
-      this.server.emit(`status_user_${payload.user_id}`, true);
-      return;
-    }
-    // if not then send the false status
-    this.server.emit(`status_user_${payload.user_id}`, false);
-  }
-
+  /**
+   *
+   * @param client client socket
+   * @param payload payload to send message
+   * @returns void
+   */
   @onEvent('send_message')
   async sendMessage(client: ISocket, payload: sendMessagePayload) {
     const newMessage = this.messageRepo.create({
@@ -118,9 +103,6 @@ export class MessageGateway implements OnGatewayDisconnect, OnGatewayConnection,
       }
       // if the user is not in the room then sends message notification
       // TODO: Send a message notification
-
-      // sending unread to the receiver
-      this.server.emit(`unread_messages_${payload.receiverId}`, await this.chatService.getUnreadMessages(payload.receiverId));
 
       return;
     }
@@ -173,6 +155,16 @@ export class MessageGateway implements OnGatewayDisconnect, OnGatewayConnection,
       receiver_pid = pid;
     });
 
+    // if the receiver is not in the room but online
+    // then the sended message will be received
+    if (!isReceiverInTheRoom && (await receiver_pid)) {
+      // message received by the receiver
+      message.received_at = new Date();
+      this.server.emit(`unread_message_${receiver_id}`, { chat_id, message });
+      return { isUserInTheRoom: isReceiverInTheRoom, isUserOnline: Boolean(await receiver_pid), message };
+    }
+
+    // if the receiver is in the room the message is received and seen by receiver
     if (isReceiverInTheRoom) {
       // message is sended and seen by the receiver
       message.received_at = new Date();
@@ -181,23 +173,16 @@ export class MessageGateway implements OnGatewayDisconnect, OnGatewayConnection,
       return { message, isUserInTheRoom: isReceiverInTheRoom, isUserOnline: Boolean(receiver_pid) };
     }
 
-    if (!isReceiverInTheRoom) {
-      // if receiver is not in the room
-
-      // user not in the room but online
-      message.received_at = new Date();
-
-      // add to unread messages
-      await this.chatService.saveUnReadMessage(message, chat_id, receiver_id);
-      return { isUserInTheRoom: isReceiverInTheRoom, isUserOnline: Boolean(receiver_pid), message };
-    }
-
+    // if the user is not in the room and completely offline then just save the message in the database
     if (!receiver_pid) {
-      // the receiver is completely offline
       return { message, isUserInTheRoom: false, isUserOnline: false };
     }
   }
 
+  /**
+   *
+   * @param client client socket
+   */
   @onEvent('make_user_online')
   async makeUserOnline(client: ISocket) {
     this.onlineUsersService.addUserToRedis(client.user.user_id, process.env.PID);

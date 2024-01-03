@@ -12,3 +12,9 @@ export interface MessageJSON {
   message: MessageEntity;
   chat_id: string;
 }
+
+export interface unreadMessageJSON {
+  chat_id: string;
+  message: MessageEntity;
+  receiver_id: string;
+}

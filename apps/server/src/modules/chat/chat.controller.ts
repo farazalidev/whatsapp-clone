@@ -69,4 +69,14 @@ export class ChatController {
 
     return response.data;
   }
+
+  @Get('mark-unread-messages/:chat_id')
+  async markSeen(@Param() param: { chat_id: string }, @GetUser() user: LoginPayload) {
+    const response = await this.chatSer.markUnreadMessages(user.user_id, param.chat_id);
+    if (!isSuccess(response)) {
+      throw new HttpException(response.error.message, response.error.statusCode);
+    }
+
+    return response;
+  }
 }

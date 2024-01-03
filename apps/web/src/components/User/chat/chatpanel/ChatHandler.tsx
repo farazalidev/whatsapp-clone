@@ -79,7 +79,6 @@ const ChatHandler: FC<ChatHandlerProps> = () => {
 
   return (
     <>
-      {/* {isInMyContacts ? null : <NewContactActions />} */}
       <div className="relative my-2 flex h-full w-full flex-col gap-4 overflow-y-scroll px-4">
         {messages
           ? [...messages]

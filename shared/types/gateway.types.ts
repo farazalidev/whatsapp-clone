@@ -1,14 +1,21 @@
 import { Socket } from 'socket.io';
 import { MessageEntity } from '../../apps/server/src/modules/chat/entities/message.entity';
 import { UserEntity } from '../../apps/server/src/modules/user/entities/user.entity';
-import { UUID } from 'typeorm/driver/mongodb/bson.typings.js';
+import { single_unread_message, unreadMessage } from '../../apps/server/src/modules/types';
 
 export interface ISocket extends Socket<ClientToServerEvents, ServerToClientEvents> {
   user: UserEntity;
 }
-
+// string is user id
 type ChatEventPattern = `user_${string}`;
-type NewMessagesEventPattern = `unread_messages_${string}`;
+/**
+ * string is for user id
+ */
+type unreadMessagesEventPattern = `unread_messages_${string}`;
+/**
+ * single unread message
+ */
+type unread_single_messagePattern = `unread_message_${string}`;
 /**
  * First string is room id and second string is user id
  */
@@ -24,7 +31,8 @@ export interface ServerToClientEvents {
   newMessage: (message: MessageEntity) => void;
   get_pid: (pid: string) => void;
   [event: ChatEventPattern]: (message: MessageEntity) => void;
-  [event: NewMessagesEventPattern]: (messages: INewMessages[]) => void;
+  [event: unreadMessagesEventPattern]: (messages: unreadMessage[]) => void;
+  [event: unread_single_messagePattern]: (message: single_unread_message) => void;
   [event: TypingIndicatorEventPattern]: () => void;
   [event: stopTypingIndicatorEventPattern]: () => void;
   [event: user_online_statusPattern]: (status: boolean) => void;

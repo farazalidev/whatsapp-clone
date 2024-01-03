@@ -19,6 +19,7 @@ import { OnlineUsersService } from './services/onlineUsers.service';
 import { UserGateway } from './gateways/user.gateway';
 import { KafkaModule } from './modules/kafka/kafka.module';
 import { MessageConsumer } from './services/message.consumer';
+import { ShutDownService } from './services/shutDown.service';
 
 @Module({
   imports: [
@@ -57,6 +58,7 @@ import { MessageConsumer } from './services/message.consumer';
     RoomService,
     OnlineUsersService,
     MessageConsumer,
+    ShutDownService,
     {
       provide: APP_GUARD,
       useClass: AuthGuard,
