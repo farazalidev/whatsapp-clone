@@ -12,5 +12,6 @@ import { AuthService } from '../auth/auth.service';
   imports: [UserModule, TypeOrmModule.forFeature([UserChatEntity, MessageEntity])],
   controllers: [ChatController],
   providers: [JwtService, AuthService, ChatService],
+  exports: [AuthService, ChatService, UserModule, TypeOrmModule.forFeature([UserChatEntity, MessageEntity])],
 })
 export class ChatModule {}

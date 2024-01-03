@@ -23,27 +23,22 @@ const ChatHandler: FC<ChatHandlerProps> = () => {
 
   const divRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    socket.emit('get_online_users');
-    socket.on('users', (users) => {
-      console.log(users);
-    });
-    socket.emit('init_room', { chat_id: id as string });
-  }, [socket, id]);
-
   // joining room
   useEffect(() => {
     socket.emit('join_room', { chat_id: id as string });
     return () => {
       socket.emit('leave_room', { room_id: id as string });
-      socket.emit('remove_user_from_room', { chat_id: id as string });
     };
+  }, [socket, id]);
+
+  useEffect(() => {
+    socket.emit('init_room', { chat_id: id as string });
+    return () => {};
   }, [socket, id]);
 
   // receiving new message
   useEffect(() => {
     socket.on('newMessage', (message) => {
-      console.log('🚀 ~ file: ChatHandler.tsx:44 ~ socket.on ~ message:', message);
       setMessages((prev) => [...prev, message]);
     });
 
@@ -84,7 +79,6 @@ const ChatHandler: FC<ChatHandlerProps> = () => {
 
   return (
     <>
-      {/* {isInMyContacts ? null : <NewContactActions />} */}
       <div className="relative my-2 flex h-full w-full flex-col gap-4 overflow-y-scroll px-4">
         {messages
           ? [...messages]

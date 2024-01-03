@@ -6,6 +6,7 @@ import { UserChatEntity } from './entities/userchat.entity';
 import { MessageEntity } from './entities/message.entity';
 import { ResponseType } from '../../Misc/ResponseType.type';
 import { MessageDto } from './DTO/message.dto';
+import { unreadMessage } from '../types';
 
 @Injectable()
 export class ChatService {
@@ -16,6 +17,32 @@ export class ChatService {
   ) {
     // get user chats service
   }
+
+  // create a new chat
+  async createAnewChat(user_id: string, chat_with_id: string): Promise<ResponseType<{ chat_id: string }>> {
+    try {
+      const chat_for = await this.userRepo.findOne({ where: { user_id } });
+      const chat_with = await this.userRepo.findOne({ where: { user_id: chat_with_id } });
+
+      const newChat = this.UserChatRepo.create({
+        chat_for,
+        chat_with,
+        messages: [],
+      });
+      await this.UserChatRepo.save(newChat);
+      return {
+        success: true,
+        successMessage: 'new chat created',
+        data: { chat_id: newChat.id },
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: { message: 'Error while creating a new chat', statusCode: 500 },
+      };
+    }
+  }
+
   async getUserChats(user_id: string): Promise<ResponseType<UserChatEntity[]>> {
     try {
       const user = await this.UserChatRepo.find({
@@ -225,6 +252,50 @@ export class ChatService {
       return {
         success: false,
         error: { message: 'Internal server error', statusCode: 500 },
+      };
+    }
+  }
+  async getUnreadMessagesForUser(user_id: string): Promise<unreadMessage[]> {
+    const chats = await this.UserChatRepo.find({ where: [{ chat_for: { user_id } }, { chat_with: { user_id } }] });
+
+    const messages: unreadMessage[] = [];
+
+    for (const chat of chats) {
+      const unreadMessages = chat.messages.filter((message) => !message.is_seen && message.from.user_id !== user_id);
+
+      const chatExists = messages?.find((message) => message.chat_id === chat.id);
+
+      if (chatExists) {
+        chatExists.unread_messages.push(...unreadMessages);
+        return;
+      }
+
+      messages.push({ chat_id: chat.id, unread_messages: [...unreadMessages] });
+    }
+    return messages;
+  }
+
+  async markUnreadMessages(user_id: string, chat_id: string): Promise<ResponseType> {
+    try {
+      const chat = await this.UserChatRepo.findOne({ where: { id: chat_id } });
+
+      chat.messages.forEach((message) => {
+        if (!message.is_seen && message.from.user_id !== user_id) {
+          message.is_seen = true;
+          message.seen_at = new Date();
+        }
+        return;
+      });
+
+      await this.UserChatRepo.save(chat);
+      return {
+        success: true,
+        successMessage: 'messages seen',
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: { message: 'internal server error', statusCode: 500 },
       };
     }
   }
