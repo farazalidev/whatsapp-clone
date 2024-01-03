@@ -1,4 +1,4 @@
-import { Entity, JoinColumn, ManyToOne, OneToMany, PrimaryColumn } from 'typeorm';
+import { BeforeInsert, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryColumn } from 'typeorm';
 import { v4 } from 'uuid';
 import { MessageEntity } from './message.entity';
 import { UserEntity } from '../../user/entities/user.entity';
@@ -17,4 +17,9 @@ export class UserChatEntity {
 
   @OneToMany(() => MessageEntity, (message) => message.chat, { cascade: true, eager: true })
   messages: MessageEntity[];
+
+  @BeforeInsert()
+  async initMessages() {
+    this.messages = [];
+  }
 }

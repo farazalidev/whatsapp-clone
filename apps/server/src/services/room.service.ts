@@ -101,20 +101,25 @@ export class RoomService {
     return new Promise((resolve, reject) => {
       this.redis.exists(key, async (err, exists) => {
         if (err) {
+          console.log('🚀 ~ file: room.service.ts:104 ~ RoomService ~ this.redis.exists ~ err:', err);
           reject(new Error('Error checking room existence'));
           return;
         }
 
         if (exists) {
-          await this.redis.hget(key, 'users', (err, usersJson) => {
+          console.log('🚀 ~ file: room.service.ts:110 ~ RoomService ~ this.redis.exists ~ exists:', exists);
+          await this.redis.hget(key, 'users', async (err, usersJson) => {
+            console.log('🚀 ~ file: room.service.ts:112 ~ RoomService ~ awaitthis.redis.hget ~ usersJson:', usersJson);
             if (err) {
+              console.log('🚀 ~ file: room.service.ts:114 ~ RoomService ~ awaitthis.redis.hget ~ err:', err);
               reject(new Error('Error while getting users data'));
               return;
             }
 
             const usersArray = JSON.parse(usersJson);
+            console.log('🚀 ~ file: room.service.ts:120 ~ RoomService ~ awaitthis.redis.hget ~ usersArray:', usersArray);
 
-            if (usersArray?.includes(user_id)) {
+            if (Array.isArray(usersArray) && usersArray.includes(user_id)) {
               resolve(true);
             } else {
               resolve(false);
@@ -170,5 +175,47 @@ export class RoomService {
         });
       }
     });
+  }
+  async removeAllUserRooms(user_id: string) {
+    const roomKeys = await this.redis.keys('room:*');
+
+    const promises = roomKeys.map(async (roomKey) => {
+      const room_id = roomKey.split(':')[1];
+      await this.removeUserFromRoom(room_id, user_id);
+    });
+
+    await Promise.all(promises);
+  }
+
+  async removeRoomsByPid(pid: string, callback: (error: Error | null, removedCount?: number) => void): Promise<void> {
+    const roomKeys = await this.redis.keys('room:*');
+
+    let removedCount = 0;
+
+    const promises = roomKeys.map(async (roomKey) => {
+      await this.redis.hget(roomKey, 'users', async (err, usersJSON) => {
+        if (err) {
+          console.error(`Error getting users for room ${roomKey}: ${err}`);
+          return;
+        }
+
+        const users = JSON.parse(usersJSON) || [];
+
+        if (users.includes(`pid:${pid}`)) {
+          // The specified PID is in the room, remove the entire room
+          await this.redis.del(roomKey, (err) => {
+            if (err) {
+              console.error(`Error deleting room ${roomKey}: ${err}`);
+            } else {
+              removedCount++;
+            }
+          });
+        }
+      });
+    });
+
+    await Promise.all(promises);
+
+    callback(null, removedCount);
   }
 }

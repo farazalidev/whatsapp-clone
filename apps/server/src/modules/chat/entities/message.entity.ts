@@ -28,5 +28,8 @@ export class MessageEntity {
   sended_at: Date;
 
   @Column({ nullable: true })
+  received_at: Date;
+
+  @Column({ nullable: true })
   seen_at: Date;
 }

@@ -1,19 +1,19 @@
 'use client';
 import React, { FC, Fragment } from 'react';
-import { IoIosArrowDown } from 'react-icons/io';
 import { Menu, Transition } from '@headlessui/react';
 import { cn } from '@/utils/cn';
 import { SideBarUserCardOptionsArray } from '@/data/SideBarUserCardOptionsData';
+import OptionIcon from './OptionIcon';
 
 interface SideBarUserCardOptionsProps {}
 
 const SideBarUserCardOptions: FC<SideBarUserCardOptionsProps> = ({ ...props }) => {
   return (
-    <span className="" {...props}>
+    <span {...props}>
       <Menu as="div" className="relative inline-block text-left">
         <div>
-          <Menu.Button className="text-sm">
-            <IoIosArrowDown size={22} className="text-gray-500" />
+          <Menu.Button className="flex place-items-center text-sm">
+            <OptionIcon src="/icons/down.svg" tooltip="options" />
           </Menu.Button>
         </div>
 
@@ -26,16 +26,14 @@ const SideBarUserCardOptions: FC<SideBarUserCardOptionsProps> = ({ ...props }) =
           leaveFrom="transform opacity-100 scale-100"
           leaveTo="transform opacity-0 scale-95"
         >
-          <Menu.Items className="absolute right-0 z-10 mt-2 w-56 origin-top-right  bg-white dark:bg-whatsapp-dark-secondary_bg shadow-xl focus:outline-none">
+          <Menu.Items className="dark:bg-whatsapp-dark-secondary_bg absolute right-0 z-10 mt-2 w-56  origin-top-right bg-white shadow-xl focus:outline-none">
             <div className="py-4">
               {SideBarUserCardOptionsArray.map((option, index) => (
                 <Menu.Item key={index}>
                   {({ active }) => (
                     <span
                       className={cn(
-                        active
-                          ? 'bg-gray-100 text-gray-900 dark:bg-whatsapp-dark-primary_bg dark:text-white'
-                          : 'text-gray-700 dark:text-white ',
+                        active ? 'dark:bg-whatsapp-dark-primary_bg bg-gray-100 text-gray-900 dark:text-white' : 'text-gray-700 dark:text-white ',
                         'block px-6 py-3 text-sm',
                       )}
                     >

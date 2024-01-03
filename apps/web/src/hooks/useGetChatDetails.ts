@@ -49,8 +49,7 @@ export function useUserChatDetails(chat_slice: IChatSlice, userData: UserDataTyp
    * and have chat before
    */
 
-  // const isIamReceiver = userData?.chats.some((chat) => chat.chat_with.user_id === userData.Me.user_id);
-  const isReceiver = isIamReceiver(chat!, userData?.Me.user_id as string);
+  const isReceiver = isIamReceiver(chat?.chat_with.user_id, userData?.Me.user_id as string);
 
   return {
     avatar_path: isReceiver ? chat?.chat_for.profile.pic_path : chat?.chat_with.profile.pic_path,

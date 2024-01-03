@@ -78,4 +78,33 @@ export class OnlineUsersService {
       callback(null, pid);
     });
   }
+
+  async removeUsersByPid(pid: string, callback: (error: Error | null, removedCount?: number) => void): Promise<void> {
+    const userListKey = 'online_users';
+
+    // Get all users with the specified pid
+    await this.redis.hscan(userListKey, 0, 'MATCH', `*:${pid}`, 'COUNT', 100, async (err, result) => {
+      if (err) {
+        console.error('Error scanning users:', err);
+        return callback(err);
+      }
+
+      const usersToRemove = result[1];
+
+      if (usersToRemove.length === 0) {
+        // No users with the specified pid found
+        return callback(null, 0);
+      }
+
+      // Remove users with the specified pid
+      await this.redis.hdel(userListKey, ...usersToRemove, (err, removedCount) => {
+        if (err) {
+          console.error('Error removing users:', err);
+          return callback(err);
+        }
+
+        callback(null, removedCount);
+      });
+    });
+  }
 }

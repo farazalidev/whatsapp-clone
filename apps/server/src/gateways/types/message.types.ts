@@ -5,3 +5,16 @@ export interface PubSubMessage {
   receiver_pid: string;
   chat_id: string;
 }
+
+export interface MessageJSON {
+  sender: string;
+  receiver: string;
+  message: MessageEntity;
+  chat_id: string;
+}
+
+export interface unreadMessageJSON {
+  chat_id: string;
+  message: MessageEntity;
+  receiver_id: string;
+}

@@ -3,12 +3,16 @@ import { Request } from 'express';
 import { JwtService } from '@nestjs/jwt';
 import { LoginPayload } from '../auth.service';
 import { Reflector } from '@nestjs/core';
+import { InjectRepository } from '@nestjs/typeorm';
+import { UserEntity } from '../../user/entities/user.entity';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
   constructor(
     private jwt: JwtService,
     private reflector: Reflector,
+    @InjectRepository(UserEntity) private UserRepo: Repository<UserEntity>,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -25,7 +29,8 @@ export class AuthGuard implements CanActivate {
     }
     try {
       const payload: LoginPayload = await this.jwt.verifyAsync(accessToken, { secret: process.env.ACCESS_TOKEN_SECRET });
-      req['user'] = payload;
+      const user = await this.UserRepo.findOne({ where: { user_id: payload.user_id } });
+      req['user'] = user;
       return true;
     } catch (error) {
       throw new ForbiddenException();
