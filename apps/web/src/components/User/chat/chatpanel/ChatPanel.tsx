@@ -12,8 +12,10 @@ const ChatPanel = () => {
 
   const user = useSelector((state: RootState) => state.UserSlice);
 
+  const { chats_raw: chats } = useSelector((state: RootState) => state.messagesSlice);
+
   const { avatar_path, name, receiver_id, chat_id } = useUserChatDetails(chatSlice, {
-    chats: user.chats as any,
+    chats: chats,
     contacts: user.contacts as any,
     Me: user.Me as any,
   });

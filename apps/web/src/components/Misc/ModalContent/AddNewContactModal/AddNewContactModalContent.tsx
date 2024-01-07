@@ -45,7 +45,7 @@ const AddNewContactModalContent = () => {
     if (foundedUser) {
       try {
         await Mutation(`user/add-contact/${foundedUser.user_id}`, undefined);
-        await mutate('api/user');
+        await mutate('api/contacts');
         toast.success('Contact Added!', { position: 'top-right' });
       } catch (error) {
         toast.error((error as AxiosError<{ message: string }>).response?.data.message || 'Internal Server Error', {
