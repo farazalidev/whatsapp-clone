@@ -6,6 +6,7 @@ import useSwr from 'swr';
 import { ContactEntity } from '@server/modules/user/entities/contact.entity';
 import { useDispatch } from 'react-redux';
 import { setUser } from '@/global/features/UserSlice';
+import { addNewChat } from '@/global/features/messagesSlice';
 
 const useUser = () => {
   const dispatch = useDispatch();
@@ -19,6 +20,9 @@ const useUser = () => {
 
   const result = useSwr('api/user', userFetcher);
   dispatch(setUser(result.data));
+  result.data?.chats.forEach(async (chat) => {
+    dispatch(addNewChat({ chat_id: chat.id, messages: chat.messages }));
+  });
   return result;
 };
 
