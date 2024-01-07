@@ -101,23 +101,18 @@ export class RoomService {
     return new Promise((resolve, reject) => {
       this.redis.exists(key, async (err, exists) => {
         if (err) {
-          console.log('🚀 ~ file: room.service.ts:104 ~ RoomService ~ this.redis.exists ~ err:', err);
           reject(new Error('Error checking room existence'));
           return;
         }
 
         if (exists) {
-          console.log('🚀 ~ file: room.service.ts:110 ~ RoomService ~ this.redis.exists ~ exists:', exists);
           await this.redis.hget(key, 'users', async (err, usersJson) => {
-            console.log('🚀 ~ file: room.service.ts:112 ~ RoomService ~ awaitthis.redis.hget ~ usersJson:', usersJson);
             if (err) {
-              console.log('🚀 ~ file: room.service.ts:114 ~ RoomService ~ awaitthis.redis.hget ~ err:', err);
               reject(new Error('Error while getting users data'));
               return;
             }
 
             const usersArray = JSON.parse(usersJson);
-            console.log('🚀 ~ file: room.service.ts:120 ~ RoomService ~ awaitthis.redis.hget ~ usersArray:', usersArray);
 
             if (Array.isArray(usersArray) && usersArray.includes(user_id)) {
               resolve(true);
@@ -195,7 +190,6 @@ export class RoomService {
     const promises = roomKeys.map(async (roomKey) => {
       await this.redis.hget(roomKey, 'users', async (err, usersJSON) => {
         if (err) {
-          console.error(`Error getting users for room ${roomKey}: ${err}`);
           return;
         }
 

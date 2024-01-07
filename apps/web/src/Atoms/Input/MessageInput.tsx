@@ -1,17 +1,21 @@
 import OptionIcon from '@/components/User/Sidebar/OptionIcon';
 import React, { FC } from 'react';
+import { useSelector } from 'react-redux';
+import { RootState } from '../../global/store';
 
 interface MessageInputProps extends React.DetailedHTMLProps<React.InputHTMLAttributes<HTMLInputElement>, HTMLInputElement> {}
 
 const MessageInput: FC<MessageInputProps> = ({ ...props }) => {
+  const { message_input_loading } = useSelector((state: RootState) => state.LoadingSlice);
   return (
     <div className="relative flex place-items-center">
       <input
-        className="w-full rounded-lg bg-white dark:bg-whatsapp-misc-message_input outline-none dark:text-whatsapp-dark-text pr-[12px] pl-12 placeholder:p-1 py-[9px] my-[5px]"
+        className="dark:bg-whatsapp-misc-message_input dark:text-whatsapp-dark-text my-[5px] w-full rounded-lg bg-white py-[9px] pl-12 pr-[12px] outline-none placeholder:p-1"
         placeholder="Type a message"
+        disabled={message_input_loading}
         {...props}
       />
-      <OptionIcon src="/icons/smiley.svg" tooltip="" className="absolute left-2 z-10 top-[14px]" />
+      <OptionIcon src="/icons/smiley.svg" tooltip="" className="absolute left-2 top-[14px] z-10" />
     </div>
   );
 };

@@ -24,7 +24,6 @@ const SideBarUserCard: FC<SideBarUserCardProps> = ({
   onClick,
   unread_message_count,
 }) => {
-  console.log(unread_message_count);
   return (
     <div
       onClick={onClick}

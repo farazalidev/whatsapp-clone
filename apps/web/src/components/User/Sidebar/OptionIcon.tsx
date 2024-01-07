@@ -4,7 +4,7 @@ import React, { FC } from 'react';
 
 interface OptionIconProps extends React.DetailedHTMLProps<React.HTMLAttributes<HTMLSpanElement>, HTMLSpanElement> {
   src: string;
-  tooltip: string;
+  tooltip?: string;
   height?: number;
   width?: number;
 }

@@ -2,7 +2,6 @@ import { cn } from '@/utils/cn';
 import React from 'react';
 
 const UnreadCount = ({ count }: { count: number | undefined }) => {
-  console.log('🚀 ~ file: UnreadCount.tsx:5 ~ UnreadCount ~ count:', count);
   return count ? (
     <span
       className={cn([

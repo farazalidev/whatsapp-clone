@@ -5,7 +5,7 @@ export function getDayOrFormattedDate(messages: MessageEntity[]): string {
   if (!messages || messages.length === 0) return '';
 
   const message = messages?.reduce((a, b) => {
-    return new Date(a.sended_at) > new Date(a.sended_at) ? a : b;
+    return new Date(a?.sended_at) > new Date(a?.sended_at) ? a : b;
   });
 
   const date = dayjs(message.sended_at);

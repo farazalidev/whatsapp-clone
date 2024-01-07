@@ -3,10 +3,9 @@ import SearchInput from '@/Atoms/Input/SearchInput';
 import React, { Suspense } from 'react';
 import SideBarUserCard from '../SideBarUseCard';
 import AddNewContactHeading from './AddNewContactHeading';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { toggleAddContactModal } from '@/global/features/ModalSlice';
 import Typography from '@/Atoms/Typography/Typography';
-import useUser from '@/hooks/useUser';
 import FallBackLoadingSpinner from '@/Atoms/Loading/FallBackLoadingSpinner';
 import { setUserChatEntity } from '@/global/features/ChatSlice';
 import { setSelectedOverlay, setShow } from '@/global/features/SideBarOverlaySlice';
@@ -14,11 +13,12 @@ import SideBarOptionCard from '@/Atoms/Cards/SideBarOptionCard';
 import { fetcher } from '@/utils/fetcher';
 import { SuccessResponseType } from '@server/Misc/ResponseType.type';
 import { UserChatEntity } from '@server/modules/chat/entities/userchat.entity';
+import { RootState } from '../../../../global/store';
 
 const AddNewContactOverlay = () => {
   const dispatch = useDispatch();
 
-  const { data, error } = useUser();
+  const data = useSelector((state: RootState) => state.UserSlice);
 
   const handleAddNewContact = () => {
     dispatch(toggleAddContactModal());
@@ -69,7 +69,7 @@ const AddNewContactOverlay = () => {
         <AddNewContactHeading heading="Contacts on whatsapp" />
 
         <Suspense fallback={<FallBackLoadingSpinner />}>
-          {data?.contacts && !error ? (
+          {data?.contacts || data.contacts.length === 0 ? (
             data.contacts?.map((contact) => (
               <SideBarUserCard
                 key={contact.id}
@@ -79,8 +79,6 @@ const AddNewContactOverlay = () => {
                 onClick={() => chatStartHandler(contact.contact?.user_id)}
               />
             ))
-          ) : error ? (
-            <Typography className="flex h-full w-full place-items-center justify-center">Error while loading Contacts</Typography>
           ) : (
             <Typography className="flex h-full w-full place-items-center justify-center"> Nothing here...</Typography>
           )}
