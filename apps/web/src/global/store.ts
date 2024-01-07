@@ -4,6 +4,7 @@ import { modalSlice } from './features/ModalSlice';
 import { UserSlice } from './features/UserSlice';
 import { ChatSlice } from './features/ChatSlice';
 import { chatDetailsSlice } from '@/hooks/messagesSlice';
+import { messagesSlice } from './features/messagesSlice';
 
 export const store = configureStore({
   reducer: {
@@ -12,6 +13,7 @@ export const store = configureStore({
     UserSlice: UserSlice.reducer,
     ChatSlice: ChatSlice.reducer,
     chatDetails: chatDetailsSlice.reducer,
+    messagesSlice: messagesSlice.reducer,
   },
   devTools: true,
 });

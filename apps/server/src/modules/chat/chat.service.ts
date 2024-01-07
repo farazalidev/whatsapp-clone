@@ -299,4 +299,52 @@ export class ChatService {
       };
     }
   }
+
+  async updateMessagesStatusToSeen(chat_id: string, user_id: string): Promise<ResponseType<{ messages: MessageEntity[]; receiver_id: string }>> {
+    try {
+      const chat = await this.UserChatRepo.findOne({ where: { id: chat_id } });
+      const receiver_id = chat.chat_for.user_id === user_id ? chat.chat_with.user_id : chat.chat_for.user_id;
+
+      const updatedMessages: MessageEntity[] = [];
+      chat.messages.forEach((message) => {
+        if (!message.is_seen && message.from.user_id !== user_id) {
+          message.seen_at = new Date();
+          message.is_seen = true;
+          updatedMessages.push(message);
+        }
+      });
+      await this.UserChatRepo.save(chat);
+      return { success: true, successMessage: 'status updated', data: { messages: updatedMessages, receiver_id } };
+    } catch (error) {
+      return { success: false, error: { message: 'unable to update message status', statusCode: 500 } };
+    }
+  }
+
+  async updateMessagesStatusToReceived(user_id: string): Promise<ResponseType<MessageEntity[]>> {
+    try {
+      const chats = await this.UserChatRepo.find({ where: [{ chat_for: { user_id } }, { chat_with: { user_id } }] });
+
+      const updatedMessages: MessageEntity[] = [];
+      for (const chat of chats) {
+        chat.messages.forEach((message) => {
+          if (!message.sended_at && message.from.user_id !== user_id) {
+            message.sended_at = new Date();
+            updatedMessages.push(message);
+          }
+        });
+      }
+
+      await this.UserChatRepo.save(chats);
+      return {
+        success: true,
+        successMessage: 'status updated',
+        data: updatedMessages,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: { message: 'unable to update messages status', statusCode: 500 },
+      };
+    }
+  }
 }

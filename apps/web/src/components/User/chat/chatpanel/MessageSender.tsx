@@ -2,11 +2,14 @@ import React, { ChangeEvent, FormEvent, useState } from 'react';
 import OptionIcon from '../../Sidebar/OptionIcon';
 import MessageInput from '@/Atoms/Input/MessageInput';
 import { Mutation, fetcher } from '@/utils/fetcher';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { SuccessResponseType } from '@server/Misc/ResponseType.type';
 import useSocket from '@/hooks/useSocket';
 import { RootState } from '../../../../global/store';
 import { UserChatEntity } from '@server/modules/chat/entities/userchat.entity';
+import { addNewMessage } from '@/global/features/messagesSlice';
+import { v4 } from 'uuid';
+import { MessageEntity } from '@server/modules/chat/entities/message.entity';
 
 const MessageSender = ({ receiver_id, chat_id }: { receiver_id: string; chat_id: string | undefined }) => {
   const { id, started_from } = useSelector((state: RootState) => state.ChatSlice);
@@ -17,9 +20,9 @@ const MessageSender = ({ receiver_id, chat_id }: { receiver_id: string; chat_id:
 
   const [typing, setTyping] = useState(false);
 
-  // const dispatch = useDispatch();
-
   const [messageValue, setMessageValue] = useState<string>();
+
+  const dispatch = useDispatch();
 
   const handleMessageChange = (e: ChangeEvent<HTMLInputElement>) => {
     setMessageValue(e.target.value);
@@ -42,6 +45,16 @@ const MessageSender = ({ receiver_id, chat_id }: { receiver_id: string; chat_id:
 
   const handleSendMessage = async (e: FormEvent) => {
     e.preventDefault();
+    const newMessage: MessageEntity = {
+      content: messageValue as string,
+      sended_at: new Date(),
+      is_seen: false,
+      id: v4(),
+      received_at: null,
+      seen_at: null,
+      from: Me as any,
+      clear_for: null,
+    };
     try {
       if (started_from === 'contact') {
         // if the user selects from chat and there is not chat existed
@@ -49,18 +62,21 @@ const MessageSender = ({ receiver_id, chat_id }: { receiver_id: string; chat_id:
         const isChatStarted = await fetcher<SuccessResponseType<UserChatEntity>>(`chat/is-chat/${receiver_id}`);
 
         if (isChatStarted.success) {
-          socket?.emit('send_message', { chat_id: isChatStarted.data?.id, message: { content: messageValue }, receiverId: receiver_id });
+          socket?.emit('send_message', { chat_id: isChatStarted.data?.id, message: { ...newMessage }, receiverId: receiver_id });
+          dispatch(addNewMessage({ chat_id: isChatStarted.data?.id as string, message: newMessage }));
           setMessageValue('');
 
           return;
         }
 
         const response = await Mutation<{ chat_with: string }, SuccessResponseType<{ chat_id: string }>>('chat/new-chat', { chat_with: receiver_id });
-        socket?.emit('send_message', { chat_id: response.data?.chat_id, message: { content: messageValue }, receiverId: receiver_id });
+        socket?.emit('send_message', { chat_id: response.data?.chat_id, message: { ...newMessage }, receiverId: receiver_id });
+        dispatch(addNewMessage({ chat_id: response.data?.chat_id as string, message: newMessage }));
         setMessageValue('');
         return;
       }
-      socket?.emit('send_message', { chat_id: id, message: { content: messageValue }, receiverId: receiver_id });
+      socket?.emit('send_message', { chat_id: id, message: { ...newMessage }, receiverId: receiver_id });
+      dispatch(addNewMessage({ chat_id: id as string, message: newMessage }));
       setMessageValue('');
     } catch (error) {
       console.error('Error while sending message');

@@ -55,11 +55,11 @@ const UserPage: FC<Props> = () => {
 
   return (
     <UserPageLayout>
-      <div className="flex h-full">
+      <div className="flex h-full ">
         <aside className="h-full w-[40%] flex-none flex-shrink-0 lg:w-[30%]">
           <UserSideBar />
         </aside>
-        <div className="flex-1 flex-grow">
+        <div className="w-fit flex-1 flex-grow overflow-x-hidden">
           <UserChat />
         </div>
         <Modal onClose={() => dispatch(toggleAddContactModal())} isOpen={AddContactModalIsOpen} content={<AddNewContactModalContent />} />
