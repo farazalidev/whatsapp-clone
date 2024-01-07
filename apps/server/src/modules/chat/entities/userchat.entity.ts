@@ -1,12 +1,11 @@
 import { BeforeInsert, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryColumn } from 'typeorm';
-import { v4 } from 'uuid';
 import { MessageEntity } from './message.entity';
 import { UserEntity } from '../../user/entities/user.entity';
 
 @Entity()
 export class UserChatEntity {
   @PrimaryColumn({ type: 'uuid' })
-  id: string = v4();
+  id: string;
 
   @ManyToOne(() => UserEntity, { eager: true })
   @JoinColumn()

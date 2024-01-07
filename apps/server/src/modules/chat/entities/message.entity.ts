@@ -1,12 +1,11 @@
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm';
-import { v4 } from 'uuid';
 import { UserEntity } from '../../user/entities/user.entity';
 import { UserChatEntity } from './userchat.entity';
 
 @Entity()
 export class MessageEntity {
   @PrimaryColumn()
-  id: string = v4();
+  id: string;
 
   @ManyToOne(() => UserEntity, (user) => user.user_id, { eager: true })
   @JoinColumn({ name: 'from' })
@@ -16,10 +15,10 @@ export class MessageEntity {
   content: string;
 
   @ManyToOne(() => UserEntity, { nullable: true })
-  clear_for: UserEntity;
+  clear_for: UserEntity | null;
 
   @ManyToOne(() => UserChatEntity, (chat) => chat.messages)
-  chat: UserChatEntity;
+  chat?: UserChatEntity;
 
   @Column({ nullable: true })
   is_seen: boolean;
@@ -28,8 +27,8 @@ export class MessageEntity {
   sended_at: Date;
 
   @Column({ nullable: true })
-  received_at: Date;
+  received_at: Date | null;
 
   @Column({ nullable: true })
-  seen_at: Date;
+  seen_at: Date | null;
 }

@@ -9,20 +9,23 @@ import { UserEntity } from '../modules/user/entities/user.entity';
 import { Repository } from 'typeorm';
 import { onEvent } from '../utils/onEvent';
 import { RoomService } from '../services/room.service';
+import { ChatService } from '../modules/chat/chat.service';
 
 @WebSocketGateway({ cors: { origin: process.env.FRONT_END_URL, credentials: true } })
 export class UserGateway implements OnGatewayDisconnect, OnGatewayConnection, OnGatewayInit {
   constructor(
     private onlineUsersService: OnlineUsersService,
     private roomService: RoomService,
+    private chatService: ChatService,
     @InjectRepository(UserEntity) private userRepo: Repository<UserEntity>,
   ) {}
   afterInit(server: Server) {
     server.use(WsAuthMiddleware(this.userRepo));
   }
-  handleConnection(client: ISocket) {
+  async handleConnection(client: ISocket) {
     client.emit('get_pid', process.env.PID);
     this.server.emit(`status_user_${client.user.user_id}`, true);
+    await this.chatService.updateMessagesStatusToReceived(client.user.user_id);
   }
 
   async handleDisconnect(client: ISocket) {

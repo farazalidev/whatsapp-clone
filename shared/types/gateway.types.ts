@@ -2,6 +2,7 @@ import { Socket } from 'socket.io';
 import { MessageEntity } from '../../apps/server/src/modules/chat/entities/message.entity';
 import { UserEntity } from '../../apps/server/src/modules/user/entities/user.entity';
 import { single_unread_message, unreadMessage } from '../../apps/server/src/modules/types';
+import { UpdateMessageStatusBulk, messageStatus } from '.';
 
 export interface ISocket extends Socket<ClientToServerEvents, ServerToClientEvents> {
   user: UserEntity;
@@ -36,6 +37,8 @@ export interface ServerToClientEvents {
   [event: TypingIndicatorEventPattern]: () => void;
   [event: stopTypingIndicatorEventPattern]: () => void;
   [event: user_online_statusPattern]: (status: boolean) => void;
+  message_status: (messageStatus: IMessageStatus) => void;
+  update_message_status_bulk: (payload: UpdateMessageStatusBulk) => void;
 }
 export interface ClientToServerEvents {
   send_message: (payload: sendMessagePayload) => void;
@@ -51,13 +54,19 @@ export interface ClientToServerEvents {
 }
 
 export interface sendMessagePayload {
-  message: messageFromClient;
+  message: MessageEntity;
   chat_id: string | undefined;
   receiverId: string;
 }
 
 export interface messageFromClient {
-  content: string | undefined;
+  content: string;
+  sended_at: Date;
+  is_seen: boolean;
+  id: string;
+  received_at: Date | null;
+  seen_at: Date | null;
+  from: UserEntity;
 }
 
 export interface joinRoomPayload {
@@ -88,4 +97,10 @@ export interface getUserOnlineStatusPayload {
 
 export interface userOnlinePayload {
   status: boolean;
+}
+
+export interface IMessageStatus {
+  message_id: string;
+  chat_id: string;
+  status: messageStatus;
 }

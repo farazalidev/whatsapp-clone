@@ -1,5 +1,5 @@
 'use client';
-import React, { Suspense, useEffect, useState } from 'react';
+import React, { Suspense, useState } from 'react';
 import SideBarHeader from './SideBarHeader';
 import SideBarSearch from './SideBarSearch';
 import EncryptionMessage from '@/Atoms/misc/EncryptionMessage';
@@ -14,73 +14,28 @@ import { getDayOrFormattedDate } from '@/utils/getDateOrFormat';
 import { setUserChatEntity } from '@/global/features/ChatSlice';
 import { isIamReceiver } from '../../../utils/isIamReceiver';
 import { getLatestMessage } from '@/utils/getLatestMessage';
-import useUser from '@/hooks/useUser';
-import useSocket from '@/hooks/useSocket';
-import { unreadMessage } from '@server/modules/types';
-import { fetcher } from '@/utils/fetcher';
+import { AnimatePresence, Reorder } from 'framer-motion';
+import { ICombinedData } from '@/global/features/types/types';
+import useCombinedData from '@/hooks/useCombinedData';
 
 const UserSideBar = () => {
-  const { socket } = useSocket();
-
   const dispatch = useDispatch();
 
   const { selectedOverlay, show } = useSelector((state: RootState) => state.sideBarOverlaySlice);
 
-  const [unreadMessages, setUnreadMessages] = useState<unreadMessage[]>([]);
-
   const { id } = useSelector((state: RootState) => state.ChatSlice);
 
-  const { data } = useUser();
+  const data = useSelector((state: RootState) => state.UserSlice);
+
+  const { data: combinedData, updateData } = useCombinedData();
 
   const handleChat = async (chat_id: string, unread_messages_length: number | undefined) => {
     dispatch(setUserChatEntity({ id: chat_id, started_from: 'chat' }));
 
-    const existedUnreadMessagesChat = unreadMessages.find((chat) => chat?.chat_id === chat_id);
-    if (existedUnreadMessagesChat) {
-      existedUnreadMessagesChat.unread_messages = [];
-      // sending request to mark all unread messages
-      if (unread_messages_length !== 0) {
-        await fetcher(`chat/mark-unread-messages/${chat_id}`);
-      }
-    }
-    return;
+    await updateData(chat_id, unread_messages_length);
   };
 
-  useEffect(() => {
-    socket.emit('get_unread_messages');
-    socket.on(`unread_messages_${data?.Me.user_id}`, (messages) => {
-      setUnreadMessages(messages);
-    });
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [socket]);
-
-  useEffect(() => {
-    socket.on(`unread_message_${data?.Me.user_id}`, (unreadMessageData) => {
-      setUnreadMessages((prevMessages) => {
-        const index = prevMessages.findIndex((chat) => chat.chat_id === unreadMessageData.chat_id);
-
-        if (index !== -1) {
-          return [
-            ...prevMessages.slice(0, index),
-            {
-              ...prevMessages[index],
-              unread_messages: [...prevMessages[index].unread_messages, unreadMessageData.message],
-            },
-            ...prevMessages.slice(index + 1),
-          ];
-        } else {
-          return [...prevMessages, { chat_id: unreadMessageData.chat_id, unread_messages: [unreadMessageData.message] }];
-        }
-      });
-    });
-  }, [socket, data?.Me.user_id]);
-
-  const combinedData = data?.chats.map((chat) => ({
-    ...chat,
-    unread_messages: unreadMessages.find((unreadMessage) => unreadMessage.chat_id === chat.id),
-  }));
-  console.log('🚀 ~ file: UserSideBar.tsx:74 ~ combinedData ~ combinedData:', combinedData);
+  const [chatsData, setChatsData] = useState<ICombinedData[]>(combinedData);
 
   return (
     <div className="dark:bg-whatsapp-dark-primary_bg relative flex h-full flex-col overflow-x-hidden border-r-[2px] border-r-gray-300 bg-white dark:border-r-gray-600">
@@ -91,41 +46,41 @@ const UserSideBar = () => {
         <SideBarSearch />
       </div>
       <Suspense fallback={<SidebarChatsSkeleton />}>
-        <div className="dark:bg-whatsapp-dark-primary_bg h-[100%] overflow-y-scroll ">
+        <Reorder.Group values={chatsData} onReorder={setChatsData} className="dark:bg-whatsapp-dark-primary_bg h-[100%] overflow-y-scroll ">
           {combinedData && data?.Me && combinedData.length !== 0 ? (
             combinedData?.map((chat) => {
               return (
-                <SideBarUserCard
-                  key={chat.id}
-                  name={isIamReceiver(chat.chat_with.user_id, data?.Me.user_id) ? chat.chat_for.name : chat?.chat_with.name}
-                  last_message={getLatestMessage(chat?.messages)?.content}
-                  last_message_date={chat?.messages ? getDayOrFormattedDate(chat?.messages) : undefined}
-                  active={chat.id === id}
-                  avatar_path={isIamReceiver(chat.chat_with.user_id, data?.Me.user_id) ? chat.chat_for.profile.pic_path : chat?.chat_with.profile.pic_path}
-                  onClick={() => handleChat(chat.id, chat.unread_messages?.unread_messages?.length)}
-                  unread_message_count={chat.unread_messages?.unread_messages.length}
-                />
+                <AnimatePresence key={chat.id}>
+                  <Reorder.Item value={chat} as="ul">
+                    <SideBarUserCard
+                      key={chat.id}
+                      name={isIamReceiver(chat.chat_with.user_id, data?.Me!.user_id) ? chat.chat_for.name : chat?.chat_with.name}
+                      // last_message={getLatestMessage(chat?.messages)?.content}
+                      last_message={
+                        chat.unread_messages?.unread_messages
+                          ? getLatestMessage(chat.unread_messages?.unread_messages)?.content
+                          : null || getLatestMessage(chat?.messages)?.content
+                      }
+                      last_message_date={
+                        chat.unread_messages?.unread_messages
+                          ? getDayOrFormattedDate(chat.unread_messages?.unread_messages)
+                          : chat?.messages
+                            ? getDayOrFormattedDate(chat?.messages)
+                            : undefined
+                      }
+                      active={chat.id === id}
+                      avatar_path={isIamReceiver(chat.chat_with.user_id, data?.Me!.user_id) ? chat.chat_for.profile.pic_path : chat?.chat_with.profile.pic_path}
+                      onClick={() => handleChat(chat.id, chat.unread_messages?.unread_messages?.length)}
+                      unread_message_count={chat.unread_messages?.unread_messages.length}
+                    />
+                  </Reorder.Item>
+                </AnimatePresence>
               );
             })
           ) : (
             <Typography className="flex h-full w-full place-items-center justify-center">No messages yet</Typography>
           )}
-          {/* {data?.chats && data?.Me && data?.chats?.length !== 0 ? (
-            data?.chats?.map((chat) => (
-              <SideBarUserCard
-                key={chat.id}
-                name={isIamReceiver(chat, data?.Me.user_id) ? chat.chat_for.name : chat?.chat_with.name}
-                last_message={getLatestMessage(chat?.messages)?.content}
-                last_message_date={chat?.messages ? getDayOrFormattedDate(chat?.messages) : undefined}
-                active={chat.id === id}
-                avatar_path={isIamReceiver(chat, data?.Me.user_id) ? chat.chat_for.profile.pic_path : chat?.chat_with.profile.pic_path}
-                onClick={() => handleChat(chat.id)}
-              />
-            ))
-          ) : (
-            <Typography className="flex h-full w-full place-items-center justify-center">No messages yet</Typography>
-          )} */}
-        </div>
+        </Reorder.Group>
 
         <EncryptionMessage />
       </Suspense>

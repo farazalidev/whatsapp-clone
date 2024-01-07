@@ -5,21 +5,19 @@ import { ContactEntity } from '@server/modules/user/entities/contact.entity';
 import { RootState } from '../store';
 
 interface UserSliceInitialStateType {
-  Me: UserEntity | undefined;
-  chats: UserChatEntity[] | undefined;
-  contacts: ContactEntity[] | undefined;
-  pid: string | undefined;
+  Me: UserEntity | null;
+  contacts: ContactEntity[];
+  pid: string;
   isLoading: boolean;
   isError: boolean;
 }
 
 const initialState: UserSliceInitialStateType = {
-  Me: undefined,
-  chats: undefined,
-  contacts: undefined,
+  Me: null,
+  contacts: [],
   isLoading: true,
   isError: false,
-  pid: undefined,
+  pid: '',
 };
 
 export const UserSlice = createSlice({
