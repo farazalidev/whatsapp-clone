@@ -4,7 +4,9 @@ import { Socket, io } from 'socket.io-client';
 import { ClientToServerEvents, ServerToClientEvents } from '@shared/types';
 import { getCookie } from './getCookie';
 
-let socketInstance: Socket<ServerToClientEvents, ClientToServerEvents> | null = null;
+export type ISocket_Client = Socket<ServerToClientEvents, ClientToServerEvents> | null;
+
+let socketInstance: ISocket_Client = null;
 export const createSocket = () => {
   if (socketInstance) {
     return { socket: socketInstance, isError: false };

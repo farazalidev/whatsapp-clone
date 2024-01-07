@@ -19,12 +19,13 @@ export class ChatService {
   }
 
   // create a new chat
-  async createAnewChat(user_id: string, chat_with_id: string): Promise<ResponseType<{ chat_id: string }>> {
+  async createAnewChat(user_id: string, chat_id: string, chat_with_id: string): Promise<ResponseType<{ chat_id: string }>> {
     try {
       const chat_for = await this.userRepo.findOne({ where: { user_id } });
       const chat_with = await this.userRepo.findOne({ where: { user_id: chat_with_id } });
 
       const newChat = this.UserChatRepo.create({
+        id: chat_id,
         chat_for,
         chat_with,
         messages: [],
@@ -36,6 +37,7 @@ export class ChatService {
         data: { chat_id: newChat.id },
       };
     } catch (error) {
+      console.log('🚀 ~ file: chat.service.ts:40 ~ ChatService ~ createAnewChat ~ error:', error);
       return {
         success: false,
         error: { message: 'Error while creating a new chat', statusCode: 500 },

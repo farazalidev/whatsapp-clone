@@ -6,7 +6,6 @@ import { RootState } from '../store';
 
 interface UserSliceInitialStateType {
   Me: UserEntity | null;
-  chats: UserChatEntity[];
   contacts: ContactEntity[];
   pid: string;
   isLoading: boolean;
@@ -15,7 +14,6 @@ interface UserSliceInitialStateType {
 
 const initialState: UserSliceInitialStateType = {
   Me: null,
-  chats: [],
   contacts: [],
   isLoading: true,
   isError: false,

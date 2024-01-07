@@ -1,5 +1,4 @@
 import React, { FC, useEffect, useRef } from 'react';
-import {} from 'class-transformer';
 import MessagePreview from '@/Atoms/chat/MessagePreview';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '@/global/store';
@@ -11,14 +10,15 @@ interface ChatHandlerProps {}
 const ChatHandler: FC<ChatHandlerProps> = () => {
   const { socket } = useSocket();
 
+  const dispatch = useDispatch();
+
   const { id } = useSelector((state: RootState) => state.ChatSlice);
 
-  const messages = useSelector((state: RootState) => state.messagesSlice.chats.find((chat) => (chat.chat_id === id ? chat.messages : [])));
-
   const Me = useSelector((state: RootState) => state.UserSlice.Me);
+
   const divRef = useRef<HTMLDivElement>(null);
 
-  const dispatch = useDispatch();
+  const chat = useSelector((state: RootState) => state.messagesSlice.chats.find((chat) => chat.chat_id === id));
 
   // joining room
   useEffect(() => {
@@ -46,22 +46,22 @@ const ChatHandler: FC<ChatHandlerProps> = () => {
 
   // scroll to bottom
   useEffect(() => {
-    if (divRef) {
-      divRef.current?.scrollIntoView({ behavior: 'instant', block: 'end' });
+    if (divRef.current && chat && chat?.messages?.length > 0) {
+      divRef.current.scrollIntoView({ behavior: 'instant', block: 'nearest' });
     }
-  }, []);
+  }, [chat]);
 
   useEffect(() => {
     if (divRef) {
-      divRef.current?.scrollIntoView({ behavior: 'instant', block: 'end' });
+      divRef.current?.scrollIntoView({ behavior: 'instant', block: 'nearest' });
     }
-  }, [messages]);
+  }, [chat?.messages]);
 
   return (
     <>
-      <div className="relative my-2 flex h-full w-full flex-col gap-4 overflow-y-scroll px-4 ">
-        {messages
-          ? [...messages.messages]
+      <div className="relative my-2 flex h-full w-full flex-col gap-1 overflow-y-scroll px-4 ">
+        {chat?.messages
+          ? [...chat.messages]
               ?.sort((a, b) => {
                 const dateA = new Date(a?.sended_at)?.getTime();
                 const dateB = new Date(b?.sended_at)?.getTime();

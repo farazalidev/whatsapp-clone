@@ -1,22 +1,22 @@
 'use client';
 import { fetcher } from '@/utils/fetcher';
-import { UserEntity } from '@server/modules/user/entities/user.entity';
 import useSwr from 'swr';
+import { ContactEntity } from '@server/modules/user/entities/contact.entity';
 import { useDispatch } from 'react-redux';
 import { setUser } from '@/global/features/UserSlice';
 import { AxiosError } from 'axios';
 
-const useUser = () => {
+const useContacts = () => {
   const dispatch = useDispatch();
   const userFetcher = async () => {
-    const Me = await fetcher<UserEntity>('user/me');
+    const contacts = await fetcher<ContactEntity[]>('user/contacts');
 
-    return { Me };
+    return { contacts };
   };
 
-  const result = useSwr<{ Me: UserEntity }, AxiosError>('api/me', userFetcher);
+  const result = useSwr<{ contacts: ContactEntity[] }, AxiosError>('api/contacts', userFetcher);
   dispatch(setUser(result.data));
   return result;
 };
 
-export default useUser;
+export default useContacts;

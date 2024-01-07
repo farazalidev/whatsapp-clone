@@ -2,13 +2,16 @@ import { createSlice } from '@reduxjs/toolkit';
 import { UpdateMessageStatusBulk } from '@shared/types';
 import { messageStatus } from '@shared/types';
 import { MessageEntity } from '@server/modules/chat/entities/message.entity';
+import { UserChatEntity } from '@server/modules/chat/entities/userchat.entity';
 
 interface IMessagesSliceInitialState {
-  chats: { chat_id: string; messages: MessageEntity[] }[];
+  chats: { chat_id: string; messages: MessageEntity[]; receiverFootPrints?: string }[];
+  chats_raw: UserChatEntity[];
 }
 interface addNewChatPayload {
   chat_id: string;
   messages: MessageEntity[];
+  receiverFootPrints?: string;
 }
 interface addNewMessagePayload {
   chat_id: string;
@@ -23,6 +26,7 @@ interface updateMessagePayload {
 
 const initialState: IMessagesSliceInitialState = {
   chats: [],
+  chats_raw: [],
 };
 
 export const messagesSlice = createSlice({
@@ -43,6 +47,16 @@ export const messagesSlice = createSlice({
         }
         existedChat.messages.push(...payload.messages);
       }
+    },
+
+    addRawChats: (state, { payload }: { payload: UserChatEntity[] | undefined }) => {
+      if (payload) {
+        state.chats_raw = payload;
+      }
+    },
+
+    removeChat: (state, { payload }: { payload: { chat_id: string } }) => {
+      state.chats.filter((chat) => chat.chat_id !== payload.chat_id);
     },
 
     // add a new message
@@ -83,4 +97,4 @@ export const messagesSlice = createSlice({
   },
 });
 
-export const { addNewChat, addNewMessage, updateMessageStatus, updateMessageStatusBulk } = messagesSlice.actions;
+export const { addNewChat, addNewMessage, updateMessageStatus, updateMessageStatusBulk, removeChat, addRawChats } = messagesSlice.actions;

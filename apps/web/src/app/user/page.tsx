@@ -12,9 +12,10 @@ import useUser from '@/hooks/useUser';
 import MainLoadingPage from '@/components/Misc/MainLoadingPage';
 import MainErrorPage from '@/components/Misc/MainErrorPage';
 import SessionExpiredErrorPage from '@/components/Misc/SessionExpiredErrorPage';
-import { AxiosError } from 'axios';
 import useSocket from '@/hooks/useSocket';
 import { setUser } from '@/global/features/UserSlice';
+import useChats from '@/hooks/useChats';
+import useContacts from '@/hooks/useContacts';
 
 type Props = {
   searchParams: Record<string, string> | null | undefined;
@@ -40,16 +41,18 @@ const UserPage: FC<Props> = () => {
   const { AddContactModalIsOpen } = useSelector((state: RootState) => state.modalSlice);
 
   const { isLoading, error } = useUser();
+  const { error: chatsError, isLoading: chatsIsLoading } = useChats();
+  const { error: contactsError, isLoading: contactsIsLoading } = useContacts();
 
-  if (isLoading) {
+  if (isLoading || chatsIsLoading || contactsIsLoading) {
     return <MainLoadingPage />;
   }
 
-  if ((error as AxiosError)?.response?.status === 401) {
+  if (error?.response?.status === 401 || chatsError?.response?.status === 401 || contactsError?.response?.status === 401) {
     return <SessionExpiredErrorPage />;
   }
 
-  if (error) {
+  if (error || chatsError || contactsError) {
     return <MainErrorPage />;
   }
 
