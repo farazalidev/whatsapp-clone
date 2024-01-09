@@ -20,13 +20,19 @@ const ChatHandler: FC<ChatHandlerProps> = () => {
 
   const chat = useSelector((state: RootState) => state.messagesSlice.chats.find((chat) => chat.chat_id === id));
 
-  // joining room
   useEffect(() => {
+    console.log('running this');
+
     socket.emit('init_room', { chat_id: id as string });
     socket.emit('join_room', { chat_id: id as string });
-    socket.on('update_message_status_bulk', (messagesStatus) => {
-      dispatch(updateMessageStatusBulk(messagesStatus));
-    });
+
+    return () => {
+      socket.emit('leave_room', { room_id: id as string });
+      socket.off('get_pid');
+    };
+  }, [socket, id, dispatch]);
+
+  useEffect(() => {
     socket.on('newMessage', (message) => {
       dispatch(addNewMessage({ chat_id: id as string, message }));
     });
@@ -37,12 +43,10 @@ const ChatHandler: FC<ChatHandlerProps> = () => {
       dispatch(updateMessageStatusBulk(messages));
     });
     return () => {
-      socket.emit('leave_room', { room_id: id as string });
-      socket.off('get_pid');
       socket.off('message_status');
       socket.off('update_message_status_bulk');
     };
-  }, [socket, id, dispatch]);
+  }, [socket, dispatch]);
 
   // scroll to bottom
   useEffect(() => {
