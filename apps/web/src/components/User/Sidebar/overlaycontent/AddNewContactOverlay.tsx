@@ -74,7 +74,8 @@ const AddNewContactOverlay = () => {
               <SideBarUserCard
                 key={contact.id}
                 name={contact.contact?.name}
-                avatar_path={contact.contact?.profile.pic_path}
+                for_other
+                user_id={contact.contact.user_id}
                 show_options={false}
                 onClick={() => chatStartHandler(contact.contact?.user_id)}
               />

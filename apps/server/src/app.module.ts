@@ -10,7 +10,6 @@ import { AuthGuard } from './modules/auth/guards/auth.guard';
 import { JwtService } from '@nestjs/jwt';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ChatModule } from './modules/chat/chat.module';
-import { LocalUploadModule } from './modules/localupload/localupload.module';
 import { MessageGateway } from './gateways/message.gateway';
 import { RedisModule } from '@nestjs-modules/ioredis';
 import { pubsubService } from './services/pubsub.service';
@@ -46,7 +45,6 @@ import { ShutDownService } from './services/shutDown.service';
     ScheduleModule.forRoot(),
     AuthModule,
     UserModule,
-    LocalUploadModule,
     ChatModule,
   ],
   controllers: [AppController],

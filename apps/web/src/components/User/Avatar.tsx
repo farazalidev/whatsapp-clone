@@ -8,29 +8,37 @@ export interface AvatarProps {
   name?: string;
   height?: number;
   width?: number;
-  avatar_path?: string;
+  user_id?: string;
   isAbsolute?: boolean;
+  absolute_src?: string;
+  for_other?: boolean;
 }
 
-const Avatar: FC<AvatarProps> = ({ avatar_path, isAbsolute, name, height = 55, width = 55 }) => {
+const Avatar: FC<AvatarProps> = ({ user_id, for_other, isAbsolute, absolute_src, name, height = 55, width = 55 }) => {
   const fetchProfilePic = async () => {
-    const blob = await fetcher(`user/profile-image/${avatar_path}`, undefined, 'blob');
+    const blob = await fetcher(`api/file/read/profile-pic/small`, undefined, 'blob', 'static');
     const url = URL.createObjectURL(blob);
+    console.log('🚀 ~ fetchProfilePic ~ blob:', blob);
     return url;
   };
 
-  const { data } = useSwr(avatar_path, isAbsolute ? null : fetchProfilePic);
+  const fetchOtherProfilePic = async () => {
+    const blob = await fetcher(`api/file/read-other/profile-pic/${user_id}/small`, undefined, 'blob', 'static');
+    const url = URL.createObjectURL(blob);
+    console.log('🚀 ~ fetchOtherProfilePic ~ blob:', blob);
+    return url;
+  };
+
+  const { data } = useSwr(for_other ? user_id : 'profile-pic', isAbsolute ? null : for_other ? fetchOtherProfilePic : fetchProfilePic);
 
   return (
     <Suspense fallback={'loading'}>
       <div className={cn('relative')} style={{ height, width }}>
-        <Image
-          src={(isAbsolute ? avatar_path : (data as string)) || '/icons/avatardefault.svg'}
-          fill
-          className="h-[55px] w-[55px] rounded-full object-cover"
-          // objectPosition="center"
-          alt={name ? name : 'user'}
-        />
+        {isAbsolute ? (
+          <Image src={absolute_src || '/icons/avatardefault.svg'} fill className="h-[55px] w-[55px] rounded-full object-cover" alt={name ? name : 'user'} />
+        ) : (
+          <Image src={(data as string) || '/icons/avatardefault.svg'} fill className="h-[55px] w-[55px] rounded-full object-cover" alt={name ? name : 'user'} />
+        )}
       </div>
     </Suspense>
   );

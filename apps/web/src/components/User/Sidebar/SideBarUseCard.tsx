@@ -15,7 +15,6 @@ interface SideBarUserCardProps extends AvatarProps {
 }
 
 const SideBarUserCard: FC<SideBarUserCardProps> = ({
-  avatar_path,
   name,
   last_message,
   last_message_date,
@@ -23,6 +22,8 @@ const SideBarUserCard: FC<SideBarUserCardProps> = ({
   active = false,
   onClick,
   unread_message_count,
+  user_id,
+  for_other,
 }) => {
   return (
     <div
@@ -35,7 +36,7 @@ const SideBarUserCard: FC<SideBarUserCardProps> = ({
       )}
     >
       <span className="py-4">
-        <Avatar avatar_path={avatar_path} name={name} height={55} width={55} />
+        <Avatar user_id={user_id} for_other={for_other} name={name} height={55} width={55} />
       </span>
       <div className="border-whatsapp-light-secondary_bg dark:border-whatsapp-dark-secondary_bg flex w-full place-items-center  justify-between border-b-[1px] px-3">
         <div className="flex flex-col justify-evenly">
