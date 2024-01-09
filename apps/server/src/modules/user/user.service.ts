@@ -91,7 +91,6 @@ export class UserService {
       const user = await this.UserRepo.findOne({ where: { user_id } });
       const newProfile = new UserProfileEntity();
       newProfile.about = profile.about;
-      newProfile.pic_path = profile.pic_path;
       user.profile = newProfile;
 
       await this.UserRepo.save(user);

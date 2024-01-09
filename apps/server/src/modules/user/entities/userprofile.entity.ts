@@ -6,9 +6,6 @@ export class UserProfileEntity {
   @PrimaryColumn({ type: 'uuid' })
   id: string = v4();
 
-  @Column({ nullable: true })
-  pic_path: string;
-
   @Column()
   about: string;
 }

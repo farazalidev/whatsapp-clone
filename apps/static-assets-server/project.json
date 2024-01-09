@@ -1,0 +1,57 @@
+{
+  "name": "static-assets-server",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/static-assets-server/src",
+  "projectType": "application",
+  "targets": {
+    "build": {
+      "executor": "@nx/webpack:webpack",
+      "outputs": ["{options.outputPath}"],
+      "defaultConfiguration": "production",
+      "options": {
+        "target": "node",
+        "compiler": "tsc",
+        "outputPath": "dist/apps/static-assets-server",
+        "main": "apps/static-assets-server/src/main.ts",
+        "tsConfig": "apps/static-assets-server/tsconfig.app.json",
+        "assets": ["apps/static-assets-server/src/assets"],
+        "isolatedConfig": true,
+        "webpackConfig": "apps/static-assets-server/webpack.config.js"
+      },
+      "configurations": {
+        "development": {},
+        "production": {}
+      }
+    },
+    "serve": {
+      "executor": "@nx/js:node",
+      "defaultConfiguration": "development",
+      "options": {
+        "buildTarget": "static-assets-server:build"
+      },
+      "configurations": {
+        "development": {
+          "buildTarget": "static-assets-server:build:development"
+        },
+        "production": {
+          "buildTarget": "static-assets-server:build:production"
+        }
+      }
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["apps/static-assets-server/**/*.ts"]
+      }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "apps/static-assets-server/jest.config.ts"
+      }
+    }
+  },
+  "tags": []
+}

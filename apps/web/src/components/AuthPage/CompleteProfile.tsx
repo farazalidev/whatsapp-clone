@@ -27,14 +27,14 @@ const CompleteProfile = () => {
 
   const submitHandler = async (data: CompleteProfileType) => {
     const fmData = new FormData();
-    fmData.append('profile_pic', image as any);
+    fmData.append('profile-pic', image as any);
 
     // uploading profile pic
-    await Mutation<FormData, { file_path: string }>('file/upload/profile-pic', fmData)
+    await Mutation<FormData, { file_path: string }>('api/file/upload/profile-pic', fmData, 'static')
       .then(async (profile_pic) => {
         setIsLoading(true);
         toast.success('profile pic uploaded');
-        await Mutation('user/complete-profile', { pic_path: profile_pic.file_path, about: data.about })
+        await Mutation('user/complete-profile', { about: data.about })
           .then(() => {
             toast.success('Profile completion successful');
             setTimeout(() => {

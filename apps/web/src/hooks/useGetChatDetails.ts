@@ -15,7 +15,6 @@ export type UserDataType =
 
 type getDetailsForChatPanelResponse = {
   name: string | undefined;
-  avatar_path: string | undefined;
   receiver_id: string | undefined;
   chat_id: string | undefined;
 };
@@ -37,7 +36,6 @@ export function useUserChatDetails(chat_slice: IChatSlice, userData: UserDataTyp
     const contact = userData?.contacts.find((contact) => contact.contact.user_id === id);
 
     return {
-      avatar_path: contact?.contact.profile.pic_path,
       name: contact?.contact.name,
       receiver_id: contact?.contact.user_id,
       chat_id: undefined,
@@ -52,7 +50,6 @@ export function useUserChatDetails(chat_slice: IChatSlice, userData: UserDataTyp
   const isReceiver = isIamReceiver(chat?.chat_with.user_id, userData?.Me.user_id as string);
 
   return {
-    avatar_path: isReceiver ? chat?.chat_for.profile.pic_path : chat?.chat_with.profile.pic_path,
     name: isReceiver ? chat?.chat_for.name : chat?.chat_with.name,
     receiver_id: isReceiver ? chat?.chat_for.user_id : chat?.chat_with.user_id,
     chat_id: chat?.id,
