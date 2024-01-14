@@ -1,9 +1,9 @@
 import { getCookie } from '@/utils/getCookie';
 import axios from 'axios';
 
-const axiosWithAuth = () => {
+const axiosWithAuth = ({ static_server }: { static_server?: boolean }) => {
   const instance = axios.create({
-    baseURL: process.env.NEXT_PUBLIC_BACKEND_URL,
+    baseURL: static_server ? process.env.NEXT_PUBLIC_STATIC_ASSETS_SERVER_URL : process.env.NEXT_PUBLIC_BACKEND_URL,
     headers: {
       Authorization: `Bearer ${getCookie(process.env.NEXT_PUBLIC_ACCESS_TOKEN_NAME)}`,
     },
@@ -21,7 +21,7 @@ const axiosWithAuth = () => {
 
         try {
           // Call your API route to refresh the access token
-          await axios.get('http://localhost:8000/auth/refresh', { withCredentials: true });
+          await axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/refresh`, { withCredentials: true });
           const newAccessToken = getCookie(process.env.NEXT_PUBLIC_ACCESS_TOKEN_NAME);
 
           // Update the original request with the new access token

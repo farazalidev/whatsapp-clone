@@ -105,7 +105,8 @@ export class MessageGateway implements OnGatewayInit {
     // Producing message in kafka
     await this.producerService.produce('MESSAGE', { value: JSON.stringify(messageJSON), key: 'message' });
 
-    client.emit('message_status', processedMessage.messageStatus);
+    // client.emit('message_status', processedMessage.messageStatus);
+    client.emit('message_status', { ...processedMessage.messageStatus, status: { ...processedMessage.messageStatus.status, sended: true } });
 
     if (!processedMessage.isUserInTheRoom) {
       if (!processedMessage.isUserOnline) {
@@ -183,7 +184,7 @@ export class MessageGateway implements OnGatewayInit {
         isUserInTheRoom: isReceiverInTheRoom,
         isUserOnline: Boolean(await receiver_pid),
         message,
-        messageStatus: { chat_id, message_id: message.id, status: { is_seen: false, received_at, seen_at: null, sended_at: message.sended_at } },
+        messageStatus: { chat_id, message_id: message.id, status: { is_seen: false, received_at, seen_at: null, sended_at: message.sended_at, sended: false } },
       };
     }
 
@@ -199,7 +200,7 @@ export class MessageGateway implements OnGatewayInit {
         message,
         isUserInTheRoom: isReceiverInTheRoom,
         isUserOnline: Boolean(receiver_pid),
-        messageStatus: { chat_id, message_id: message.id, status: { is_seen: true, received_at, seen_at, sended_at: message.sended_at } },
+        messageStatus: { chat_id, message_id: message.id, status: { is_seen: true, received_at, seen_at, sended_at: message.sended_at, sended: false } },
       };
     }
 
@@ -209,7 +210,11 @@ export class MessageGateway implements OnGatewayInit {
         message,
         isUserInTheRoom: false,
         isUserOnline: false,
-        messageStatus: { chat_id, message_id: message.id, status: { is_seen: false, received_at: null, seen_at: null, sended_at: message.sended_at } },
+        messageStatus: {
+          chat_id,
+          message_id: message.id,
+          status: { is_seen: false, received_at: null, seen_at: null, sended_at: message.sended_at, sended: false },
+        },
       };
     }
   }

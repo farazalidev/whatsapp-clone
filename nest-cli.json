@@ -1,0 +1,16 @@
+{
+  "projects": {
+    "static-assets-server": {
+      "type": "library",
+      "root": "libs/static-assets-server",
+      "entryFile": "index",
+      "sourceRoot": "libs/static-assets-server/src",
+      "compilerOptions": {
+        "tsConfigPath": "libs/static-assets-server/tsconfig.lib.json"
+      }
+    }
+  },
+  "compilerOptions": {
+    "webpack": true
+  }
+}

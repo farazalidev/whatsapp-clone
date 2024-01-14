@@ -29,7 +29,7 @@ const AddNewContactModalContent = () => {
     try {
       setSearchIsLoading(true);
       await fetcher<searchUserResponse>(`/user/search-user/${data.email}`).then(async (data) => {
-        setFoundedUser({ ...data, pic_path: data.pic_path });
+        setFoundedUser({ ...data });
       });
       setSearchQueryState({ error: null, isError: false });
     } catch (error) {
@@ -82,7 +82,7 @@ const AddNewContactModalContent = () => {
       </form>
       {foundedUser ? (
         <div className="mx-4">
-          <RequestCard name={foundedUser?.name} avatar_src={foundedUser.pic_path} onButtonClick={handleSendRequest} />
+          <RequestCard name={foundedUser?.name} user_id={foundedUser.user_id} for_other onButtonClick={handleSendRequest} />
         </div>
       ) : null}
 

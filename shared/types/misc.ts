@@ -5,6 +5,7 @@ export interface messageStatus {
   sended_at: Date;
   received_at: Date;
   seen_at: Date;
+  sended: boolean;
 }
 
 export interface UpdateMessageStatusBulk {
