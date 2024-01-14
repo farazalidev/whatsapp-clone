@@ -23,6 +23,9 @@ export class MessageEntity {
   @Column({ nullable: true })
   is_seen: boolean;
 
+  @Column({ nullable: true })
+  sended: boolean;
+
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   sended_at: Date;
 
