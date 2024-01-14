@@ -1,26 +1,25 @@
-import Avatar from '@/components/User/Avatar';
+import Avatar, { AvatarProps } from '@/components/User/Avatar';
 import { cn } from '@/utils/cn';
 import React, { FC } from 'react';
 import Button from '../Button/Button';
 
-interface IRequestCard {
+interface IRequestCard extends AvatarProps {
   onButtonClick?: () => void;
-  avatar_src: string;
   name: string;
 }
 
-const RequestCard: FC<IRequestCard> = ({ avatar_src, name, onButtonClick }) => {
+const RequestCard: FC<IRequestCard> = ({ name, onButtonClick, ...props }) => {
   return (
     <div
       className={cn(
-        'group relative flex px-2 dark:bg-whatsapp-dark-primary_bg dark:text-white',
+        'dark:bg-whatsapp-dark-primary_bg group relative flex px-2 dark:text-white',
         ' hover:bg-whatsapp-light-secondary_bg dark:hover:bg-whatsapp-dark-secondary_bg cursor-pointer',
       )}
     >
       <span className="py-4">
-        <Avatar avatar_path={avatar_src} name={name} height={55} width={55} />
+        <Avatar {...props} name={name} height={55} width={55} />
       </span>
-      <div className="flex w-full place-items-center justify-between px-3  border-b-[1px] border-whatsapp-light-secondary_bg dark:border-whatsapp-dark-secondary_bg">
+      <div className="border-whatsapp-light-secondary_bg dark:border-whatsapp-dark-secondary_bg flex w-full place-items-center  justify-between border-b-[1px] px-3">
         <div className="flex flex-col justify-evenly">
           <span className="text-sm md:text-base">{name}</span>
         </div>

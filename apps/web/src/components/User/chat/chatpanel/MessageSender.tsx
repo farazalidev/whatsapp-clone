@@ -54,6 +54,7 @@ const MessageSender = ({ receiver_id, chat_id }: { receiver_id: string; chat_id:
       seen_at: null,
       from: Me as any,
       clear_for: null,
+      sended: false,
     };
     try {
       if (started_from === 'chat') {

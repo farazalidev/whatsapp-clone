@@ -14,7 +14,7 @@ interface addNewChatPayload {
   receiverFootPrints?: string;
 }
 interface addNewMessagePayload {
-  chat_id: string;
+  chat_id: string | undefined;
   message: MessageEntity;
 }
 
@@ -62,8 +62,10 @@ export const messagesSlice = createSlice({
     // add a new message
 
     addNewMessage: (state, { payload }: { payload: addNewMessagePayload }) => {
-      const existedChat = state.chats.find((chat) => chat.chat_id === payload.chat_id);
-      existedChat?.messages.push(payload.message);
+      console.log('🚀 ~ payload:', payload);
+      const existedChat = state.chats.find((chat) => chat?.chat_id === payload.chat_id);
+      if (existedChat) existedChat?.messages.push(payload.message);
+      return;
     },
 
     // update message status

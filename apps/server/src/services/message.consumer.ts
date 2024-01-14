@@ -26,7 +26,7 @@ export class MessageConsumer implements OnModuleInit {
         if (!chat.messages || chat.messages.length === 0) {
           chat.messages = [];
         }
-        chat.messages.push(message.message);
+        chat.messages.push({ ...message.message, sended: true });
         await this.UserChatRepo.save(chat);
       },
     });

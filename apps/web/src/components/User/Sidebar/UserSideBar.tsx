@@ -69,7 +69,8 @@ const UserSideBar = () => {
                             : undefined
                       }
                       active={chat.id === id}
-                      avatar_path={isIamReceiver(chat.chat_with.user_id, data?.Me!.user_id) ? chat.chat_for.profile.pic_path : chat?.chat_with.profile.pic_path}
+                      for_other
+                      user_id={chat.chat_with.user_id}
                       onClick={() => handleChat(chat.id, chat.unread_messages?.unread_messages?.length)}
                       unread_message_count={chat.unread_messages?.unread_messages.length}
                     />
