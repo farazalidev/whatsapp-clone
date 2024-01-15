@@ -5,6 +5,7 @@ import { UserSlice } from './features/UserSlice';
 import { ChatSlice } from './features/ChatSlice';
 import { messagesSlice } from './features/messagesSlice';
 import { LoadingSlice } from './loadingSlice';
+import { overlaySlice } from './features/overlaySlice';
 
 export const store = configureStore({
   reducer: {
@@ -13,7 +14,11 @@ export const store = configureStore({
     UserSlice: UserSlice.reducer,
     ChatSlice: ChatSlice.reducer,
     messagesSlice: messagesSlice.reducer,
+    overlaySlice: overlaySlice.reducer,
     LoadingSlice: LoadingSlice.reducer,
+  },
+  middleware(getDefaultMiddleware) {
+    return getDefaultMiddleware({ serializableCheck: false });
   },
   devTools: true,
 });

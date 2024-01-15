@@ -2,10 +2,12 @@ import { createSlice } from '@reduxjs/toolkit';
 
 interface initStatType {
   AddContactModalIsOpen: boolean;
+  SendDocumentModalIsOpen: boolean;
 }
 
 const initialState: initStatType = {
   AddContactModalIsOpen: false,
+  SendDocumentModalIsOpen: false,
 };
 
 export const modalSlice = createSlice({
@@ -15,7 +17,11 @@ export const modalSlice = createSlice({
     toggleAddContactModal: (state) => {
       state.AddContactModalIsOpen = !state.AddContactModalIsOpen;
     },
+    toggleSendDocumentModal: (state) => {
+      state.AddContactModalIsOpen = false;
+      state.SendDocumentModalIsOpen = !state.SendDocumentModalIsOpen;
+    },
   },
 });
 
-export const { toggleAddContactModal } = modalSlice.actions;
+export const { toggleAddContactModal, toggleSendDocumentModal } = modalSlice.actions;
