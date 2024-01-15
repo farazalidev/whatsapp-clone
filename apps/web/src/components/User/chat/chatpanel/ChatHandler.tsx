@@ -46,6 +46,7 @@ const ChatHandler: FC<ChatHandlerProps> = () => {
       socket.off('message_status');
       socket.off('update_message_status_bulk');
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [socket, dispatch]);
 
   // scroll to bottom
@@ -63,7 +64,7 @@ const ChatHandler: FC<ChatHandlerProps> = () => {
 
   return (
     <>
-      <div className="relative my-2 flex h-full w-full flex-col gap-1 overflow-y-scroll px-4 ">
+      <div className=" my-2 flex h-full w-full flex-col gap-1 overflow-y-scroll px-4">
         {chat?.messages
           ? [...chat.messages]
               ?.sort((a, b) => {
