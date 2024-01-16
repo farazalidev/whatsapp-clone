@@ -18,14 +18,12 @@ const Avatar: FC<AvatarProps> = ({ user_id, for_other, isAbsolute, absolute_src,
   const fetchProfilePic = async () => {
     const blob = await fetcher(`api/file/read/profile-pic/small`, undefined, 'blob', 'static');
     const url = URL.createObjectURL(blob);
-    console.log('🚀 ~ fetchProfilePic ~ blob:', blob);
     return url;
   };
 
   const fetchOtherProfilePic = async () => {
     const blob = await fetcher(`api/file/read-other/profile-pic/${user_id}/small`, undefined, 'blob', 'static');
     const url = URL.createObjectURL(blob);
-    console.log('🚀 ~ fetchOtherProfilePic ~ blob:', blob);
     return url;
   };
 
