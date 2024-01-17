@@ -1,13 +1,14 @@
 import { Thumbnail } from '@/components/Misc/Thumbnail';
-import VideoThumbnail from '@/components/Misc/VideoThumbnail';
 import { useFilesContext } from '@/global/context/filesContext';
-import { FilesActionType, fileToPreviewType } from '@/global/context/reducers/filesReducer';
-import { GetFileUrlReturnType } from '@/utils/getFileUrl';
+import { FilesActionType, expectedFileTypes, fileToPreviewType } from '@/global/context/reducers/filesReducer';
 import React, { FC } from 'react';
 
-export interface SelectedFileType extends GetFileUrlReturnType {
+export interface SelectedFileType {
   id: string;
-  name: string;
+  file: File;
+  type: expectedFileTypes;
+  thumbnailUrl: string | undefined | null;
+  url: string | undefined;
 }
 
 interface ISelectedFiles {
@@ -24,33 +25,15 @@ const SelectedFiles: FC<ISelectedFiles> = ({ files }) => {
   return (
     <div className="flex h-28 w-full place-items-center justify-center gap-2">
       {files.map((file) => {
-        return file.type === 'image' ? (
+        return (
           <Thumbnail
-            url={file.url}
+            key={file.id}
             height={60}
             width={60}
-            type="image"
+            type={file.type}
+            url={file.type === 'image' ? file.url : (file.thumbnailUrl as string)}
             active={state.fileToPreview.id === file.id}
-            onClick={() => selectFileTOPreview({ type: file.type, url: file.url, id: file.id, name: file.name, size: file.size })}
-          />
-        ) : file.type === 'video' ? (
-          <VideoThumbnail
-            videoUrl={file.url}
-            height={60}
-            width={60}
-            snapShotAtTime={15}
-            type="video"
-            onClick={() => selectFileTOPreview({ type: file.type, url: file.url, id: file.id, name: file.name, size: file.size })}
-            active={state.fileToPreview.id === file.id}
-          />
-        ) : (
-          <Thumbnail
-            height={60}
-            width={60}
-            type={null}
-            url={undefined}
-            active={file.id === state.fileToPreview.id}
-            onClick={() => selectFileTOPreview({ type: file.type, url: file.url, id: file.id, name: file.name, size: file.size })}
+            onClick={() => selectFileTOPreview({ id: file.id, name: file.file.name, size: file.file.size, type: file.type, url: file.url })}
           />
         );
       })}

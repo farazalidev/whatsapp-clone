@@ -1,37 +1,31 @@
-import { isVideo } from './isVideo';
+export async function getSnapShotOfVideo(videoUrl: string, snapshotTime: number, height: number, width: number): Promise<string> {
+  return new Promise((resolve, reject) => {
+    // Create a video element
+    const video = document.createElement('video');
+    video.src = videoUrl;
+    video.crossOrigin = 'anonymous'; // Enable cross-origin for CORS support
 
-type IGetSnapShotArguments = {
-  videoUrl: string;
-  height: number;
-  width: number;
-  snapShotAtTime: number;
-};
-type IGetSnapShot = (args: IGetSnapShotArguments) => Promise<{ snapShot: string | undefined; error: boolean }>;
+    // When the video metadata is loaded, set the snapshot time and capture the frame
+    video.onloadedmetadata = function () {
+      video.currentTime = snapshotTime;
+    };
 
-export const getSnapShotOfVideo: IGetSnapShot = async ({ height, videoUrl, width, snapShotAtTime }) => {
-  const video = document.createElement('video');
-  video.src = videoUrl;
-  const canvas = document.createElement('canvas');
+    // When the seeking is complete, capture the frame and resolve the promise
+    video.onseeked = function () {
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      ctx?.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-  canvas.height = height;
-  canvas.width = width;
+      // Convert the canvas content to a data URL and resolve the promise
+      const thumbnailUrl = canvas.toDataURL();
+      resolve(thumbnailUrl);
+    };
 
-  const { error } = await isVideo(videoUrl);
-
-  if (error) {
-    return { snapShot: undefined, error: true };
-  }
-  const getSnapShot = () => {
-    canvas.getContext('2d')?.drawImage(video, 0, 0, width, height);
-    const thumbnail = canvas.toDataURL('image/png');
-    return thumbnail;
-  };
-
-  if (!video.currentTime || video.currentTime < snapShotAtTime) {
-    video.currentTime = snapShotAtTime;
-  }
-  const snapShot = getSnapShot();
-  video.remove();
-  canvas.remove();
-  return { error: false, snapShot };
-};
+    // If there's an error loading the video, reject the promise
+    video.onerror = function () {
+      reject(new Error('Error loading the video.'));
+    };
+  });
+}
