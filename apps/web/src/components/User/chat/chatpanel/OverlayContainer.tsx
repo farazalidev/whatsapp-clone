@@ -30,9 +30,9 @@ const OverlayContainer: FC<IOverlayContainer> = ({ parentRef, isOpen, onClose })
   useEffect(() => {
     if (state.files) {
       for (const file of state.files) {
-        const { type, url } = getFileUrl(file.file);
+        const { type, url, size } = getFileUrl(file.file);
         setLoadedFiles((prev) => {
-          return [...prev, { id: file.id, type, url, name: file.file.name }];
+          return [...prev, { id: file.id, type, url, name: file.file.name, size }];
         });
       }
     }

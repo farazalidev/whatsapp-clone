@@ -12,7 +12,7 @@ export type expectedFileTypes = 'image' | 'video' | 'pdf' | 'others' | null;
 
 type filesFromType = 'document' | 'videos&photos' | 'sticker';
 
-export type fileToPreviewType = { url: string | undefined; type: expectedFileTypes; id: string | null; name: string | null };
+export type fileToPreviewType = { url: string | undefined; type: expectedFileTypes; id: string | null; name: string | null; size: number };
 
 export type fileStateType = {
   from: filesFromType | null;
@@ -23,7 +23,7 @@ export type fileStateType = {
 export const FilesContextInitialState: fileStateType = {
   from: null,
   files: [],
-  fileToPreview: { type: 'others', url: undefined, id: null, name: null },
+  fileToPreview: { type: 'others', url: undefined, id: null, name: null, size: 0 },
 };
 
 type FilePayload = {
@@ -47,7 +47,7 @@ export const FilesReducer = (state: fileStateType, action: FilesActionTypesMap):
       state.from = action.payload.from;
       if (!state.fileToPreview) {
         const { type, url } = getFileUrl(action.payload.file);
-        state.fileToPreview = { type, url, id: '', name: null };
+        state.fileToPreview = { type, url, id: '', name: null, size: 0 };
       }
 
       return {
@@ -61,21 +61,21 @@ export const FilesReducer = (state: fileStateType, action: FilesActionTypesMap):
       return {
         files: filteredFiles,
         from: state.from,
-        fileToPreview: { type, url, id: newFileToPreview.id, name: newFileToPreview.file.name },
+        fileToPreview: { type, url, id: newFileToPreview.id, name: newFileToPreview.file.name, size: 0 },
       };
     }
     case FilesActionType.Reset: {
       return {
         files: [],
         from: null,
-        fileToPreview: { type: null, url: undefined, id: null, name: null },
+        fileToPreview: { type: null, url: undefined, id: null, name: null, size: 0 },
       };
     }
     case FilesActionType.selectFileToPreview: {
       return {
         files: [],
         from: null,
-        fileToPreview: { type: action.payload.type, url: action.payload.url, id: action.payload.id, name: action.payload.name },
+        fileToPreview: { type: action.payload.type, url: action.payload.url, id: action.payload.id, name: action.payload.name, size: action.payload.size },
       };
     }
 

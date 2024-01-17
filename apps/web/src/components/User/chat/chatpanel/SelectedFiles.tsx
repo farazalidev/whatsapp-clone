@@ -17,8 +17,8 @@ interface ISelectedFiles {
 const SelectedFiles: FC<ISelectedFiles> = ({ files }) => {
   const { dispatch, state } = useFilesContext();
 
-  const selectFileTOPreview = ({ type, url, id, name }: fileToPreviewType) => {
-    dispatch({ type: FilesActionType.selectFileToPreview, payload: { type, url, id, name } });
+  const selectFileTOPreview = ({ type, url, id, name, size }: fileToPreviewType) => {
+    dispatch({ type: FilesActionType.selectFileToPreview, payload: { type, url, id, name, size } });
   };
 
   return (
@@ -27,23 +27,32 @@ const SelectedFiles: FC<ISelectedFiles> = ({ files }) => {
         return file.type === 'image' ? (
           <Thumbnail
             url={file.url}
-            height={80}
+            height={60}
             width={60}
             type="image"
             active={state.fileToPreview.id === file.id}
-            onClick={() => selectFileTOPreview({ type: file.type, url: file.url, id: file.id, name: file.name })}
+            onClick={() => selectFileTOPreview({ type: file.type, url: file.url, id: file.id, name: file.name, size: file.size })}
           />
         ) : file.type === 'video' ? (
           <VideoThumbnail
             videoUrl={file.url}
-            height={80}
+            height={60}
             width={60}
             snapShotAtTime={15}
             type="video"
-            onClick={() => selectFileTOPreview({ type: file.type, url: file.url, id: file.id, name: file.name })}
+            onClick={() => selectFileTOPreview({ type: file.type, url: file.url, id: file.id, name: file.name, size: file.size })}
             active={state.fileToPreview.id === file.id}
           />
-        ) : null;
+        ) : (
+          <Thumbnail
+            height={60}
+            width={60}
+            type={null}
+            url={undefined}
+            active={file.id === state.fileToPreview.id}
+            onClick={() => selectFileTOPreview({ type: file.type, url: file.url, id: file.id, name: file.name, size: file.size })}
+          />
+        );
       })}
     </div>
   );

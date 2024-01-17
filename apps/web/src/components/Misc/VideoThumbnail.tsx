@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import React, { FC, useEffect, useRef, useState } from 'react';
 import { Thumbnail, ThumbnailProps } from './Thumbnail';
+import { isVideo } from '@/utils/isVideo';
 
 interface IVideoThumbnail extends Omit<ThumbnailProps, 'url'> {
   videoUrl: string | undefined;
@@ -13,11 +14,18 @@ interface VideoThumbnailState {
   dataLoaded: boolean;
   suspended: boolean;
   snapShot: string | null | undefined;
+  error: boolean;
 }
 
 const VideoThumbnail: FC<IVideoThumbnail> = ({ snapShotAtTime, width, height, videoUrl, active, type, onClick }) => {
-  console.log('🚀 ~ videoUrl:', videoUrl);
-  const [state, setState] = useState<VideoThumbnailState>({ dataLoaded: false, metadataLoaded: false, seeked: false, snapShot: null, suspended: false });
+  const [state, setState] = useState<VideoThumbnailState>({
+    dataLoaded: false,
+    metadataLoaded: false,
+    seeked: false,
+    snapShot: null,
+    suspended: false,
+    error: false,
+  });
   console.log('🚀 ~ state:', state);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -25,20 +33,23 @@ const VideoThumbnail: FC<IVideoThumbnail> = ({ snapShotAtTime, width, height, vi
 
   useEffect(() => {
     if (!state.snapShot) {
-      const getSnapShot = () => {
+      const getSnapShot = async () => {
         try {
           const video = videoRef.current;
           const canvas = canvasRef.current;
 
-          console.log(canvas?.height, canvas?.width);
+          const { error } = await isVideo(videoUrl);
 
-          if (video) {
+          if (video && !error) {
             canvas?.getContext('2d')?.drawImage(video, 0, 0, width, height);
             const thumbnail = canvas?.toDataURL('image/png');
             setState((prev) => {
               return { ...prev, snapShot: thumbnail };
             });
           }
+          setState((prev) => {
+            return { ...prev, snapShot: undefined, error: true };
+          });
         } catch (error) {
           console.log(error);
         }
@@ -53,14 +64,15 @@ const VideoThumbnail: FC<IVideoThumbnail> = ({ snapShotAtTime, width, height, vi
         }
       }
     }
-  }, [state, snapShotAtTime, height, width]);
+  }, [state, snapShotAtTime, height, width, videoUrl]);
 
-  if (!state.snapShot) {
+  if (state.snapShot === null) {
     return (
       <div>
         <span
           className={`flex h-full w-full place-items-center justify-center rounded-lg  bg-black ${active ? 'border-whatsapp-misc-my_message_bg_dark border-[3px] ' : 'border-[2px] border-gray-300 border-opacity-10 dark:border-gray-600'}`}
           style={{ width, height }}
+          onClick={onClick}
         >
           <span>
             <Image src={'/icons/spinner.svg'} height={30} width={30} alt="loading..." />
@@ -95,6 +107,8 @@ const VideoThumbnail: FC<IVideoThumbnail> = ({ snapShotAtTime, width, height, vi
         ></video>
       </div>
     );
+  } else if (state.error || state.snapShot === undefined) {
+    <Thumbnail url={'/icons/preview-generic.svg'} height={height} width={width} type={type} onClick={onClick} active={active} />;
   } else {
     return (
       <>
