@@ -1,11 +1,12 @@
-import { expectedFileTypes, fileToPreviewType } from '@/global/context/reducers/filesReducer';
+import Typography from '@/Atoms/Typography/Typography';
+import { fileToPreviewType } from '@/global/context/reducers/filesReducer';
 import { convertFileSizeFromBytes } from '@/utils/getFIleSizeFromBytes';
 import Image from 'next/image';
 import React, { FC } from 'react';
 
 interface IFilePreview extends fileToPreviewType {}
 
-const FilePreview: FC<IFilePreview> = ({ type, url, name, size }) => {
+const FilePreview: FC<IFilePreview> = ({ type, url, name, size, id }) => {
   return (
     <div className={`mx-auto flex h-full w-full place-items-center justify-center `}>
       {type ? (
@@ -13,10 +14,7 @@ const FilePreview: FC<IFilePreview> = ({ type, url, name, size }) => {
           {type === 'image' ? (
             <ImagePreview name={name as string} size={size} url={url as string} />
           ) : type === 'video' ? (
-            <>
-              <video src={url} autoPlay controls />
-              {size}
-            </>
+            <VideoPreview videoUrl={url as string} size={size} />
           ) : type === 'pdf' ? (
             <GenericFilePreview name={name as string} size={size} />
           ) : (
@@ -44,7 +42,12 @@ interface IGenericFilePreview {
 const GenericFilePreview: FC<IGenericFilePreview> = ({ name, size }) => {
   return (
     <div className="relative flex h-64 w-60 flex-col place-items-center justify-center  gap-2 border border-gray-300 dark:border-gray-600">
-      <Image src={'/icons/preview-generic.svg'} height={120} width={80} alt="File" />
+      <Typography level={4} className="text-center text-gray-700">
+        File Preview is not available
+      </Typography>
+      <div>
+        <Image src={'/icons/preview-generic.svg'} height={120} width={80} alt="File" />
+      </div>
       <span className="text-whatsapp-light-text dark:text-whatsapp-dark-text">{convertFileSizeFromBytes(size)}</span>
     </div>
   );
@@ -60,11 +63,20 @@ const ImagePreview: FC<IImagePreview> = ({ name, size, url }) => {
   return (
     <div className="flex flex-col justify-center gap-2">
       <div className="relative flex h-64 w-60 flex-col justify-center gap-2">
-        <Image src={url ? url : '/icons/preview-generic.svg'} objectFit="cover" fill alt={name ? name : 'Preview Thumbnail'} />
+        <Image src={url ? url : '/icons/preview-generic.svg'} objectFit="cover" fill alt={name ? name : 'Preview Thumbnail'} />T
       </div>
       <span className="text-whatsapp-light-text dark:text-whatsapp-dark-text flex place-items-center justify-center">
         <span className="flex place-items-center justify-center">{convertFileSizeFromBytes(size)}</span>
       </span>
+    </div>
+  );
+};
+
+const VideoPreview = ({ videoUrl, size }: { videoUrl: string; size: number }) => {
+  return (
+    <div className="text-whatsapp-light-text dark:text-whatsapp-dark-text flex h-full w-full flex-col place-items-center justify-center gap-2">
+      <video src={videoUrl} controls></video>
+      <span>{convertFileSizeFromBytes(size)}</span>
     </div>
   );
 };

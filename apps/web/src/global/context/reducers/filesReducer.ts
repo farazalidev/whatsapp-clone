@@ -1,6 +1,5 @@
 import { v4 } from 'uuid';
 import { ActionMap } from '../type';
-import { getFileUrl } from '@/utils/getFileUrl';
 export enum FilesActionType {
   Add_File = 'add_file',
   remove_File = 'remove_file',
@@ -8,15 +7,17 @@ export enum FilesActionType {
   selectFileToPreview = 'select_file_to_preview',
 }
 
-export type expectedFileTypes = 'image' | 'video' | 'pdf' | 'others' | null;
+export type expectedFileTypes = 'image' | 'video' | 'pdf' | 'others' | 'svg' | null;
 
 type filesFromType = 'document' | 'videos&photos' | 'sticker';
 
 export type fileToPreviewType = { url: string | undefined; type: expectedFileTypes; id: string | null; name: string | null; size: number };
 
+export type IFiles = { file: File; id: string }[];
+
 export type fileStateType = {
   from: filesFromType | null;
-  files: { file: File; id: string }[];
+  files: IFiles;
   fileToPreview: fileToPreviewType;
 };
 
@@ -45,11 +46,6 @@ export const FilesReducer = (state: fileStateType, action: FilesActionTypesMap):
     case FilesActionType.Add_File: {
       state.files.push({ file: action.payload.file, id: v4() });
       state.from = action.payload.from;
-      if (!state.fileToPreview) {
-        const { type, url } = getFileUrl(action.payload.file);
-        state.fileToPreview = { type, url, id: '', name: null, size: 0 };
-      }
-
       return {
         ...state,
       };
@@ -57,11 +53,11 @@ export const FilesReducer = (state: fileStateType, action: FilesActionTypesMap):
     case FilesActionType.remove_File: {
       const filteredFiles = state.files.filter((file) => file.id === action.payload.id);
       const newFileToPreview = filteredFiles[0];
-      const { type, url } = getFileUrl(newFileToPreview.file);
+      // const { type, url } = getFileUrl(newFileToPreview.file);
       return {
         files: filteredFiles,
         from: state.from,
-        fileToPreview: { type, url, id: newFileToPreview.id, name: newFileToPreview.file.name, size: 0 },
+        fileToPreview: { type: 'others', url: '', id: newFileToPreview.id, name: newFileToPreview.file.name, size: 0 },
       };
     }
     case FilesActionType.Reset: {
