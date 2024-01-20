@@ -23,15 +23,16 @@ const SelectedFiles: FC<ISelectedFiles> = ({ files }) => {
   };
 
   return (
-    <div className="flex h-28 w-full place-items-center justify-center gap-2">
+    <div className="flex h-28 place-items-center w-[90%] gap-2 overflow-y-auto shadow-xl">
       {files.map((file) => {
         return (
           <Thumbnail
+            id={file.id}
             key={file.id}
             height={60}
             width={60}
             type={file.type}
-            url={file.type === 'image' ? file.url : (file.thumbnailUrl as string)}
+            url={file.type === 'video' ? (file.thumbnailUrl as string) : file.url}
             active={state.fileToPreview.id === file.id}
             onClick={() => selectFileTOPreview({ id: file.id, name: file.file.name, size: file.file.size, type: file.type, url: file.url })}
           />

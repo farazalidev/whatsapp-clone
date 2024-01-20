@@ -1,16 +1,18 @@
 import { SelectedFileType } from '@/components/User/chat/chatpanel/SelectedFiles';
-import { IFiles } from '@/global/context/reducers/filesReducer';
+import { IFiles, filesFromType } from '@/global/context/reducers/filesReducer';
 import fileType from 'file-type';
 import { getSnapShotOfVideo } from './getSnapShot';
+import { isSVG } from './isSvg';
 
 type validateFilesAndGetThumbnailsArgs = {
+  from: filesFromType | null;
   files: IFiles;
   thumbnailDimensions: { width: number; height: number };
 };
 
 type validateFilesAndGetThumbnailsType = (args: validateFilesAndGetThumbnailsArgs) => Promise<SelectedFileType[]>;
-export const validateFilesAndGetThumbnails: validateFilesAndGetThumbnailsType = async ({ files, thumbnailDimensions }) => {
-  const result: SelectedFileType[] = [];
+export const validateFilesAndGetThumbnails: validateFilesAndGetThumbnailsType = async ({ files, thumbnailDimensions, from }) => {
+  let result: SelectedFileType[] = [];
 
   for (const file of files) {
     // if the file is video by extension based
@@ -24,7 +26,7 @@ export const validateFilesAndGetThumbnails: validateFilesAndGetThumbnailsType = 
       // if the file actual type and extension matched
       else {
         const videoUrl = URL.createObjectURL(file.file);
-        const videoThumbnail = await getSnapShotOfVideo(videoUrl, 15, 60, 60);
+        const videoThumbnail = await getSnapShotOfVideo(videoUrl, 15, thumbnailDimensions.height, thumbnailDimensions.width);
         result.push({ file: file.file, thumbnailUrl: videoThumbnail, type: 'video', url: videoUrl, id: file.id });
       }
     }
@@ -46,9 +48,13 @@ export const validateFilesAndGetThumbnails: validateFilesAndGetThumbnailsType = 
 
     // if the file is an svg
     else if (file.file.type.startsWith('image/svg')) {
-      const actualType = await fileType.fromBuffer(await file.file.arrayBuffer());
+      console.log(file);
+      const fileArrayBuffer = await file.file.arrayBuffer();
+
+      const is = isSVG(Buffer.from(fileArrayBuffer));
+
       // if its not an svg
-      if (!actualType?.mime.startsWith('image/svg')) {
+      if (!is) {
         result.push({ file: file.file, id: file.id, thumbnailUrl: undefined, type: 'others', url: undefined });
       }
       // if the file ext matched
@@ -77,5 +83,13 @@ export const validateFilesAndGetThumbnails: validateFilesAndGetThumbnailsType = 
       result.push({ file: file.file, thumbnailUrl: undefined, type: 'others', url: undefined, id: file.id });
     }
   }
+
+  // removing unmatched files
+  // if the files are selected as video or images
+  if (from === 'videos&photos') {
+    result = result.filter((file) => file.type === 'image' || file.type === 'video' || file.type === 'svg');
+    console.log(result);
+  }
+
   return result;
 };

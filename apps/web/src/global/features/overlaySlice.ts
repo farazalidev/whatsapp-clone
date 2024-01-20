@@ -15,7 +15,10 @@ export const overlaySlice = createSlice({
     toggleDocumentOverlay: (state) => {
       state.DocumentOverlayIsOpen = !state.DocumentOverlayIsOpen;
     },
+    closeOverlay: (state) => {
+      state.DocumentOverlayIsOpen = false;
+    },
   },
 });
 
-export const { toggleDocumentOverlay } = overlaySlice.actions;
+export const { toggleDocumentOverlay, closeOverlay } = overlaySlice.actions;

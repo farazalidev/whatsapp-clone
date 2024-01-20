@@ -10,6 +10,8 @@ import SelectedFiles, { SelectedFileType } from './SelectedFiles';
 import { validateFilesAndGetThumbnails } from '@/utils/validateFIlesAndGetThumbnail';
 import { toast } from 'sonner';
 import Image from 'next/image';
+import { useDispatch } from 'react-redux';
+import { closeOverlay } from '@/global/features/overlaySlice';
 
 interface IOverlayContainer {
   parentRef: React.RefObject<HTMLElement>;
@@ -24,6 +26,8 @@ const OverlayContainer: FC<IOverlayContainer> = ({ parentRef, isOpen, onClose })
 
   const [isLoading, setIsLoading] = useState(false);
 
+  const RTK_Dispatch = useDispatch();
+
   useEffect(() => {
     if (parentRef.current) {
       parentRef.current.style.position = 'relative';
@@ -34,7 +38,7 @@ const OverlayContainer: FC<IOverlayContainer> = ({ parentRef, isOpen, onClose })
     const getFilesThumbnailAndValidateThem = async () => {
       try {
         setIsLoading(true);
-        const loadedFiles = await validateFilesAndGetThumbnails({ files: state.files, thumbnailDimensions: { height: 60, width: 60 } });
+        const loadedFiles = await validateFilesAndGetThumbnails({ files: state.files, thumbnailDimensions: { height: 60, width: 60 }, from: state.from });
         if (loadedFiles) {
           setLoadedFiles(loadedFiles);
         }
@@ -43,9 +47,12 @@ const OverlayContainer: FC<IOverlayContainer> = ({ parentRef, isOpen, onClose })
           type: FilesActionType.selectFileToPreview,
           payload: { id: firstFile.id, name: firstFile.file.name, size: firstFile.file.size, type: firstFile.type, url: firstFile.url },
         });
+
+
       } catch (error) {
+        console.log("🚀 ~ getFilesThumbnailAndValidateThem ~ error:", error)
         toast.error('There is an Error while loading files...');
-        onClose();
+        RTK_Dispatch(closeOverlay());
       } finally {
         setIsLoading(false);
       }
@@ -53,7 +60,7 @@ const OverlayContainer: FC<IOverlayContainer> = ({ parentRef, isOpen, onClose })
     if (state.files.length !== 0) {
       getFilesThumbnailAndValidateThem();
     }
-  }, [state, dispatch, onClose]);
+  }, [state, dispatch, onClose, RTK_Dispatch]);
 
   const handleOnClose = () => {
     onClose();
