@@ -8,6 +8,7 @@ import { addNewMessage } from '@/global/features/messagesSlice';
 import { v4 } from 'uuid';
 import { MessageEntity } from '@server/modules/chat/entities/message.entity';
 import { start_newChat } from '@/utils/start_newChat';
+import Attachments from './Attachments';
 
 const MessageSender = ({ receiver_id, chat_id }: { receiver_id: string; chat_id: string | undefined }) => {
   const { message_input_loading } = useSelector((state: RootState) => state.LoadingSlice);
@@ -80,9 +81,7 @@ const MessageSender = ({ receiver_id, chat_id }: { receiver_id: string; chat_id:
       onSubmit={(e) => handleSendMessage(e)}
       className="bg-whatsapp-light-sender_bg dark:bg-whatsapp-dark-sender_bg flex place-items-center justify-between gap-[16px] px-[20px] py-[5px]"
     >
-      <span>
-        <OptionIcon src="/icons/attach-menu-plus.svg" tooltip="attach" />
-      </span>
+      <Attachments />
       <span className="w-full">
         <MessageInput onChange={handleMessageChange} value={messageValue} />
       </span>
