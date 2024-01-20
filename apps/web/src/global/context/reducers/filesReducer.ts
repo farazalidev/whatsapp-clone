@@ -9,7 +9,7 @@ export enum FilesActionType {
 
 export type expectedFileTypes = 'image' | 'video' | 'pdf' | 'others' | 'svg' | null;
 
-type filesFromType = 'document' | 'videos&photos' | 'sticker';
+export type filesFromType = 'document' | 'videos&photos' | 'sticker';
 
 export type fileToPreviewType = { url: string | undefined; type: expectedFileTypes; id: string | null; name: string | null; size: number };
 
@@ -34,6 +34,7 @@ type FilePayload = {
   };
   [FilesActionType.remove_File]: {
     id: string;
+    fileToPreview: fileToPreviewType;
   };
   [FilesActionType.Reset]: undefined;
   [FilesActionType.selectFileToPreview]: fileToPreviewType;
@@ -44,16 +45,17 @@ export type FilesActionTypesMap = ActionMap<FilePayload>[keyof ActionMap<FilePay
 export const FilesReducer = (state: fileStateType, action: FilesActionTypesMap): fileStateType => {
   switch (action.type) {
     case FilesActionType.Add_File: {
-      state.files.push({ file: action.payload.file, id: v4() });
-      state.from = action.payload.from;
+      const newFile = { file: action.payload.file, id: v4() };
       return {
         ...state,
+        files: [...state.files, newFile],
+        from: action.payload.from,
       };
     }
+
     case FilesActionType.remove_File: {
       const filteredFiles = state.files.filter((file) => file.id === action.payload.id);
       const newFileToPreview = filteredFiles[0];
-      // const { type, url } = getFileUrl(newFileToPreview.file);
       return {
         files: filteredFiles,
         from: state.from,

@@ -39,7 +39,6 @@ const UserPage: FC<Props> = () => {
   }, [socket, dispatch]);
 
   const { AddContactModalIsOpen } = useSelector((state: RootState) => state.modalSlice);
-
   const { isLoading, error } = useUser();
   const { error: chatsError, isLoading: chatsIsLoading } = useChats();
   const { error: contactsError, isLoading: contactsIsLoading } = useContacts();
