@@ -47,6 +47,7 @@ const config: Config = {
             my_message_bg_light: '#D9FDD3',
             other_message_bg_dark: '#202C33',
             other_message_bg_light: '#FFFFFF',
+            attachment_bg_hover: '#374248',
           },
         },
       },
