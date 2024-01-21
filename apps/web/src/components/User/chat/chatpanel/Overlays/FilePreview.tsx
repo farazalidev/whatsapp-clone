@@ -1,5 +1,5 @@
 import Typography from '@/Atoms/Typography/Typography';
-import { fileToPreviewType } from '@/global/context/reducers/filesReducer';
+import { fileToPreviewType } from '@/global/features/filesSlice';
 import { convertFileSizeFromBytes } from '@/utils/getFIleSizeFromBytes';
 import Image from 'next/image';
 import React, { FC } from 'react';
@@ -74,9 +74,11 @@ const ImagePreview: FC<IImagePreview> = ({ name, size, url }) => {
 
 const VideoPreview = ({ videoUrl, size }: { videoUrl: string; size: number }) => {
   return (
-    <div className="text-whatsapp-light-text dark:text-whatsapp-dark-text flex h-full w-full flex-col place-items-center justify-center gap-2">
-      <video src={videoUrl} controls></video>
-      <span>{convertFileSizeFromBytes(size)}</span>
+    <div className='flex flex-col place-items-center justify-center gap-2'>
+      <div className="relative w-full pb-[45%] text-whatsapp-light-text dark:text-whatsapp-dark-text ">
+        <iframe src={videoUrl} frameBorder={0} allowFullScreen allow='autoplay' className='absolute top-0 left-0 w-full h-full'></iframe>
+      </div>
+      <span className='absolute bottom-0'>{convertFileSizeFromBytes(size)}</span>
     </div>
   );
 };

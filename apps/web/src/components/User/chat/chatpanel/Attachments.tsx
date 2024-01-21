@@ -3,28 +3,19 @@ import { Popover } from '@headlessui/react';
 import OptionIcon from '../../Sidebar/OptionIcon';
 import AttachmentOption from './AttachmentOption';
 import AttachmentOptionFile from './AttachmentOptionFIle';
-import { useFilesContext } from '@/global/context/filesContext';
 import { toggleDocumentOverlay } from '@/global/features/overlaySlice';
 import { useDispatch } from 'react-redux';
-import { FilesActionType, filesFromType } from '@/global/context/reducers/filesReducer';
+import { addFiles, filesFromType } from '@/global/features/filesSlice';
 
 const Attachments = () => {
   const [isOpen, setIsOpen] = useState(false);
 
-  const { dispatch } = useFilesContext();
 
   const RTK_dispatch = useDispatch();
 
   const handleFilesChange = (e: ChangeEvent<HTMLInputElement>, from: filesFromType) => {
-    console.log("🚀 ~ handleFilesChange ~ from:", from)
     const files = e.target.files;
-    if (files) {
-      Array.from(files).map((file) => {
-        console.log(from);
-
-        dispatch({ type: FilesActionType.Add_File, payload: { file, from } });
-      });
-    }
+    RTK_dispatch(addFiles({ files, from }))
     RTK_dispatch(toggleDocumentOverlay());
   };
 
