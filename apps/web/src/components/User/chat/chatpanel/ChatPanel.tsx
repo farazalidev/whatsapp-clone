@@ -29,9 +29,9 @@ const ChatPanel = () => {
   });
 
   return (
-    <div className="bg-pattern  flex h-full w-full flex-col overflow-hidden">
-      <ChatPanelHeader header_name={name as string} user_id={receiver_id} for_other receiver_id={receiver_id} chat_id={chat_id} />
-      <div ref={parentRef} className="dark:bg-whatsapp-dark-primary_bg  flex h-full w-full flex-col bg-[#F5DEB3] bg-opacity-25 dark:bg-opacity-95">
+    <div className="bg-pattern h-full w-full">
+      <div ref={parentRef} className="dark:bg-whatsapp-dark-primary_bg flex h-full w-full flex-col bg-[#F5DEB3] bg-opacity-25 dark:bg-opacity-95" >
+        <ChatPanelHeader header_name={name as string} user_id={receiver_id} for_other receiver_id={receiver_id} chat_id={chat_id} />
         <Suspense fallback={<FallBackLoadingSpinner />}>
           {/* overlay container */}
           <OverlayContainer parentRef={parentRef} isOpen={DocumentOverlayIsOpen} onClose={() => dispatch(toggleDocumentOverlay())} />

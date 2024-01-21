@@ -5,7 +5,7 @@ import { RootState } from '@/global/store';
 import useSocket from '@/hooks/useSocket';
 import { addNewMessage, updateMessageStatus, updateMessageStatusBulk } from '@/global/features/messagesSlice';
 
-interface ChatHandlerProps {}
+interface ChatHandlerProps { }
 
 const ChatHandler: FC<ChatHandlerProps> = () => {
   const { socket } = useSocket();
@@ -64,15 +64,16 @@ const ChatHandler: FC<ChatHandlerProps> = () => {
 
   return (
     <>
-      <div className=" my-2 flex h-full w-full flex-col gap-1 overflow-y-scroll px-4">
+      <div className="flex h-full w-full flex-col gap-1 overflow-y-scroll px-4 py-2 border scrollbar">
         {chat?.messages
           ? [...chat.messages]
-              ?.sort((a, b) => {
-                const dateA = new Date(a?.sended_at)?.getTime();
-                const dateB = new Date(b?.sended_at)?.getTime();
-                return dateA - dateB;
-              })
-              .map((message) => <MessagePreview isFromMe={Me?.user_id === message?.from?.user_id} message={message} key={message?.id} />)
+
+            ?.sort((a, b) => {
+              const dateA = new Date(a?.sended_at)?.getTime();
+              const dateB = new Date(b?.sended_at)?.getTime();
+              return dateA - dateB;
+            })
+            .map((message) => <MessagePreview isFromMe={Me?.user_id === message?.from?.user_id} message={message} key={message?.id} />)
           : null}
         <div ref={divRef} />
       </div>

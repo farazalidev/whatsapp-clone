@@ -10,6 +10,7 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      boxShadow: {},
       backgroundImage: {
         pattern: "url('/pattern.png')",
         pattern_light: "url('/pattern-light.png')",
@@ -48,6 +49,7 @@ const config: Config = {
             other_message_bg_dark: '#202C33',
             other_message_bg_light: '#FFFFFF',
             attachment_bg_hover: '#374248',
+            whatsapp_primary_green_light: '#00A884',
           },
         },
       },

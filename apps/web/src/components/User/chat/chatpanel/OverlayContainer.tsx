@@ -51,10 +51,13 @@ const OverlayContainer: FC<IOverlayContainer> = ({ parentRef, isOpen, onClose })
         setIsLoading(false);
       }
     };
+
     if (files.length !== 0) {
+      console.log('getting and generating thumbnails');
+
       getFilesThumbnailAndValidateThem();
     }
-  }, [files, from, onClose, RTK_Dispatch]);
+  }, [files, from, RTK_Dispatch]);
 
   const handleOnClose = () => {
     onClose();
@@ -94,4 +97,4 @@ const OverlayContainer: FC<IOverlayContainer> = ({ parentRef, isOpen, onClose })
   );
 };
 
-export default OverlayContainer;
+export default React.memo(OverlayContainer);
