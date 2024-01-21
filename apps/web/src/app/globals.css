@@ -8,16 +8,32 @@
   box-sizing: border-box;
 }
 
-::-webkit-scrollbar {
-  width: 7px; /* Set the width of the scrollbar */
+.right_box_shadow {
+box-shadow: inset 15px 0 15px -15px white
+}
+.left_box_shadow{
+box-shadow: inset -15px 0 15px -15px white;
 }
 
-::-webkit-scrollbar-thumb {
-  @apply bg-whatsapp-misc-scrollbar_light dark:bg-whatsapp-misc-scrollbar_dark;
-}
+@layer components {
+  .scrollbar::-webkit-scrollbar {
+      @apply w-[7px] h-[7px]
+    }
+    .scrollbar::-webkit-scrollbar-corner {
+      @apply bg-transparent
+    }
 
-::-webkit-scrollbar-track {
-  @apply bg-transparent;
+    .scrollbar::-webkit-scrollbar-track {
+      @apply bg-transparent;
+    }
+
+    .scrollbar::-webkit-scrollbar-thumb {
+      @apply bg-whatsapp-misc-scrollbar_light dark:bg-whatsapp-misc-scrollbar_dark;
+    }
+
+    .scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #fff;
+    }
 }
 
 a {
@@ -36,4 +52,8 @@ a:hover {
     -webkit-appearance: none;
     margin: 0;
   }
+
+}
+.box_shadow_inset {
+  @apply shadow-[inset_0px_0px_34px_22px_#00000024]
 }

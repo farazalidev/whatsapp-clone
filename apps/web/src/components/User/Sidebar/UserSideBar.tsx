@@ -46,7 +46,7 @@ const UserSideBar = () => {
         <SideBarSearch />
       </div>
       <Suspense fallback={<SidebarChatsSkeleton />}>
-        <Reorder.Group values={chatsData} onReorder={setChatsData} className="dark:bg-whatsapp-dark-primary_bg h-[100%] overflow-y-scroll ">
+        <Reorder.Group values={chatsData} onReorder={setChatsData} className="dark:bg-whatsapp-dark-primary_bg h-[100%] overflow-y-scroll scrollbar">
           {combinedData && data?.Me && combinedData.length !== 0 ? (
             combinedData?.map((chat) => {
               return (

@@ -63,9 +63,19 @@ export const filesSlice = createSlice({
     },
     removeFile: (state, { payload }: { payload: removeFilePayload }) => {
       const filteredFiles = state.files.filter((file) => file.id !== payload.id);
+      const filteredLoadedFiles = state.loadedFiles.filter((loadedFile) => loadedFile.id !== payload.id);
+      const firstLoadedFile = filteredLoadedFiles[0];
+
+      // If the removing file is in the preview
+      let newFileToPreview = state.fileToPreview;
+      if (state.fileToPreview.id === payload.id) {
+        newFileToPreview = { ...firstLoadedFile, name: firstLoadedFile.file.name, size: firstLoadedFile.file.size };
+      }
+
       return {
         ...state,
         files: filteredFiles,
+        fileToPreview: newFileToPreview,
       };
     },
   },

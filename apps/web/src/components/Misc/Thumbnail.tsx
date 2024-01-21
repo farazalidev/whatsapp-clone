@@ -1,7 +1,8 @@
-import { expectedFileTypes } from '@/global/features/filesSlice';
+import { expectedFileTypes, removeFile } from '@/global/features/filesSlice';
 import useColorScheme from '@/hooks/useColorScheme';
 import Image from 'next/image';
 import React, { FC, } from 'react';
+import { useDispatch } from 'react-redux';
 
 export interface ThumbnailProps {
   id: string
@@ -16,10 +17,11 @@ export interface ThumbnailProps {
 export const Thumbnail: FC<ThumbnailProps> = ({ url, height, width, active, onClick, type, id }) => {
   const colorScheme = useColorScheme()
 
+  const dispatch = useDispatch()
+
   const handleRemove = (e: React.MouseEvent, id: string) => {
     e.stopPropagation()
-    // dispatch({type:FilesActionType.remove_File,payload:{id}})
-    console.log("removing", id);
+    dispatch(removeFile({ id }))
 
   }
 
@@ -30,7 +32,7 @@ export const Thumbnail: FC<ThumbnailProps> = ({ url, height, width, active, onCl
       className={`group relative flex place-items-center justify-center overflow-hidden border hover:cursor-pointer ${active ? ' border-whatsapp-misc-my_message_bg_dark rounded-lg border-[3px]' : 'border-[2px] border-gray-300  dark:border-gray-600'}`}
     >
       <span className="invisible absolute -bottom-[100%] z-10  h-full w-full overflow-hidden bg-gray-800 bg-opacity-50 group-hover:visible group-hover:top-0" />
-      <span className='absolute top-0 right-0 w-5 h-5 z-20 border' onClick={(e) => handleRemove(e, id)}>
+      <span className='invisible group group-hover:visible absolute top-0 right-0 w-5 h-5 z-20' onClick={(e) => handleRemove(e, id)}>
         {colorScheme === "light" ? <Image src={'/icons/x.svg'} fill alt='remove' /> : <Image src={'/icons/x_white.svg'} fill alt='remove' />}
       </span>
       {url ? (

@@ -63,7 +63,7 @@ const ImagePreview: FC<IImagePreview> = ({ name, size, url }) => {
   return (
     <div className="flex flex-col justify-center gap-2">
       <div className="relative flex h-64 w-60 flex-col justify-center gap-2">
-        <Image src={url ? url : '/icons/preview-generic.svg'} objectFit="cover" fill alt={name ? name : 'Preview Thumbnail'} />
+        <Image src={url ? url : '/icons/preview-generic.svg'} objectFit="contain" fill alt={name ? name : 'Preview Thumbnail'} />
       </div>
       <span className="text-whatsapp-light-text dark:text-whatsapp-dark-text flex place-items-center justify-center">
         <span className="flex place-items-center justify-center">{convertFileSizeFromBytes(size)}</span>
@@ -74,11 +74,8 @@ const ImagePreview: FC<IImagePreview> = ({ name, size, url }) => {
 
 const VideoPreview = ({ videoUrl, size }: { videoUrl: string; size: number }) => {
   return (
-    <div className='flex flex-col place-items-center justify-center gap-2'>
-      <div className="relative w-full pb-[45%] text-whatsapp-light-text dark:text-whatsapp-dark-text ">
-        <iframe src={videoUrl} frameBorder={0} allowFullScreen allow='autoplay' className='absolute top-0 left-0 w-full h-full'></iframe>
-      </div>
-      <span className='absolute bottom-0'>{convertFileSizeFromBytes(size)}</span>
+    <div className="relative w-full pb-[45%] text-whatsapp-light-text dark:text-whatsapp-dark-text ">
+      <iframe src={videoUrl} allowFullScreen allow='autoplay' className='absolute top-0 left-0 w-full h-full'></iframe>
     </div>
   );
 };
