@@ -1,5 +1,4 @@
-import { useFilesContext } from '@/global/context/filesContext';
-import { FilesActionType, expectedFileTypes } from '@/global/context/reducers/filesReducer';
+import { expectedFileTypes } from '@/global/features/filesSlice';
 import useColorScheme from '@/hooks/useColorScheme';
 import Image from 'next/image';
 import React, { FC, } from 'react';
@@ -16,7 +15,6 @@ export interface ThumbnailProps {
 
 export const Thumbnail: FC<ThumbnailProps> = ({ url, height, width, active, onClick, type, id }) => {
   const colorScheme = useColorScheme()
-  const { dispatch } = useFilesContext()
 
   const handleRemove = (e: React.MouseEvent, id: string) => {
     e.stopPropagation()

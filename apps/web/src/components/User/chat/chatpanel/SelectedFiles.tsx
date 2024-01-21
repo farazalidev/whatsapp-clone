@@ -1,7 +1,9 @@
 import { Thumbnail } from '@/components/Misc/Thumbnail';
-import { useFilesContext } from '@/global/context/filesContext';
-import { FilesActionType, expectedFileTypes, fileToPreviewType } from '@/global/context/reducers/filesReducer';
+import { expectedFileTypes, fileToPreviewType } from '@/global/context/reducers/filesReducer';
+import { addFileToPreview } from '@/global/features/filesSlice';
+import { RootState } from '@/global/store';
 import React, { FC } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 
 export interface SelectedFileType {
   id: string;
@@ -16,10 +18,11 @@ interface ISelectedFiles {
 }
 
 const SelectedFiles: FC<ISelectedFiles> = ({ files }) => {
-  const { dispatch, state } = useFilesContext();
+  const { fileToPreview } = useSelector((state: RootState) => state.filesSlice)
+  const dispatch = useDispatch()
 
-  const selectFileTOPreview = ({ type, url, id, name, size }: fileToPreviewType) => {
-    dispatch({ type: FilesActionType.selectFileToPreview, payload: { type, url, id, name, size } });
+  const selectFileTOPreview = (fileToPreview: fileToPreviewType) => {
+    dispatch(addFileToPreview({ ...fileToPreview }))
   };
 
   return (
@@ -33,7 +36,7 @@ const SelectedFiles: FC<ISelectedFiles> = ({ files }) => {
             width={60}
             type={file.type}
             url={file.type === 'video' ? (file.thumbnailUrl as string) : file.url}
-            active={state.fileToPreview.id === file.id}
+            active={fileToPreview.id === file.id}
             onClick={() => selectFileTOPreview({ id: file.id, name: file.file.name, size: file.file.size, type: file.type, url: file.url })}
           />
         );
