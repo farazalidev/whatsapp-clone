@@ -9,11 +9,12 @@
 }
 
 .right_box_shadow {
-box-shadow: inset 15px 0 15px -15px white
+box-shadow: none 15px 0 15px -15px white
 }
 .left_box_shadow{
-box-shadow: inset -15px 0 15px -15px white;
+box-shadow: -15px 0 25px -15px white;
 }
+
 
 @layer components {
   .scrollbar::-webkit-scrollbar {

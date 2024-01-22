@@ -62,7 +62,6 @@ export const messagesSlice = createSlice({
     // add a new message
 
     addNewMessage: (state, { payload }: { payload: addNewMessagePayload }) => {
-      console.log('🚀 ~ payload:', payload);
       const existedChat = state.chats.find((chat) => chat?.chat_id === payload.chat_id);
       if (existedChat) existedChat?.messages.push(payload.message);
       return;

@@ -49,6 +49,8 @@ const MessageSender = ({ receiver_id, chat_id }: { receiver_id: string; chat_id:
     const newMessage: MessageEntity = {
       content: messageValue as string,
       sended_at: new Date(),
+      messageType: "text",
+      media: null,
       is_seen: false,
       id: v4(),
       received_at: null,

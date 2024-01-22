@@ -1,12 +1,18 @@
 import { SelectedFileType } from '@/components/User/chat/chatpanel/SelectedFiles';
 import { createSlice } from '@reduxjs/toolkit';
 import { v4 } from 'uuid';
-
-export type expectedFileTypes = 'image' | 'video' | 'pdf' | 'others' | 'svg' | null;
+import { expectedFileTypes } from '@shared/types';
 
 export type filesFromType = 'document' | 'videos&photos' | 'sticker';
 
-export type fileToPreviewType = { url: string | undefined; type: expectedFileTypes; id: string | null; name: string | null; size: number };
+export type fileToPreviewType = {
+  url: string | undefined;
+  type: expectedFileTypes;
+  id: string | null;
+  name: string | null;
+  size: number;
+  attachedMessage: string | null;
+};
 
 export type IFiles = { file: File; id: string }[];
 
@@ -21,7 +27,7 @@ export const initialState: IFilesSliceInitialState = {
   from: null,
   files: [],
   loadedFiles: [],
-  fileToPreview: { type: 'others', url: undefined, id: null, name: null, size: 0 },
+  fileToPreview: { type: 'others', url: undefined, id: null, name: null, size: 0, attachedMessage: null },
 };
 
 export const filesSlice = createSlice({
@@ -41,16 +47,32 @@ export const filesSlice = createSlice({
         files: newFiles,
       };
     },
+    addMoreFiles: (state, { payload }: { payload: FileList | null }) => {
+      const moreFiles: IFiles = [];
+      if (payload) {
+        Array.from(payload).map((file) => moreFiles.push({ file, id: v4() }));
+      }
+      return {
+        ...state,
+        files: [...state.files, ...moreFiles],
+      };
+    },
     addLoadedFiles: (state, { payload }: { payload: AddLoadedFilesPayload }) => {
       return {
         ...state,
         loadedFiles: payload.loadedFiles,
       };
     },
+    addAttachedMessage: (state, { payload }: { payload: string }) => {
+      const foundedFile = state.loadedFiles.find((file) => file.id === state.fileToPreview.id);
+      if (foundedFile) {
+        foundedFile.attachedMessage = payload;
+      }
+    },
     resetFiles: (state) => {
       return {
         files: [],
-        fileToPreview: { id: '', name: '', size: 0, type: 'others', url: undefined },
+        fileToPreview: { id: '', name: '', size: 0, type: 'others', url: undefined, attachedMessage: null },
         from: null,
         loadedFiles: [],
       };
@@ -69,7 +91,12 @@ export const filesSlice = createSlice({
       // If the removing file is in the preview
       let newFileToPreview = state.fileToPreview;
       if (state.fileToPreview.id === payload.id) {
-        newFileToPreview = { ...firstLoadedFile, name: firstLoadedFile.file.name, size: firstLoadedFile.file.size };
+        newFileToPreview = {
+          ...firstLoadedFile,
+          name: firstLoadedFile.file.name,
+          size: firstLoadedFile.file.size,
+          attachedMessage: firstLoadedFile.attachedMessage,
+        };
       }
 
       return {
@@ -81,7 +108,7 @@ export const filesSlice = createSlice({
   },
 });
 
-export const { addFiles, removeFile, resetFiles, addLoadedFiles, addFileToPreview } = filesSlice.actions;
+export const { addFiles, removeFile, resetFiles, addLoadedFiles, addFileToPreview, addAttachedMessage, addMoreFiles } = filesSlice.actions;
 
 export interface AddFilePayload {
   from: filesFromType;

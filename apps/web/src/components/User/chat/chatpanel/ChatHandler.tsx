@@ -21,7 +21,6 @@ const ChatHandler: FC<ChatHandlerProps> = () => {
   const chat = useSelector((state: RootState) => state.messagesSlice.chats.find((chat) => chat.chat_id === id));
 
   useEffect(() => {
-    console.log('running this');
 
     socket.emit('init_room', { chat_id: id as string });
     socket.emit('join_room', { chat_id: id as string });
@@ -64,7 +63,7 @@ const ChatHandler: FC<ChatHandlerProps> = () => {
 
   return (
     <>
-      <div className="flex h-full w-full flex-col gap-1 overflow-y-scroll px-4 py-2 border scrollbar">
+      <div className="flex h-full w-full flex-col gap-1 overflow-y-scroll px-4 py-2 scrollbar">
         {chat?.messages
           ? [...chat.messages]
 
