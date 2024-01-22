@@ -7,6 +7,10 @@ import { Repository } from 'typeorm';
 import { UserEntity } from '@server/modules/user/entities/user.entity';
 import { LoginPayload } from '@server/modules/auth/auth.service';
 
+export interface ExtendedReq extends Request {
+  user: UserEntity;
+}
+
 @Injectable()
 export class Upload_Guard implements CanActivate {
   constructor(
@@ -21,8 +25,7 @@ export class Upload_Guard implements CanActivate {
     if (isPublic) {
       return true;
     }
-    const req = context.switchToHttp().getRequest<Request>();
-
+    const req = context.switchToHttp().getRequest<ExtendedReq>();
     const accessToken = req.headers['authorization']?.split(' ')[1];
     if (!accessToken) {
       throw new UnauthorizedException();
