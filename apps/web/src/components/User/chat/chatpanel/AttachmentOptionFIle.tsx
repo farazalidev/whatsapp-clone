@@ -1,5 +1,5 @@
 import { AcceptedFileTypes } from '@/components/@types/component.types';
-import { filesFromType } from '@/global/context/reducers/filesReducer';
+import { filesFromType } from '@/global/features/filesSlice';
 import Image from 'next/image';
 import React, { FC } from 'react';
 
