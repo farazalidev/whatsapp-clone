@@ -6,7 +6,7 @@ import * as fs from 'fs';
 import { storage } from '../storage/storage';
 import { LocalUploadService } from './localupload.service';
 import { isSuccess } from '@server/utils/isSuccess.typeguard';
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import { GetUser } from '@server/modules/auth/decorators/getuser.decorator';
 import { UserEntity } from '@server/modules/user/entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -14,6 +14,7 @@ import { ContactEntity } from '@server/modules/user/entities/contact.entity';
 import { Repository } from 'typeorm';
 import { ResponseType } from '@server/Misc/ResponseType.type';
 import { UserChatEntity } from '@server/modules/chat/entities/userchat.entity';
+import { AttachmentFileStorage } from '../storage/attachment-file.storage';
 
 @Controller('file')
 export class LocalUploadController {
@@ -104,8 +105,15 @@ export class LocalUploadController {
         maxAge: 300 * 1000,
       });
     } catch (error) {
-      console.log('🚀 ~ LocalUploadController ~ readOtherProfilePic ~ error:', error);
       throw new HttpException('unable to get profile pic', 500);
     }
+  }
+
+  @Post('upload-attachment-file')
+  @UseInterceptors(FileInterceptor('attachment-file', AttachmentFileStorage))
+  async uploadFile(@GetUser() user: UserEntity, @UploadedFile() file: Express.Multer.File, @Res() res: Response, @Req() req: Request) {
+    res.send({
+      filePath: req.headers.file_name,
+    });
   }
 }

@@ -26,6 +26,7 @@ const SelectedFiles: FC<ISelectedFiles> = ({ files }) => {
 
   const selectFileTOPreview = (fileToPreview: fileToPreviewType) => {
     dispatch(addFileToPreview({ ...fileToPreview }))
+
   };
 
   const handleSendMessages = () => {
