@@ -9,7 +9,9 @@
     "noImplicitAny": false,
     "baseUrl": "./",
     "paths": {
-      "@server/*": ["../../apps/server/src/*"]
+      "@server/*": ["../../apps/server/src/*"],
+      "@shared/types":["../../shared/types/index.ts"]
+
     }
   },
   "exclude": ["jest.config.ts", "src/**/*.spec.ts", "src/**/*.test.ts"],

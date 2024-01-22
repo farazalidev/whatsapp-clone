@@ -1,4 +1,4 @@
-import React, { FC, useEffect, useState } from 'react';
+import React, { ChangeEvent, FC, useEffect, useState } from 'react';
 import OptionIcon from '../../Sidebar/OptionIcon';
 import { AnimatePresence, motion } from 'framer-motion';
 import { slideUpAnimation } from '@/animation/slide-up-Animation';
@@ -11,7 +11,7 @@ import Image from 'next/image';
 import { useDispatch, useSelector } from 'react-redux';
 import { closeOverlay } from '@/global/features/overlaySlice';
 import { RootState } from '@/global/store';
-import { addFileToPreview, addLoadedFiles, resetFiles } from '@/global/features/filesSlice';
+import { addAttachedMessage, addFileToPreview, addLoadedFiles, resetFiles } from '@/global/features/filesSlice';
 
 interface IOverlayContainer {
   parentRef: React.RefObject<HTMLElement>;
@@ -24,7 +24,7 @@ const OverlayContainer: FC<IOverlayContainer> = ({ parentRef, isOpen, onClose })
 
   const [isLoading, setIsLoading] = useState(false);
 
-  const RTK_Dispatch = useDispatch();
+  const dispatch = useDispatch();
 
   useEffect(() => {
     if (parentRef.current) {
@@ -38,31 +38,41 @@ const OverlayContainer: FC<IOverlayContainer> = ({ parentRef, isOpen, onClose })
         setIsLoading(true);
         const loadedFiles = await validateFilesAndGetThumbnails({ files: files, thumbnailDimensions: { height: 60, width: 60 }, from: from });
         if (loadedFiles) {
-          RTK_Dispatch(addLoadedFiles({ loadedFiles }))
+          dispatch(addLoadedFiles({ loadedFiles }))
         }
         const firstFile = loadedFiles[0];
-        RTK_Dispatch(addFileToPreview({ id: firstFile.id, name: firstFile.file.name, size: firstFile.file.size, type: firstFile.type, url: firstFile.url }))
+        dispatch(addFileToPreview({ id: firstFile.id, name: firstFile.file.name, size: firstFile.file.size, type: firstFile.type, url: firstFile.url, attachedMessage: null }))
 
 
       } catch (error) {
         toast.error('There is an Error while loading files...');
-        RTK_Dispatch(closeOverlay());
+        dispatch(closeOverlay());
       } finally {
         setIsLoading(false);
       }
     };
 
     if (files.length !== 0) {
-      console.log('getting and generating thumbnails');
 
       getFilesThumbnailAndValidateThem();
     }
-  }, [files, from, RTK_Dispatch]);
+  }, [files, from, dispatch]);
 
   const handleOnClose = () => {
     onClose();
-    RTK_Dispatch(resetFiles())
+    dispatch(resetFiles())
   };
+
+  const handleMessageChange = (e: ChangeEvent<HTMLInputElement>) => {
+    dispatch(addAttachedMessage(e.target.value))
+  }
+
+
+  const getLoadedFileAttachedMessage = (id: string | null) => {
+
+    const attachedMessage = loadedFiles.find(file => file.id === id)
+    return attachedMessage?.attachedMessage
+  }
 
   return (
     <AnimatePresence key={'overlay-container'}>
@@ -86,7 +96,7 @@ const OverlayContainer: FC<IOverlayContainer> = ({ parentRef, isOpen, onClose })
                 <FilePreview {...fileToPreview} />
               </div>
               <div className="mx-auto my-2 w-[70%]">
-                <MessageInput placeholder="Type message" />
+                <MessageInput placeholder="Type message" key={fileToPreview.id} value={getLoadedFileAttachedMessage(fileToPreview.id) || ""} onChange={handleMessageChange} />
               </div>
               <SelectedFiles files={loadedFiles} />
             </>

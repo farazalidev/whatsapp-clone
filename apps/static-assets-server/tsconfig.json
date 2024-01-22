@@ -27,7 +27,8 @@
     "strictBindCallApply": false,
     "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": false,
-    "types": ["express", "node", "Multer"]
+    "types": ["express", "node", "Multer"],
+
   },
   "exclude": ["./dist/**"]
 }

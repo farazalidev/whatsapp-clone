@@ -104,6 +104,7 @@ export class LocalUploadController {
         maxAge: 300 * 1000,
       });
     } catch (error) {
+      console.log('🚀 ~ LocalUploadController ~ readOtherProfilePic ~ error:', error);
       throw new HttpException('unable to get profile pic', 500);
     }
   }
