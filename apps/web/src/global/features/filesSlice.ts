@@ -84,7 +84,6 @@ export const filesSlice = createSlice({
       };
     },
     removeFile: (state, { payload }: { payload: removeFilePayload }) => {
-      const filteredFiles = state.files.filter((file) => file.id !== payload.id);
       const filteredLoadedFiles = state.loadedFiles.filter((loadedFile) => loadedFile.id !== payload.id);
       const firstLoadedFile = filteredLoadedFiles[0];
 
@@ -97,13 +96,10 @@ export const filesSlice = createSlice({
           size: firstLoadedFile.file.size,
           attachedMessage: firstLoadedFile.attachedMessage,
         };
+        state.fileToPreview = newFileToPreview;
       }
 
-      return {
-        ...state,
-        files: filteredFiles,
-        fileToPreview: newFileToPreview,
-      };
+      state.loadedFiles = filteredLoadedFiles;
     },
   },
 });
