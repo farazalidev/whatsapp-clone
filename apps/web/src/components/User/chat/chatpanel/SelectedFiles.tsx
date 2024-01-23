@@ -20,7 +20,7 @@ interface ISelectedFiles {
 }
 
 const SelectedFiles: FC<ISelectedFiles> = () => {
-  const { fileToPreview, files: selectedFiles, loadedFiles } = useSelector((state: RootState) => state.filesSlice)
+  const { fileToPreview, loadedFiles } = useSelector((state: RootState) => state.filesSlice)
   const dispatch = useDispatch()
 
   const selectFileTOPreview = (fileToPreview: fileToPreviewType) => {
@@ -58,7 +58,7 @@ const SelectedFiles: FC<ISelectedFiles> = () => {
       </div>
       <div className='flex place-items-center gap-2 '>
         <AddNewFileButton onChange={handleAddFileChange} />
-        <SendMediaMessagesButton count={selectedFiles.length} onClick={handleSendMessages} />
+        <SendMediaMessagesButton count={loadedFiles.length} onClick={handleSendMessages} />
       </div>
     </div>
   );
