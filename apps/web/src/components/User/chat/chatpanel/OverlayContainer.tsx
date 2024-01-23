@@ -98,7 +98,7 @@ const OverlayContainer: FC<IOverlayContainer> = ({ parentRef, isOpen, onClose })
               <div className="mx-auto my-2 w-[70%]">
                 <MessageInput placeholder="Type message" key={fileToPreview.id} value={getLoadedFileAttachedMessage(fileToPreview.id) || ""} onChange={handleMessageChange} />
               </div>
-              <SelectedFiles files={loadedFiles} />
+              <SelectedFiles />
             </>
           )}
         </motion.div>

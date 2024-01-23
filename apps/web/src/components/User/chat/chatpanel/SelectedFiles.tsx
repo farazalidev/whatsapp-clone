@@ -17,10 +17,9 @@ export interface SelectedFileType {
 }
 
 interface ISelectedFiles {
-  files: SelectedFileType[];
 }
 
-const SelectedFiles: FC<ISelectedFiles> = ({ files }) => {
+const SelectedFiles: FC<ISelectedFiles> = () => {
   const { fileToPreview, files: selectedFiles, loadedFiles } = useSelector((state: RootState) => state.filesSlice)
   const dispatch = useDispatch()
 
@@ -42,7 +41,7 @@ const SelectedFiles: FC<ISelectedFiles> = ({ files }) => {
   return (
     <div className='flex place-items-start gap-2 py-2 px-3' >
       <div className="relative flex place-items-center w-full gap-2 overflow-y-scroll scrollbar">
-        {files.map((file) => {
+        {loadedFiles.map((file) => {
           return (
             <Thumbnail
               id={file.id}
