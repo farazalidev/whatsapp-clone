@@ -1,6 +1,6 @@
 'use client';
 import axiosWithAuth from '@/middlewares/axiosInterceptor';
-import { AxiosResponseTransformer } from 'axios';
+import { AxiosRequestConfig, AxiosResponseTransformer } from 'axios';
 import { ResponseType } from 'axios';
 
 export async function fetcher<TResponse = any>(
@@ -20,6 +20,11 @@ export async function multiFetcher(...urls: string[]) {
   return Promise.all(urls.map((url) => f(url)));
 }
 
-export async function Mutation<TBody = any, TResponse = any>(url: string, body: TBody, server_type: 'static' | 'primary' | undefined = 'primary') {
-  return (await axiosWithAuth({ static_server: server_type === 'static' ? true : false }).post<TResponse>(url, body))?.data;
+export async function Mutation<TBody = any, TResponse = any>(
+  url: string,
+  body: TBody,
+  server_type: 'static' | 'primary' | undefined = 'primary',
+  config?: AxiosRequestConfig<any | undefined>,
+) {
+  return (await axiosWithAuth({ static_server: server_type === 'static' ? true : false }).post<TResponse>(url, body, config))?.data;
 }

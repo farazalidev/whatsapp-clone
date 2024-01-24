@@ -15,6 +15,7 @@ import { Repository } from 'typeorm';
 import { ResponseType } from '@server/Misc/ResponseType.type';
 import { UserChatEntity } from '@server/modules/chat/entities/userchat.entity';
 import { AttachmentFileStorage } from '../storage/attachment-file.storage';
+import { AttachmentThumbnailStorage } from '../storage/attachemt-thumbnail.storage';
 
 @Controller('file')
 export class LocalUploadController {
@@ -114,6 +115,26 @@ export class LocalUploadController {
   async uploadFile(@GetUser() user: UserEntity, @UploadedFile() file: Express.Multer.File, @Res() res: Response, @Req() req: Request) {
     res.send({
       filePath: req.headers.file_name,
+    });
+  }
+  @Post('upload-thumbnail')
+  @UseInterceptors(FileInterceptor('attachment-thumbnail', AttachmentThumbnailStorage))
+  async uploadAttachmentsThumbnail(@GetUser() user, @UploadedFile() file: Express.Multer.File, @Res() res: Response, @Req() req: Request) {
+    console.log(file);
+
+    res.send({
+      filePath: `${req.headers.file_name}-thumbnail`,
+    });
+  }
+
+  @Get('get-attachment/:path/:ext')
+  async getAttachmentFile(@GetUser() user: UserEntity, @Param() param: { path: string; ext: string }, @Res() res: Response) {
+    const filePath = `${storage.main}${user.user_id}/attachments/${param.path}`;
+    res.sendFile(`${filePath}.${param.ext}`, {
+      root: `${storage.main}${user.user_id}/attachments/`,
+      cacheControl: true,
+      dotfiles: 'deny',
+      maxAge: parseInt(process.env.PROFILE_IMAGE_CACHE_MAX_AGE) * 1000 || 0,
     });
   }
 }
