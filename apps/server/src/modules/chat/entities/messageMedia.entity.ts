@@ -12,6 +12,9 @@ export class MessageMediaEntity {
   @Column({ type: 'uuid' })
   path: string;
 
+  @Column()
+  ext: string;
+
   @Column({ type: 'uuid' })
   thumbnail_path: string;
 

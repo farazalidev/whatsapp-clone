@@ -17,7 +17,7 @@ export class MessageEntity {
   messageType: MediaMessageType;
 
   @OneToMany(() => MessageMediaEntity, (messageMedia) => messageMedia.message, { eager: true })
-  media: MessageEntity | null;
+  media: MessageMediaEntity | null;
 
   @Column()
   content: string;
