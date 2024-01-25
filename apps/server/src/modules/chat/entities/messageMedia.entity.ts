@@ -1,5 +1,6 @@
 import { Column, Entity, ManyToOne, PrimaryColumn } from 'typeorm';
 import { MessageEntity } from './message.entity';
+import { expectedFileTypes } from '@shared/types';
 
 @Entity()
 export class MessageMediaEntity {
@@ -15,11 +16,11 @@ export class MessageMediaEntity {
   @Column()
   ext: string;
 
-  @Column({ type: 'uuid' })
-  thumbnail_path: string;
+  @Column({ type: 'uuid', nullable: true })
+  thumbnail_path: string | null;
 
   @Column({ type: 'varchar' })
-  type: string;
+  type: expectedFileTypes;
 
   @Column({ type: 'bytea' })
   size: number;

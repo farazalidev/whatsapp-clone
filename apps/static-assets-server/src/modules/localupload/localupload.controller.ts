@@ -129,8 +129,8 @@ export class LocalUploadController {
 
   @Get('get-attachment/:path/:ext')
   async getAttachmentFile(@GetUser() user: UserEntity, @Param() param: { path: string; ext: string }, @Res() res: Response) {
-    const filePath = `${storage.main}${user.user_id}/attachments/${param.path}`;
-    res.sendFile(`${filePath}.${param.ext}`, {
+    // const filePath = `${storage.main}${user.user_id}/attachments/${param.path}`;
+    res.sendFile(`${param.path}${param.ext}`, {
       root: `${storage.main}${user.user_id}/attachments/`,
       cacheControl: true,
       dotfiles: 'deny',
