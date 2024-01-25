@@ -5,6 +5,7 @@ import useSwr from 'swr';
 import { useDispatch } from 'react-redux';
 import { addNewChat, addRawChats } from '@/global/features/messagesSlice';
 import { AxiosError } from 'axios';
+import { mainDb } from '@/utils/mainIndexedDB';
 
 const useChats = () => {
   const dispatch = useDispatch();
@@ -16,9 +17,14 @@ const useChats = () => {
 
   const result = useSwr<{ chats: UserChatEntity[] }, AxiosError>('api/chats', userFetcher);
   dispatch(addRawChats(result.data?.chats));
-  result.data?.chats.forEach(async (chat) => {
-    dispatch(addNewChat({ chat_id: chat.id, messages: chat.messages }));
-  });
+  const saveChat = async () => {
+    const localMediaMessages = await mainDb?.mediaMessages.toArray();
+
+    result.data?.chats.forEach(async (chat) => {
+      dispatch(addNewChat({ chat_id: chat.id, messages: [...chat.messages, ...localMediaMessages] }));
+    });
+  };
+  saveChat();
   return result;
 };
 

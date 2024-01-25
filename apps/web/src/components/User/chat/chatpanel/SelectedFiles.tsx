@@ -13,6 +13,10 @@ import { mainDb } from '@/utils/mainIndexedDB';
 import { closeOverlay } from '@/global/features/overlaySlice';
 import { sendMessageFn } from '@/utils/sendMessageFn';
 import useSocket from '@/hooks/useSocket';
+import { v4 } from 'uuid';
+import { extname } from 'path';
+import { combineMediaWithMessages } from '@/utils/combineMediaWithMessages';
+import useCurrentChat from '@/hooks/useCurrentChat';
 
 export interface SelectedFileType {
   id: string;
@@ -31,6 +35,8 @@ const SelectedFiles: FC<ISelectedFiles> = () => {
   const { socket } = useSocket()
 
   const chatSlice = useSelector((state: RootState) => state.ChatSlice)
+
+  const { chat, raw_chat } = useCurrentChat()
 
   const { Me } = useSelector((state: RootState) => state.UserSlice)
 
@@ -79,12 +85,21 @@ const SelectedFiles: FC<ISelectedFiles> = () => {
 
         // saving loaded files into indexed db
       })
-      await mainDb.media_messages.bulkAdd(loadedFiles)
+
+      await mainDb.media.bulkAdd(loadedFiles)
+
+      // before saving the message into the database, save the file in the server, and then process the message
+
+      const mediaMessages = combineMediaWithMessages(loadedFiles, Me, raw_chat)
+      console.log("🚀 ~ handleSendMessages ~ mediaMessages:", mediaMessages)
+
+      await mainDb.mediaMessages.bulkAdd(mediaMessages)
+
 
       // registering messages in the data base
-      // TODO: implement message send functionality...
-      await sendMessageFn({ chatSlice, Me, socket, messageValue: "", receiver_id: "" })
-      dispatch(closeOverlay())
+      // // TODO: implement message send functionality...
+      // await sendMessageFn({ chatSlice, Me, socket, messageValue: "", receiver_id: "" })
+      // dispatch(closeOverlay())
 
 
 
