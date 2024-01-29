@@ -11,12 +11,10 @@ import { getImagesAndVideosFromLoadedFiles } from '@/utils/getImagesAndVideosFro
 import { toast } from 'sonner';
 import { mainDb } from '@/utils/mainIndexedDB';
 import { closeOverlay } from '@/global/features/overlaySlice';
-import { sendMessageFn } from '@/utils/sendMessageFn';
-import useSocket from '@/hooks/useSocket';
-import { v4 } from 'uuid';
-import { extname } from 'path';
 import { combineMediaWithMessages } from '@/utils/combineMediaWithMessages';
 import useCurrentChat from '@/hooks/useCurrentChat';
+import { addNewMessage } from '@/global/features/messagesSlice';
+import { resumableUpload } from '@/utils/resumeableUpload';
 
 export interface SelectedFileType {
   id: string;
@@ -32,11 +30,8 @@ interface ISelectedFiles {
 }
 
 const SelectedFiles: FC<ISelectedFiles> = () => {
-  const { socket } = useSocket()
 
-  const chatSlice = useSelector((state: RootState) => state.ChatSlice)
-
-  const { chat, raw_chat } = useCurrentChat()
+  const { raw_chat } = useCurrentChat()
 
   const { Me } = useSelector((state: RootState) => state.UserSlice)
 
@@ -52,19 +47,6 @@ const SelectedFiles: FC<ISelectedFiles> = () => {
   };
 
   const handleSendMessages = async () => {
-    console.log(loadedFiles);
-
-    // Before uploading files we will generate all images thumbnails or we have to upload
-    // the generated videos thumbnails to the server, so that we can show the file thumbnails,
-    // After the thumbnails successfully generated, then we have to save all the loaded files into
-    // the indexedDB, so that if there was an error while uploading the file or the user internet goes off
-    // or any interruption we got, we would have a copy of all that files with, and we will also have the file
-    // relative path so that if the user intentionally or unintentionally deleted the indexedDB, we will ask the user
-    // to get that images again from his computer to again upload, so before uploading we will process all of these
-    // things.
-
-
-
     try {
       setIsLoading(true)
 
@@ -86,22 +68,20 @@ const SelectedFiles: FC<ISelectedFiles> = () => {
         // saving loaded files into indexed db
       })
 
+      // adding media in local storage
       await mainDb.media.bulkAdd(loadedFiles)
 
-      // before saving the message into the database, save the file in the server, and then process the message
-
+      // combining media with message
       const mediaMessages = combineMediaWithMessages(loadedFiles, Me, raw_chat)
-      console.log("🚀 ~ handleSendMessages ~ mediaMessages:", mediaMessages)
 
+      // adding messages in local storage
       await mainDb.mediaMessages.bulkAdd(mediaMessages)
 
+      mediaMessages.forEach(message => {
+        dispatch(addNewMessage({ chat_id: raw_chat?.id, message: { ...message } }))
+      })
 
-      // registering messages in the data base
-      // // TODO: implement message send functionality...
-      // await sendMessageFn({ chatSlice, Me, socket, messageValue: "", receiver_id: "" })
-      // dispatch(closeOverlay())
-
-
+      dispatch(closeOverlay())
 
     } catch (error) {
       toast.error("Error While uploading Files", { position: "top-center" })

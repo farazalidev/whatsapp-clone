@@ -24,7 +24,8 @@
       "@/*": ["./src/*"],
       "@public/*": ["./public/*"],
       "@server/*": ["../../apps/server/src/*"],
-      "@shared/types": ["../../shared/types/index.ts"]
+      "@shared/types": ["../../shared/types/index.ts"],
+      "@static-assets-server/*":["../../apps/static-assets-server/src/*"]
     }
   },
   "include": [

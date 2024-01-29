@@ -10,11 +10,14 @@ export interface IChatSlice {
   id: string | undefined;
 
   started_from: 'chat' | 'contact' | null;
+
+  receiver_id: string | undefined;
 }
 
 const initialState: IChatSlice = {
   started_from: null,
   id: undefined,
+  receiver_id: undefined,
 };
 
 export const ChatSlice = createSlice({

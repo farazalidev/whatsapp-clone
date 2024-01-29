@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryColumn } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, OneToOne, PrimaryColumn } from 'typeorm';
 import { UserEntity } from '../../user/entities/user.entity';
 import { UserChatEntity } from './userchat.entity';
 import { expectedFileTypes } from '@shared/types';
@@ -16,10 +16,11 @@ export class MessageEntity {
   @Column({ nullable: true, type: 'varchar' })
   messageType: MediaMessageType;
 
-  @OneToMany(() => MessageMediaEntity, (messageMedia) => messageMedia.message, { eager: true })
+  @OneToOne(() => MessageMediaEntity, (media) => media.message, { cascade: true, eager: true })
+  @JoinColumn({ name: 'media' })
   media: MessageMediaEntity | null;
 
-  @Column()
+  @Column({ nullable: true })
   content: string;
 
   @ManyToOne(() => UserEntity, { nullable: true })

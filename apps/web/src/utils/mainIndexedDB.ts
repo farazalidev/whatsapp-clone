@@ -1,3 +1,4 @@
+'use client';
 // db.ts
 import { SelectedFileType } from '@/components/User/chat/chatpanel/SelectedFiles';
 import Dexie, { Table } from 'dexie';
@@ -11,9 +12,9 @@ export class MainDB extends Dexie {
 
   constructor() {
     super('mainDb');
-    this.version(1.2).stores({
+    this.version(1.3).stores({
       media: 'id, file, type, thumbnailUrl, url, attachedMessage, thumbnailPath',
-      mediaMessages: 'id, content, sended_at, messageType, media, is_seen, received_at, seen_at, from, clear_for, sended,chat',
+      mediaMessages: 'id, content, sended_at, messageType, media, is_seen, received_at, seen_at, from, clear_for, sended,chat,totalChunks,chunksUploaded',
     });
   }
 }

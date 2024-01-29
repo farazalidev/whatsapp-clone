@@ -1,9 +1,9 @@
 import { MulterOptions } from '@nestjs/platform-express/multer/interfaces/multer-options.interface';
 import { diskStorage } from 'multer';
 import { storage } from './storage';
-import { ExtendedReq } from 'src/guards/upload.guard';
 import * as fs from 'fs';
 import { extname } from 'path';
+import { ExtendedReq } from 'src/guards/types';
 
 /**
  * In this storage we are going to store all the thumbnails of attachments

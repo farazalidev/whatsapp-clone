@@ -36,7 +36,7 @@ const OverlayContainer: FC<IOverlayContainer> = ({ parentRef, isOpen, onClose })
     const getFilesThumbnailAndValidateThem = async () => {
       try {
         setIsLoading(true);
-        const loadedFiles = await validateFilesAndGetThumbnails({ files: files, thumbnailDimensions: { height: 60, width: 60 }, from: from });
+        const loadedFiles = await validateFilesAndGetThumbnails({ files: files, thumbnailDimensions: { height: 264, width: 264 }, from: from });
         if (loadedFiles) {
           dispatch(addLoadedFiles({ loadedFiles }))
         }
@@ -79,10 +79,10 @@ const OverlayContainer: FC<IOverlayContainer> = ({ parentRef, isOpen, onClose })
       {isOpen ? (
         <motion.div
           {...slideUpAnimation}
-          className={`bg-whatsapp-light-primary_bg dark:bg-whatsapp-dark-primary_bg absolute z-20 flex h-full w-full flex-col overflow-hidden px-2`}
+          className={`bg-whatsapp-light-primary_bg dark:bg-whatsapp-dark-primary_bg absolute z-30 flex h-full w-full flex-col overflow-hidden px-2 `}
         >
           {isLoading ? (
-            <div className="flex h-full w-full place-items-center justify-center">
+            <div className="flex h-full w-full place-items-center justify-center z-30">
               <Image src={'/icons/spinner.svg'} height={100} width={100} alt="Loading Spinner" />
             </div>
           ) : (
