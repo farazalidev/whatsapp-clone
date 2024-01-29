@@ -6,7 +6,7 @@ import EncryptionMessage from '@/Atoms/misc/EncryptionMessage';
 import SideBarOverlay from './SideBarOverlay';
 import { overlayContent } from './overlaycontent/overlaycontet';
 import { useDispatch, useSelector } from 'react-redux';
-import { RootState } from '@/global/store';
+import { RootState, store } from '@/global/store';
 import SideBarUserCard from './SideBarUseCard';
 import Typography from '@/Atoms/Typography/Typography';
 import SidebarChatsSkeleton from '@/skeletons/Components/SidebarChatsSkeleton';
@@ -29,8 +29,14 @@ const UserSideBar = () => {
 
   const { data: combinedData, updateData } = useCombinedData();
 
+  const { Me } = useSelector((state: RootState) => state.UserSlice)
+
   const handleChat = async (chat_id: string, unread_messages_length: number | undefined) => {
-    dispatch(setUserChatEntity({ id: chat_id, started_from: 'chat' }));
+
+    const raw_chat = store.getState().messagesSlice.chats_raw.find(chat => chat.id === chat_id)
+    const receiver_id = isIamReceiver(raw_chat?.chat_with.user_id, Me?.user_id) ? raw_chat?.chat_for.user_id : raw_chat?.chat_with.user_id
+
+    dispatch(setUserChatEntity({ id: chat_id, started_from: 'chat', receiver_id }));
 
     await updateData(chat_id, unread_messages_length);
   };

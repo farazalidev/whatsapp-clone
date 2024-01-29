@@ -97,6 +97,6 @@ interface IGenericThumbnail {
 const GenericThumbnail: FC<IGenericThumbnail> = () => {
 
 
-  return <span><Image src={'/icons/preview-generic.svg'} alt="Thumbnail" height={30} width={30} className='relative' />
+  return <span><Image src={'/icons/svg.svg'} alt="Thumbnail" height={30} width={30} className='relative' />
   </span>
 }

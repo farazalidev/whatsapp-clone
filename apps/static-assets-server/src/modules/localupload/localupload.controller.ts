@@ -16,6 +16,10 @@ import { ResponseType } from '@server/Misc/ResponseType.type';
 import { UserChatEntity } from '@server/modules/chat/entities/userchat.entity';
 import { AttachmentFileStorage } from '../storage/attachment-file.storage';
 import { AttachmentThumbnailStorage } from '../storage/attachemt-thumbnail.storage';
+import { chunkStorage } from '../storage/chunk.storage';
+import { isAttachmentResumableResponseType } from './types/response.types';
+import { mergeChunks } from 'src/utils/mergeChunks';
+import { ExtendedReq } from 'src/guards/types';
 
 @Controller('file')
 export class LocalUploadController {
@@ -120,8 +124,6 @@ export class LocalUploadController {
   @Post('upload-thumbnail')
   @UseInterceptors(FileInterceptor('attachment-thumbnail', AttachmentThumbnailStorage))
   async uploadAttachmentsThumbnail(@GetUser() user, @UploadedFile() file: Express.Multer.File, @Res() res: Response, @Req() req: Request) {
-    console.log(file);
-
     res.send({
       filePath: `${req.headers.file_name}-thumbnail`,
     });
@@ -129,12 +131,80 @@ export class LocalUploadController {
 
   @Get('get-attachment/:path/:ext')
   async getAttachmentFile(@GetUser() user: UserEntity, @Param() param: { path: string; ext: string }, @Res() res: Response) {
-    // const filePath = `${storage.main}${user.user_id}/attachments/${param.path}`;
     res.sendFile(`${param.path}${param.ext}`, {
       root: `${storage.main}${user.user_id}/attachments/`,
       cacheControl: true,
       dotfiles: 'deny',
       maxAge: parseInt(process.env.PROFILE_IMAGE_CACHE_MAX_AGE) * 1000 || 0,
     });
+  }
+
+  @Post('chunk-upload')
+  @UseInterceptors(FileInterceptor('attachment-chunk', chunkStorage))
+  async chunksUpload(@UploadedFile() file: Express.Multer.File, @Res() res: Response, @Req() req: ExtendedReq, @GetUser() user: UserEntity) {
+    const chunkNumber = req.headers.chunk_number;
+    const total_chunks = req.headers.total_chunks;
+
+    // if it is last chunk then merge the file and save it
+    if (Number(chunkNumber) === Number(total_chunks) - 1) {
+      await mergeChunks(user.user_id, req.headers.file_id as string, req.headers.ext);
+    }
+
+    res.send({
+      filePath: file.originalname,
+    });
+  }
+
+  @Get('is-attachment-existed/:path/:ext')
+  async isExisted(@Param() param: { path: string; ext: string }, @GetUser() user: UserEntity) {
+    console.log(param.path + '.' + param.ext);
+
+    try {
+      const filePath = `${storage.main}${user.user_id}/attachments/${param.path}${param.ext}`;
+      fs.readFileSync(filePath);
+      return true;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  @Get('can-resumable-attachment/:path')
+  async canResumable(@Param() param: { path: string }, @GetUser() user: UserEntity): Promise<isAttachmentResumableResponseType> {
+    try {
+      const path = `${storage.main}${user.user_id}/attachments-chunks/${param.path}/`;
+      const isExisted = fs.existsSync(path);
+      if (isExisted) {
+        const files = fs.readdirSync(path);
+
+        const chunkNumbers = files
+          .map((fileName) => {
+            const match = fileName.match(/-(\d+)$/);
+            return match ? parseInt(match[1], 10) : null;
+          })
+          .filter((chunkNumber) => chunkNumber !== null);
+
+        if (chunkNumbers.length > 0) {
+          const lastChunk = Math.max(...chunkNumbers);
+          return {
+            lastChunk,
+            resumable: true,
+          };
+        } else {
+          return {
+            lastChunk: 0,
+            resumable: false,
+          };
+        }
+      }
+      return {
+        lastChunk: 0,
+        resumable: false,
+      };
+    } catch (error) {
+      return {
+        lastChunk: 0,
+        resumable: false,
+      };
+    }
   }
 }

@@ -1,15 +1,11 @@
 import { CanActivate, ExecutionContext, ForbiddenException, Injectable, UnauthorizedException } from '@nestjs/common';
-import { Request } from 'express';
 import { JwtService } from '@nestjs/jwt';
 import { Reflector } from '@nestjs/core';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UserEntity } from '@server/modules/user/entities/user.entity';
 import { LoginPayload } from '@server/modules/auth/auth.service';
-
-export interface ExtendedReq extends Request {
-  user: UserEntity;
-}
+import { ExtendedReq } from './types';
 
 @Injectable()
 export class Upload_Guard implements CanActivate {

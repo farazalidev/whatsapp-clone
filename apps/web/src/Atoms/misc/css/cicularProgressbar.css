@@ -1,0 +1,19 @@
+@keyframes progress-animation {
+  to {
+    transform: rotate(0deg);
+  }
+}
+
+.circular-progress {
+  @apply relative rounded-full border-solid;
+  border-color: transparent transparent #3498db #3498db;
+  /* Change color as needed */
+}
+
+.progress-bar {
+  @apply absolute rounded-full border-solid;
+  border-color: transparent transparent #3498db #3498db;
+  /* Change color as needed */
+  transform-origin: 50% 50%;
+  animation: progress-animation 1s forwards;
+}

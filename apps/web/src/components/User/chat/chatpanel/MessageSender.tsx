@@ -7,6 +7,8 @@ import { RootState } from '../../../../global/store';
 import Attachments from './Attachments';
 import { sendMessageFn } from '@/utils/sendMessageFn';
 import { toast } from 'sonner';
+import { v4 } from 'uuid';
+import { MessageEntity } from '@server/modules/chat/entities/message.entity';
 
 const MessageSender = ({ receiver_id, chat_id }: { receiver_id: string; chat_id: string | undefined }) => {
   const { message_input_loading } = useSelector((state: RootState) => state.LoadingSlice);
@@ -43,7 +45,20 @@ const MessageSender = ({ receiver_id, chat_id }: { receiver_id: string; chat_id:
 
   const handleSendMessage = async (e: FormEvent) => {
     e.preventDefault();
-    const isSended = await sendMessageFn({ chatSlice, Me, messageValue, receiver_id, socket })
+    const newMessage: MessageEntity = {
+      content: messageValue as string,
+      sended_at: new Date(),
+      messageType: "text",
+      media: null,
+      is_seen: false,
+      id: v4(),
+      received_at: null,
+      seen_at: null,
+      from: Me as any,
+      clear_for: null,
+      sended: false,
+    };
+    const isSended = await sendMessageFn({ chatSlice, receiver_id, socket, message: newMessage })
     if (!isSended) {
       toast("Failed to send Message", { position: "top-center" })
       setMessageValue("")

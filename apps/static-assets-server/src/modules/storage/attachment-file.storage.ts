@@ -3,10 +3,10 @@ import { WhiteListAttachmentFileMimeType } from './whitelistAttachmentFIleTypes'
 import { HttpException } from '@nestjs/common';
 import { diskStorage } from 'multer';
 import { storage } from './storage';
-import { ExtendedReq } from 'src/guards/upload.guard';
 import * as fs from 'fs';
 import { extname } from 'path';
 import { v4 } from 'uuid';
+import { ExtendedReq } from 'src/guards/types';
 
 export const AttachmentFileStorage: MulterOptions = {
   fileFilter(req, file, callback) {
