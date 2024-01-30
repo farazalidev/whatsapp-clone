@@ -47,10 +47,10 @@ export const start_newChat: IStartANewChat = async (socket, receiver_id, message
       }
     }
     mutate('api/chats');
-    store.dispatch(setUserChatEntity({ id: response.data?.chat_id, started_from: 'chat' }));
+    store.dispatch(setUserChatEntity({ id: response.data?.chat_id, started_from: 'chat', receiver_id }));
   } catch (error) {
     toast.error('Error while starting a new chat');
-    store.dispatch(setUserChatEntity({ id: '', started_from: null }));
+    store.dispatch(setUserChatEntity({ id: '', started_from: null, receiver_id }));
     store.dispatch(removeChat({ chat_id }));
   } finally {
     store.dispatch(setLoading({ message_input_loading: false }));

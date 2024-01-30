@@ -57,7 +57,7 @@ const UserPage: FC<Props> = () => {
 
   return (
     <UserPageLayout>
-      <div className="flex h-full ">
+      <div className="flex h-full">
         <aside className="h-full w-[40%] flex-none flex-shrink-0 lg:w-[30%]">
           <UserSideBar />
         </aside>

@@ -1,5 +1,5 @@
 import { SelectedFileType } from '@/components/User/chat/chatpanel/SelectedFiles';
-import { Mutation } from './fetcher';
+import { Mutation, fetcher } from './fetcher';
 import { splitFileIntoChunks } from './splitFileIntoChunks';
 import { extname } from 'path';
 
@@ -7,6 +7,27 @@ export type IProgressCallback = (progress: number, totalChunks: number, chunksUp
 
 export const resumableUpload = async (file: SelectedFileType, lastChunk: number, progressCallback: IProgressCallback) => {
   const { chunks, totalChunks } = splitFileIntoChunks(file.file, lastChunk);
+
+  // if the message type is vide then we will save its thumbnail first
+  console.log(file);
+
+  if (file.type === 'video') {
+    const isThumbnailExisted = await fetcher<boolean>(`api/file/is-attachment-existed/${file.id}-thumbnail/.png`, undefined, 'json', 'static');
+    console.log('🚀 ~ resumableUpload ~ isThumbnailExisted:', isThumbnailExisted);
+    if (!isThumbnailExisted) {
+      if (file.thumbnail) {
+        const fmData = new FormData();
+        fmData.append('attachment-thumbnail', file.thumbnail);
+        const response = await Mutation('api/file/upload-attachment-thumbnail', fmData, 'static', {
+          headers: {
+            file_name: file.id,
+            ext: '.png',
+          },
+        });
+        console.log('response', response);
+      }
+    }
+  }
 
   // uploading each chunk
   for (let i = 0; i < totalChunks; i++) {

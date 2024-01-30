@@ -9,6 +9,7 @@ import { sendMessageFn } from '@/utils/sendMessageFn';
 import { toast } from 'sonner';
 import { v4 } from 'uuid';
 import { MessageEntity } from '@server/modules/chat/entities/message.entity';
+import useCurrentChat from '@/hooks/useCurrentChat';
 
 const MessageSender = ({ receiver_id, chat_id }: { receiver_id: string; chat_id: string | undefined }) => {
   const { message_input_loading } = useSelector((state: RootState) => state.LoadingSlice);
@@ -23,6 +24,7 @@ const MessageSender = ({ receiver_id, chat_id }: { receiver_id: string; chat_id:
 
   const [messageValue, setMessageValue] = useState<string>();
 
+  const { raw_chat } = useCurrentChat()
 
   const handleMessageChange = (e: ChangeEvent<HTMLInputElement>) => {
     setMessageValue(e.target.value);
@@ -57,6 +59,7 @@ const MessageSender = ({ receiver_id, chat_id }: { receiver_id: string; chat_id:
       from: Me as any,
       clear_for: null,
       sended: false,
+      chat: raw_chat as any
     };
     const isSended = await sendMessageFn({ chatSlice, receiver_id, socket, message: newMessage })
     if (!isSended) {

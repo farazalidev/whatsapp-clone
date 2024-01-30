@@ -8,9 +8,15 @@ import * as fs from 'fs';
 import { profilePicSizes } from '../storage/sizes/profilePic.sizes';
 import { isFileExtSafe } from 'src/utils/isFileExtSafe';
 import { WhiteListProfilePicExtTypes, WhiteListProfilePicMimeTypes } from '../storage/whitelistProfileImages';
+import { InjectRepository } from '@nestjs/typeorm';
+import { UserChatEntity } from '@server/modules/chat/entities/userchat.entity';
+import { Repository } from 'typeorm';
+import { MessageEntity } from '@server/modules/chat/entities/message.entity';
 
 @Injectable()
 export class LocalUploadService {
+  constructor(@InjectRepository(UserChatEntity) private chatRepo: Repository<UserChatEntity>) {}
+
   async uploadProfilePic(file: Express.Multer.File, user_id: string): Promise<ResponseType<ProfilePicUploadResponseType>> {
     try {
       const destinationPath = `${storage.main}${user_id}/profile-pics/`;
@@ -61,5 +67,14 @@ export class LocalUploadService {
         error: { message: 'Error while uploading profile pic', statusCode: 500 },
       };
     }
+  }
+
+  async getAllMediaOfChatService(chat_id: string): Promise<MessageEntity[]> {
+    // TODO: check if this chat is is belong to this user or not
+    const chat = await this.chatRepo.findOne({ where: { id: chat_id }, relations: { messages: true } });
+    const mediaMessages = chat.messages.filter(
+      (message) => message.messageType === 'video' || message.messageType === 'image' || message.messageType === 'svg',
+    );
+    return mediaMessages;
   }
 }

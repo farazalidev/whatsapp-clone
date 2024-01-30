@@ -37,7 +37,6 @@ export class ChatService {
         data: { chat_id: newChat.id },
       };
     } catch (error) {
-      console.log('🚀 ~ file: chat.service.ts:40 ~ ChatService ~ createAnewChat ~ error:', error);
       return {
         success: false,
         error: { message: 'Error while creating a new chat', statusCode: 500 },
@@ -49,7 +48,7 @@ export class ChatService {
     try {
       const user = await this.UserChatRepo.find({
         where: [{ chat_for: { user_id } }, { chat_with: { user_id } }],
-        relations: { messages: { from: true } },
+        relations: { messages: true },
         order: { messages: { sended_at: 'DESC' } },
       });
       if (!user) {
@@ -258,7 +257,7 @@ export class ChatService {
     }
   }
   async getUnreadMessagesForUser(user_id: string): Promise<unreadMessage[]> {
-    const chats = await this.UserChatRepo.find({ where: [{ chat_for: { user_id } }, { chat_with: { user_id } }] });
+    const chats = await this.UserChatRepo.find({ where: [{ chat_for: { user_id } }, { chat_with: { user_id } }], relations: { messages: true } });
 
     const messages: unreadMessage[] = [];
 

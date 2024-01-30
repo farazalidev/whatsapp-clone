@@ -121,7 +121,7 @@ export class LocalUploadController {
       filePath: req.headers.file_name,
     });
   }
-  @Post('upload-thumbnail')
+  @Post('upload-attachment-thumbnail')
   @UseInterceptors(FileInterceptor('attachment-thumbnail', AttachmentThumbnailStorage))
   async uploadAttachmentsThumbnail(@GetUser() user, @UploadedFile() file: Express.Multer.File, @Res() res: Response, @Req() req: Request) {
     res.send({
@@ -129,10 +129,10 @@ export class LocalUploadController {
     });
   }
 
-  @Get('get-attachment/:path/:ext')
-  async getAttachmentFile(@GetUser() user: UserEntity, @Param() param: { path: string; ext: string }, @Res() res: Response) {
+  @Get('get-attachment/:user_id/:path/:ext')
+  async getAttachmentFile(@Param() param: { path: string; ext: string; user_id: string }, @Res() res: Response) {
     res.sendFile(`${param.path}${param.ext}`, {
-      root: `${storage.main}${user.user_id}/attachments/`,
+      root: `${storage.main}${param.user_id}/attachments/`,
       cacheControl: true,
       dotfiles: 'deny',
       maxAge: parseInt(process.env.PROFILE_IMAGE_CACHE_MAX_AGE) * 1000 || 0,
@@ -206,5 +206,11 @@ export class LocalUploadController {
         resumable: false,
       };
     }
+  }
+
+  @Get('get-all-media/:chat_id')
+  async getAllMediaOfChat(@Param() param: { chat_id: string }, @Res() res: Response) {
+    const mediaMessages = await this.localUploadService.getAllMediaOfChatService(param.chat_id);
+    res.json(mediaMessages);
   }
 }

@@ -2,10 +2,12 @@ import { createSlice } from '@reduxjs/toolkit';
 
 interface IOverlaySliceProps {
   DocumentOverlayIsOpen: boolean;
+  GalleryOverlayIsOpen: boolean;
 }
 
 const initialState: IOverlaySliceProps = {
   DocumentOverlayIsOpen: false,
+  GalleryOverlayIsOpen: false,
 };
 
 export const overlaySlice = createSlice({
@@ -18,7 +20,10 @@ export const overlaySlice = createSlice({
     closeOverlay: (state) => {
       state.DocumentOverlayIsOpen = false;
     },
+    toggleGalleryOverlay: (state) => {
+      state.GalleryOverlayIsOpen = !state.GalleryOverlayIsOpen;
+    },
   },
 });
 
-export const { toggleDocumentOverlay, closeOverlay } = overlaySlice.actions;
+export const { toggleDocumentOverlay, toggleGalleryOverlay, closeOverlay } = overlaySlice.actions;
