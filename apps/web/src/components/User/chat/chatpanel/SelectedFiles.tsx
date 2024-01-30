@@ -1,20 +1,17 @@
 import SendMediaMessagesButton from '@/Atoms/Button/SendMediaMessagesButton';
 import { Thumbnail } from '@/components/Misc/Thumbnail';
-import { addFileToPreview, addMoreFiles, addThumbnailPathOfLoadedFile, fileToPreviewType } from '@/global/features/filesSlice';
+import { addFileToPreview, addMoreFiles, fileToPreviewType } from '@/global/features/filesSlice';
 import { RootState } from '@/global/store';
 import React, { ChangeEvent, FC, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { expectedFileTypes } from '@shared/types';
 import AddNewFileButton from '@/Atoms/Button/AddNewFileButton';
-import { Mutation } from '@/utils/fetcher';
-import { getImagesAndVideosFromLoadedFiles } from '@/utils/getImagesAndVideosFromLoadedFiles';
 import { toast } from 'sonner';
 import { mainDb } from '@/utils/mainIndexedDB';
 import { closeOverlay } from '@/global/features/overlaySlice';
 import { combineMediaWithMessages } from '@/utils/combineMediaWithMessages';
 import useCurrentChat from '@/hooks/useCurrentChat';
 import { addNewMessage } from '@/global/features/messagesSlice';
-import { resumableUpload } from '@/utils/resumeableUpload';
 
 export interface SelectedFileType {
   id: string;
@@ -50,23 +47,6 @@ const SelectedFiles: FC<ISelectedFiles> = () => {
     try {
       setIsLoading(true)
 
-      // getting images and videos from loaded files
-      const imageFiles = getImagesAndVideosFromLoadedFiles(loadedFiles)
-
-      // uploading all the thumbnails of the loaded images and videos and saving the server file paths
-      imageFiles.forEach(async (file) => {
-        // if we have video
-        if (file.thumbnail && file.type === "video") {
-          const fmData = new FormData()
-          fmData.append("attachment-thumbnail", file.thumbnail as Blob, `${file.id}.png`)
-
-          const response = await Mutation<FormData, { filePath: string }>("api/file/upload-thumbnail", fmData, "static", { headers: { file_name: file.id } })
-          dispatch(addThumbnailPathOfLoadedFile({ id: file.id, path: response.filePath }))
-
-        }
-
-        // saving loaded files into indexed db
-      })
 
       // adding media in local storage
       await mainDb.media.bulkAdd(loadedFiles)

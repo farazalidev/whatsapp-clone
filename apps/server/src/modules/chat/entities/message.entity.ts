@@ -27,7 +27,7 @@ export class MessageEntity {
   clear_for: UserEntity | null;
 
   @ManyToOne(() => UserChatEntity, (chat) => chat.messages)
-  chat?: UserChatEntity;
+  chat: UserChatEntity;
 
   @Column({ nullable: true })
   is_seen: boolean;

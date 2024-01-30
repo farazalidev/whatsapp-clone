@@ -2,7 +2,6 @@ import { MulterOptions } from '@nestjs/platform-express/multer/interfaces/multer
 import { diskStorage } from 'multer';
 import { storage } from './storage';
 import * as fs from 'fs';
-import { extname } from 'path';
 import { ExtendedReq } from 'src/guards/types';
 
 /**
@@ -13,13 +12,13 @@ import { ExtendedReq } from 'src/guards/types';
 export const AttachmentThumbnailStorage: MulterOptions = {
   storage: diskStorage({
     destination(req, file, callback) {
-      const path = `${storage.main}${(req as ExtendedReq).user.user_id}/attachments-thumbnail/`;
+      const path = `${storage.main}${(req as ExtendedReq).user.user_id}/attachments/`;
       const isPath = fs.existsSync(path);
       if (!isPath) fs.mkdirSync(path);
       callback(null, path);
     },
     filename(req, file, callback) {
-      callback(null, `${req.headers.file_name}-thumbnail${extname(file.originalname)}`);
+      callback(null, `${req.headers.file_name}-thumbnail${req.headers.ext}`);
     },
   }),
 };

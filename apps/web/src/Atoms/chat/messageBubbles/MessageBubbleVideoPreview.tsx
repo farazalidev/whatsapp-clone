@@ -9,8 +9,10 @@ import CircularProgressBar from "@/Atoms/misc/RoundedProgressBar"
 import { IProgressCallback, resumableUpload } from "@/utils/resumeableUpload"
 import { sendMessageFn } from "@/utils/sendMessageFn"
 import useSocket from "@/hooks/useSocket"
-import { useSelector } from "react-redux"
+import { useDispatch, useSelector } from "react-redux"
 import { RootState } from "@/global/store"
+import { toggleGalleryOverlay } from "@/global/features/overlaySlice"
+import { setActiveGalleryMedia } from "@/global/features/GallerySlice"
 
 export const MessageBubbleVideoPreview: FC<IMessageBubblePreview> = ({ message, isFromMe }) => {
 
@@ -21,7 +23,10 @@ export const MessageBubbleVideoPreview: FC<IMessageBubblePreview> = ({ message, 
   const [mediaState, setMediaState] = useState<{ isResumable: boolean, videoUrl: string | null, videoThumbnail: string | null }>({ isResumable: false, videoThumbnail: null, videoUrl: null })
 
   const { socket } = useSocket()
+
   const chatSlice = useSelector((state: RootState) => state.ChatSlice)
+
+  const dispatch = useDispatch()
 
   useEffect(() => {
 
@@ -49,11 +54,10 @@ export const MessageBubbleVideoPreview: FC<IMessageBubblePreview> = ({ message, 
 
           const isAttachmentExisted = await fetcher<boolean>(`api/file/is-attachment-existed/${message?.media?.id}/${message?.media?.ext}`, undefined, "json", "static")
           // if media is not available on server and localMedia message uploaded chunks are 0 then automatically upload the media
-          console.log("🚀 ~ fetchVideoAndUpload ~ isAttachmentExisted:", isAttachmentExisted)
           if (!isAttachmentExisted && message?.media && message?.media?.chunksUploaded === 0 && localDbMedia) {
             // setting loading to be false to show the upload progress
             setLoading(false)
-            const progressCallback: IProgressCallback = async (progress, totalChunks, chunksUploaded) => {
+            const progressCallback: IProgressCallback = async (progress, _totalChunks, chunksUploaded) => {
               // setting upload progress
               setUploadProgress(progress)
               await mainDb.mediaMessages.update(message?.id, { media: { ...message.media, chunksUploaded } })
@@ -63,8 +67,12 @@ export const MessageBubbleVideoPreview: FC<IMessageBubblePreview> = ({ message, 
             const messageToSend = await mainDb.mediaMessages.get(message.id)
             if (messageToSend) {
               await sendMessageFn({ chatSlice, socket, receiver_id: chatSlice.receiver_id as string, message: { ...messageToSend, messageType: "video" } })
-
             }
+            // deleting message from the main db
+            await mainDb.mediaMessages.delete(message.id)
+
+            // mutating the media api
+            // mutate(`api/media/${chatSlice.id}`)
           }
 
           // if the attachment is not existed on server and uploaded chunks are more that 0, means that the user first started uploading
@@ -79,10 +87,17 @@ export const MessageBubbleVideoPreview: FC<IMessageBubblePreview> = ({ message, 
 
         }
 
-        // // if the media message is not from me
-        // if(!isFromMe){
-
-        // }
+        // if the media message is not from me
+        // then we have to load this video from the server
+        if (!isFromMe) {
+          // we will load the video thumbnail from the server, and if the user clicks on the video then we will stream it in gallery
+          const videoThumbnailBlob = await fetcher(`api/file/get-attachment/${chatSlice.receiver_id}/${message?.media?.id}-thumbnail/.png`, undefined, "blob", "static")
+          if (videoThumbnailBlob instanceof Blob) {
+            console.log("🚀 ~ fetchVideoAndUpload ~ videoThumbnailBlob:", videoThumbnailBlob)
+            const videoThumbnailUrl = URL.createObjectURL(videoThumbnailBlob)
+            setMediaState(prev => { return { ...prev, videoThumbnail: videoThumbnailUrl } })
+          }
+        }
 
       }
       catch (error) {
@@ -93,13 +108,19 @@ export const MessageBubbleVideoPreview: FC<IMessageBubblePreview> = ({ message, 
 
     fetchVideoAndUpload()
 
-  }, [message, isFromMe])
+  }, [message, isFromMe, chatSlice, socket])
 
+  const handleGalleryOverlay = (id: string | undefined) => {
+    if (id) {
+      dispatch(setActiveGalleryMedia(id))
+    }
+    dispatch(toggleGalleryOverlay())
+  }
 
 
   return (
     <>
-      {<MediaMessageBubbleWrapper isFromMe={isFromMe} messageType={message?.messageType} className="flex place-items-center justify-center">
+      {<MediaMessageBubbleWrapper isFromMe={isFromMe} messageType={message?.messageType} className="flex place-items-center justify-center cursor-pointer" onClick={() => handleGalleryOverlay(message?.media?.id)}>
         <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-b from-transparent to-gray-900 z-10"></div>
         {uploadProgress === 100 ?
           <span className="z-10 w-14 h-14 relative rounded-full bg-black bg-opacity-70 cursor-pointer flex place-items-center justify-center">

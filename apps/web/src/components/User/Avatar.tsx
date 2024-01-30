@@ -4,7 +4,7 @@ import Image from 'next/image';
 import React, { FC, Suspense } from 'react';
 import useSwr from 'swr';
 
-export interface AvatarProps {
+export interface AvatarProps extends React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement> {
   name?: string;
   height?: number;
   width?: number;
@@ -14,7 +14,7 @@ export interface AvatarProps {
   for_other?: boolean;
 }
 
-const Avatar: FC<AvatarProps> = ({ user_id, for_other, isAbsolute, absolute_src, name, height = 55, width = 55 }) => {
+const Avatar: FC<AvatarProps> = ({ user_id, for_other, isAbsolute, absolute_src, name, height = 55, width = 55, ...props }) => {
   const fetchProfilePic = async () => {
     const blob = await fetcher(`api/file/read/profile-pic/small`, undefined, 'blob', 'static');
     const url = URL.createObjectURL(blob);
@@ -31,7 +31,7 @@ const Avatar: FC<AvatarProps> = ({ user_id, for_other, isAbsolute, absolute_src,
 
   return (
     <Suspense fallback={'loading'}>
-      <div className={cn('relative')} style={{ height, width }}>
+      <div {...props} className={cn('relative', props.className)} style={{ height, width }}>
         {isAbsolute ? (
           <Image src={absolute_src || '/icons/avatardefault.svg'} fill className="h-[55px] w-[55px] rounded-full object-cover" alt={name ? name : 'user'} />
         ) : (
