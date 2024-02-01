@@ -21,6 +21,9 @@ export interface SelectedFileType {
   url: string | undefined;
   attachedMessage: string | null
   thumbnailPath?: string
+  width: number | null
+  height: number | null
+  original_name: string
 }
 
 interface ISelectedFiles {

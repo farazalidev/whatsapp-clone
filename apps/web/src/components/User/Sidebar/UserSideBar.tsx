@@ -9,7 +9,6 @@ import { useDispatch, useSelector } from 'react-redux';
 import { RootState, store } from '@/global/store';
 import SideBarUserCard from './SideBarUseCard';
 import Typography from '@/Atoms/Typography/Typography';
-import SidebarChatsSkeleton from '@/skeletons/Components/SidebarChatsSkeleton';
 import { getDayOrFormattedDate } from '@/utils/getDateOrFormat';
 import { setUserChatEntity } from '@/global/features/ChatSlice';
 import { isIamReceiver } from '../../../utils/isIamReceiver';
@@ -51,7 +50,7 @@ const UserSideBar = () => {
         <SideBarHeader />
         <SideBarSearch />
       </div>
-      <Suspense fallback={<SidebarChatsSkeleton />}>
+      <Suspense fallback={<>loading...</>}>
         <Reorder.Group values={chatsData} onReorder={setChatsData} className="dark:bg-whatsapp-dark-primary_bg h-[100%] overflow-y-scroll scrollbar">
           {combinedData && data?.Me && combinedData.length !== 0 ? (
             combinedData?.map((chat) => {

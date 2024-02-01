@@ -21,6 +21,7 @@ export const WhiteListAttachmentFileMimeType = [
   'image/bmp',
   'image/tiff',
   'image/webp',
+  'image/svg+xml',
 
   // Audio
   'audio/mpeg',
