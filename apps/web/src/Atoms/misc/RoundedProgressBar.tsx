@@ -5,7 +5,7 @@ import Image from "next/image";
 
 
 interface ICircularProgressBar {
-  percentage: number
+  percentage: number | undefined
   loading: boolean
 }
 
@@ -14,7 +14,8 @@ const CircularProgressBar: FC<ICircularProgressBar> = ({ percentage, loading }) 
 
   // Trigger the animation whenever the percentage changes
   useEffect(() => {
-    circleControl.start({ strokeDashoffset: 285 - (285 * percentage) / 100 });
+    if (percentage)
+      circleControl.start({ strokeDashoffset: 285 - (285 * percentage) / 100 });
 
   }, [circleControl, percentage])
 

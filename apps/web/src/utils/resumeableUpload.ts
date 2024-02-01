@@ -29,30 +29,38 @@ export const resumableUpload = async (file: SelectedFileType, lastChunk: number,
     }
   }
 
-  // uploading each chunk
-  for (let i = 0; i < totalChunks; i++) {
-    console.log('chunkNumber', i);
-    console.log('totalChunks', totalChunks);
+  // if file size is more than 10 mb then upload it in chunks
+  if (file.file.size > 10485760) {
+    // uploading each chunk
+    for (let i = 0; i < totalChunks; i++) {
+      console.log('chunkNumber', i);
+      console.log('totalChunks', totalChunks);
 
-    const fmData = new FormData();
-    fmData.append('attachment-chunk', chunks[i]);
+      const fmData = new FormData();
+      fmData.append('attachment-chunk', chunks[i]);
 
-    try {
-      await Mutation('api/file/chunk-upload', fmData, 'static', {
-        headers: {
-          chunk_number: i.toString(),
-          total_chunks: totalChunks.toString(),
-          file_id: file.id,
-          ext: extname(file.file.name),
-        },
-      });
+      try {
+        await Mutation('api/file/chunk-upload', fmData, 'static', {
+          headers: {
+            chunk_number: i.toString(),
+            total_chunks: totalChunks.toString(),
+            file_id: file.id,
+            ext: extname(file.file.name),
+          },
+        });
 
-      const progress = ((i + 1) / totalChunks) * 100;
-      progressCallback(progress, totalChunks, i);
+        const progress = ((i + 1) / totalChunks) * 100;
+        progressCallback(progress, totalChunks, i);
 
-      console.log(`Chunk ${i + 1}/${totalChunks} uploaded successfully`);
-    } catch (error) {
-      console.error('Error uploading chunk:', error);
+        console.log(`Chunk ${i + 1}/${totalChunks} uploaded successfully`);
+      } catch (error) {
+        console.error('Error uploading chunk:', error);
+      }
     }
   }
+
+  // if the file size is not more than 10 mbs then upload as a single file
+  const formData = new FormData();
+  formData.append('attachment-file', file.file);
+  await Mutation(`api/file/upload-attachment-file`, formData, 'static', { headers: { file_id: file.id, ext: extname(file.file.name) } });
 };

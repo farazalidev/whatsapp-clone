@@ -16,7 +16,7 @@ export class MessageEntity {
   @Column({ nullable: true, type: 'varchar' })
   messageType: MediaMessageType;
 
-  @OneToOne(() => MessageMediaEntity, (media) => media.message, { cascade: true, eager: true })
+  @OneToOne(() => MessageMediaEntity, (media) => media.message, { cascade: true, eager: true, onDelete: 'CASCADE' })
   @JoinColumn({ name: 'media' })
   media: MessageMediaEntity | null;
 

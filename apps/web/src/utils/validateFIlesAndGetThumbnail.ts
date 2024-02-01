@@ -3,6 +3,8 @@ import fileType from 'file-type';
 import { getSnapShotOfVideoBlob } from './getSnapShot';
 import { isSVG } from './isSvg';
 import { IFiles, filesFromType } from '@/global/features/filesSlice';
+import { getImageDimensions } from './getImageDimensions';
+// import jimp from 'jimp';
 
 type validateFilesAndGetThumbnailsArgs = {
   from: filesFromType | null;
@@ -21,13 +23,33 @@ export const validateFilesAndGetThumbnails: validateFilesAndGetThumbnailsType = 
 
       // if the provided video extension is video but the file is not seems to be video
       if (!actualType?.mime.startsWith('video/')) {
-        result.push({ thumbnail: undefined, type: 'others', file: file.file, url: undefined, id: file.id, attachedMessage: null });
+        result.push({
+          thumbnail: undefined,
+          type: 'others',
+          file: file.file,
+          url: undefined,
+          id: file.id,
+          attachedMessage: null,
+          height: null,
+          original_name: file.file.name,
+          width: null,
+        });
       }
       // if the file actual type and extension matched
       else {
         const videoUrl = URL.createObjectURL(file.file);
-        const videoThumbnail = await getSnapShotOfVideoBlob(videoUrl, 15, thumbnailDimensions.height, thumbnailDimensions.width);
-        result.push({ file: file.file, thumbnail: videoThumbnail, type: 'video', url: videoUrl, id: file.id, attachedMessage: null });
+        const { blob, height, width } = await getSnapShotOfVideoBlob(videoUrl, 15, thumbnailDimensions.height, thumbnailDimensions.width);
+        result.push({
+          file: file.file,
+          thumbnail: blob,
+          type: 'video',
+          url: videoUrl,
+          id: file.id,
+          attachedMessage: null,
+          height,
+          width,
+          original_name: file.file.name,
+        });
       }
     }
 
@@ -37,12 +59,33 @@ export const validateFilesAndGetThumbnails: validateFilesAndGetThumbnailsType = 
 
       // if the image is not actually an image
       if (!actualType?.mime.startsWith('image/')) {
-        result.push({ file: file.file, thumbnail: undefined, type: 'others', url: undefined, id: file.id, attachedMessage: null });
+        result.push({
+          file: file.file,
+          thumbnail: undefined,
+          type: 'others',
+          url: undefined,
+          id: file.id,
+          attachedMessage: null,
+          height: null,
+          original_name: file.file.name,
+          width: null,
+        });
       }
       // if the file ext matched
       else {
         const url = URL.createObjectURL(file.file);
-        result.push({ file: file.file, thumbnail: url, type: 'image', url, id: file.id, attachedMessage: null });
+        const dimensions = await getImageDimensions(url);
+        result.push({
+          file: file.file,
+          thumbnail: url,
+          type: 'image',
+          url,
+          id: file.id,
+          attachedMessage: null,
+          height: Math.round(dimensions.height),
+          width: Math.round(dimensions.width),
+          original_name: file.file.name,
+        });
       }
     }
 
@@ -54,12 +97,33 @@ export const validateFilesAndGetThumbnails: validateFilesAndGetThumbnailsType = 
 
       // if its not an svg
       if (!is) {
-        result.push({ file: file.file, id: file.id, thumbnail: undefined, type: 'others', url: undefined, attachedMessage: null });
+        result.push({
+          file: file.file,
+          id: file.id,
+          thumbnail: undefined,
+          type: 'others',
+          url: undefined,
+          attachedMessage: null,
+          height: null,
+          original_name: file.file.name,
+          width: null,
+        });
       }
       // if the file ext matched
       else {
         const url = URL.createObjectURL(file.file);
-        result.push({ file: file.file, id: file.id, thumbnail: url, type: 'svg', url, attachedMessage: null });
+        const dimensions = await getImageDimensions(url);
+        result.push({
+          file: file.file,
+          id: file.id,
+          thumbnail: url,
+          type: 'svg',
+          url,
+          attachedMessage: null,
+          height: Math.round(dimensions.height),
+          original_name: file.file.name,
+          width: Math.round(dimensions.width),
+        });
       }
     }
 
@@ -69,17 +133,47 @@ export const validateFilesAndGetThumbnails: validateFilesAndGetThumbnailsType = 
 
       // if the file is not actually a pdf file
       if (!actualType?.mime.startsWith('application/pdf')) {
-        result.push({ file: file.file, thumbnail: undefined, type: 'others', url: undefined, id: file.id, attachedMessage: null });
+        result.push({
+          file: file.file,
+          thumbnail: undefined,
+          type: 'others',
+          url: undefined,
+          id: file.id,
+          attachedMessage: null,
+          height: null,
+          width: null,
+          original_name: file.file.name,
+        });
       }
       // if the file ext matched
       else {
-        result.push({ file: file.file, thumbnail: undefined, type: 'pdf', url: undefined, id: file.id, attachedMessage: null });
+        result.push({
+          file: file.file,
+          thumbnail: undefined,
+          type: 'pdf',
+          url: undefined,
+          id: file.id,
+          attachedMessage: null,
+          height: null,
+          width: null,
+          original_name: file.file.name,
+        });
       }
     }
 
     // if none of the recognized types, handle as 'others'
     else {
-      result.push({ file: file.file, thumbnail: undefined, type: 'others', url: undefined, id: file.id, attachedMessage: null });
+      result.push({
+        file: file.file,
+        thumbnail: undefined,
+        type: 'others',
+        url: undefined,
+        id: file.id,
+        attachedMessage: null,
+        height: null,
+        width: null,
+        original_name: file.file.name,
+      });
     }
   }
 

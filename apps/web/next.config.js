@@ -27,7 +27,6 @@ const nextConfig = {
         fs: false,
       };
     }
-
     return config;
   },
   redirects: async () => [{ source: '/', destination: '/user', permanent: true }],

@@ -1,12 +1,13 @@
-import { Column, Entity, PrimaryColumn } from 'typeorm';
+import { Column, Entity, OneToOne, PrimaryColumn } from 'typeorm';
 import { expectedFileTypes } from '@shared/types';
+import { MessageEntity } from './message.entity';
 
 @Entity()
 export class MessageMediaEntity {
   @PrimaryColumn({ type: 'uuid' })
   id: string;
 
-  @Column({ type: 'uuid', nullable: true })
+  @OneToOne(() => MessageEntity, (message) => message.media, { onDelete: 'CASCADE' })
   message: string;
 
   @Column({ type: 'uuid' })
@@ -20,6 +21,15 @@ export class MessageMediaEntity {
 
   @Column()
   ext: string;
+
+  @Column({ nullable: true })
+  height: number | null;
+
+  @Column({ nullable: true })
+  width: number | null;
+
+  @Column({ nullable: true })
+  original_name: string | null;
 
   @Column({ type: 'varchar', nullable: true })
   thumbnail_path: string | null;

@@ -20,6 +20,8 @@ import { chunkStorage } from '../storage/chunk.storage';
 import { isAttachmentResumableResponseType } from './types/response.types';
 import { mergeChunks } from 'src/utils/mergeChunks';
 import { ExtendedReq } from 'src/guards/types';
+import { extname } from 'path';
+import { reduceImageQuality } from 'src/utils/reduceImageQuality';
 
 @Controller('file')
 export class LocalUploadController {
@@ -117,13 +119,29 @@ export class LocalUploadController {
   @Post('upload-attachment-file')
   @UseInterceptors(FileInterceptor('attachment-file', AttachmentFileStorage))
   async uploadFile(@GetUser() user: UserEntity, @UploadedFile() file: Express.Multer.File, @Res() res: Response, @Req() req: Request) {
-    res.send({
-      filePath: req.headers.file_name,
-    });
+    const filePath = `${storage.main}${user.user_id}/attachments/${req.headers.file_id}-original${req.headers.ext}`;
+    const writePath = `${storage.main}${user.user_id}/attachments/${req.headers.file_id}${extname(file.originalname)}`;
+    try {
+      if (req.headers.ext === '.png' || req.headers.ext === 'jpeg' || req.headers.ext === '.jpg') {
+        await reduceImageQuality({ path: filePath, quality: 30, shouldRemove: true, writePath });
+      }
+      res.send({
+        filePath: req.headers.file_id,
+      });
+    } catch (error) {
+      fs.unlinkSync(filePath);
+      console.log(error);
+    }
   }
   @Post('upload-attachment-thumbnail')
   @UseInterceptors(FileInterceptor('attachment-thumbnail', AttachmentThumbnailStorage))
   async uploadAttachmentsThumbnail(@GetUser() user, @UploadedFile() file: Express.Multer.File, @Res() res: Response, @Req() req: Request) {
+    const path = `${storage.main}${user.user_id}/attachments/${req.headers.file_name}-original-thumbnail${req.headers.ext}`;
+    const writePath = `${storage.main}${user.user_id}/attachments/${req.headers.file_name}-thumbnail${req.headers.ext}`;
+
+    if (req.headers.ext === '.png' || req.headers.ext === 'jpeg' || req.headers.ext === '.jpg') {
+      await reduceImageQuality({ path, quality: 30, shouldRemove: true, writePath });
+    }
     res.send({
       filePath: `${req.headers.file_name}-thumbnail`,
     });

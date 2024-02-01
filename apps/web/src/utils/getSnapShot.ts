@@ -1,4 +1,4 @@
-export async function getSnapShotOfVideo(videoUrl: string, snapshotTime: number, height: number, width: number): Promise<string> {
+export async function getSnapShotOfVideo(videoUrl: string, snapshotTime: number): Promise<string> {
   return new Promise((resolve, reject) => {
     // Create a video element
     const video = document.createElement('video');
@@ -12,6 +12,10 @@ export async function getSnapShotOfVideo(videoUrl: string, snapshotTime: number,
 
     // When the seeking is complete, capture the frame and resolve the promise
     video.onseeked = function () {
+      const aspectRatio = video.videoWidth / video.videoHeight;
+      const width = 300; // You can set a default width here
+      const height = width / aspectRatio;
+
       const canvas = document.createElement('canvas');
       canvas.width = width;
       canvas.height = height;
@@ -30,7 +34,12 @@ export async function getSnapShotOfVideo(videoUrl: string, snapshotTime: number,
   });
 }
 
-export async function getSnapShotOfVideoBlob(videoUrl: string, snapshotTime: number, height: number, width: number): Promise<Blob> {
+export async function getSnapShotOfVideoBlob(
+  videoUrl: string,
+  snapshotTime: number,
+  width: number,
+  height: number,
+): Promise<{ blob: Blob; file: File; width: number; height: number }> {
   return new Promise((resolve, reject) => {
     // Create a video element
     const video = document.createElement('video');
@@ -44,6 +53,10 @@ export async function getSnapShotOfVideoBlob(videoUrl: string, snapshotTime: num
 
     // When the seeking is complete, capture the frame and resolve the promise
     video.onseeked = function () {
+      const aspectRatio = video.videoWidth / video.videoHeight;
+      const width = 300; // You can set a default width here
+      const height = width / aspectRatio;
+
       const canvas = document.createElement('canvas');
       canvas.width = width;
       canvas.height = height;
@@ -54,13 +67,14 @@ export async function getSnapShotOfVideoBlob(videoUrl: string, snapshotTime: num
       canvas.toBlob(
         (blob) => {
           if (blob) {
-            resolve(blob);
+            const file = new File([blob], 'snapshot.png', { type: 'image/png' });
+            resolve({ blob, file, width, height: Math.round(height) });
           } else {
             reject(new Error('Error creating Blob from canvas.'));
           }
         },
         'image/png', // Specify the image format here, e.g., 'image/jpeg' or 'image/png'
-        1.0, // Quality parameter for 'image/jpeg', ignored for other formats
+        0.1, // Quality parameter for 'image/jpeg', ignored for other formats
       );
     };
 

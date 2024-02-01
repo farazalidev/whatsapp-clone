@@ -3,6 +3,7 @@ import { MessageEntity } from '@server/modules/chat/entities/message.entity';
 import { MessageBubbleImagePreview } from './MessageBubbleImagePreview';
 import { MessageBubbleVideoPreview } from './MessageBubbleVideoPreview';
 import { TextMessagePreview } from './MessageBubbleTextPreview';
+import { MessageBubbleOtherFilesPreview } from './MessageBullbleOtherPreview';
 
 interface IMessageBubble {
   isFromMe: boolean | undefined;
@@ -25,7 +26,7 @@ const MessageBubble: FC<IMessageBubble> = ({ isFromMe, message }) => {
     <>
       {message?.messageType === "image" || message?.messageType === "svg" ?
         <MessageBubbleImagePreview isFromMe={isFromMe} message={message} key={message?.id} messageLines={messageLines} />
-        : message?.messageType === "video" ? <MessageBubbleVideoPreview isFromMe={isFromMe} message={message} key={message?.id} messageLines={messageLines} /> : message?.messageType === "text" ? <TextMessagePreview isFromMe={isFromMe} message={message} messageLines={messageLines} /> : null}
+        : message?.messageType === "video" ? <MessageBubbleVideoPreview isFromMe={isFromMe} message={message} key={message?.id} messageLines={messageLines} /> : message?.messageType === "text" ? <TextMessagePreview isFromMe={isFromMe} message={message} messageLines={messageLines} /> : message?.messageType === "others" ? <MessageBubbleOtherFilesPreview isFromMe={isFromMe} message={message} key={message.id} messageLines={messageLines} /> : null}
 
     </>
   );
