@@ -37,6 +37,6 @@ export class MessageMediaEntity {
   @Column({ type: 'varchar' })
   type: expectedFileTypes;
 
-  @Column({ type: 'bytea' })
+  @Column({ type: 'bigint' })
   size: number;
 }

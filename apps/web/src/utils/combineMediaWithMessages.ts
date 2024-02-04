@@ -22,7 +22,7 @@ export const combineMediaWithMessages = (files: SelectedFileType[], from: UserEn
         id: file.id,
         ext: extname(file.file.name),
         path: file.id,
-        size: file.file.size,
+        size: Math.trunc(file.file.size),
         thumbnail_path: file.type === 'video' ? `${file.id}` : null,
         type: file.type,
         chunksUploaded: 0,

@@ -2,12 +2,13 @@ import { useEffect, useState } from 'react';
 import { MessageEntity } from '@server/modules/chat/entities/message.entity';
 import { mainDb } from '@/utils/mainIndexedDB';
 import { fetcher } from '@/utils/fetcher';
-import { IProgressCallback, resumableUpload } from '@/utils/resumeableUpload';
 import { sendMessageFn } from '@/utils/sendMessageFn';
 import { mutate } from 'swr';
 import useSocket from './useSocket';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/global/store';
+import { IProgressCallback, resumableUpload } from '@/utils/resumeableUpload';
+import { managerCallback } from '../utils/resumeableUpload';
 
 interface useMessageMediaState {
   isResumable: boolean;
@@ -20,9 +21,10 @@ interface useMessageMediaState {
 interface useFetchMessageArgs {
   message: MessageEntity | undefined;
   isFromMe: boolean | undefined;
+  shouldContinue?: boolean;
 }
 
-const useFetchMediaMessage = ({ isFromMe, message }: useFetchMessageArgs) => {
+const useFetchMediaMessage = ({ shouldContinue, isFromMe, message }: useFetchMessageArgs) => {
   const [mediaState, setMediaState] = useState<useMessageMediaState>({
     isResumable: false,
     thumbnailUrl: undefined,
@@ -61,7 +63,7 @@ const useFetchMediaMessage = ({ isFromMe, message }: useFetchMessageArgs) => {
           }
 
           const isAttachmentExisted = await fetcher<boolean>(
-            `api/file/is-attachment-existed/${message?.media?.id}/${message?.media?.ext}`,
+            `api/file/is-attachment-existed/${message?.media?.id}${message?.media?.ext}`,
             undefined,
             'json',
             'static',
@@ -69,6 +71,8 @@ const useFetchMediaMessage = ({ isFromMe, message }: useFetchMessageArgs) => {
           // if media is not available on server and localMedia message uploaded chunks are 0 then automatically upload the media
           if (!isAttachmentExisted && message?.media && message?.media?.chunksUploaded === 0 && localDbMedia) {
             // setting loading to be false to show the upload progress
+            console.log('here');
+
             setMediaState((prev) => {
               return { ...prev, isLoading: false };
             });
@@ -78,11 +82,28 @@ const useFetchMediaMessage = ({ isFromMe, message }: useFetchMessageArgs) => {
               setMediaState((prev) => {
                 return { ...prev, uploadProgress: progress };
               });
+
               await mainDb.mediaMessages.update(message?.id, { media: { ...message.media, chunksUploaded } });
             };
-            await resumableUpload(localDbMedia, message.media.chunksUploaded, progressCallback);
+
+            const managerCallback: managerCallback = (manager) => {
+              if (!shouldContinue) {
+                manager.abort();
+              }
+            };
+
+            await resumableUpload(localDbMedia, message.media.chunksUploaded, progressCallback, managerCallback);
+
+            // if user abort the upload then return from the
+            if (!shouldContinue) {
+              setMediaState((prev) => {
+                return { ...prev, error: false, isLoading: false, isResumable: true };
+              });
+              return;
+            }
 
             const messageToSend = await mainDb.mediaMessages.get(message.id);
+            console.log('🚀 ~ fetchVideoAndUpload ~ messageToSend:', messageToSend);
             if (messageToSend) {
               await sendMessageFn({
                 chatSlice,
@@ -99,7 +120,7 @@ const useFetchMediaMessage = ({ isFromMe, message }: useFetchMessageArgs) => {
             await mutate(`api/chats`);
           }
 
-          // if the attachment is not existed on server and uploaded chunks are more that 0, means that the user first started uploading
+          // if the attachment is not existed on server and uploaded chunks are more than 0, means that the user first started uploading
           // but it was failed, then we will show the user a upload button to resume it manually
           else if (!isAttachmentExisted && message?.media?.chunksUploaded && message?.media?.chunksUploaded > 0) {
             setMediaState((prev) => {
@@ -120,7 +141,7 @@ const useFetchMediaMessage = ({ isFromMe, message }: useFetchMessageArgs) => {
         if (!isFromMe) {
           const { thumbnailUrl } = await fetchThumbnailFromTheServer({ isFromMe, message, receiver_id: chatSlice.receiver_id, user_id: Me?.user_id });
           setMediaState((prev) => {
-            return { ...prev, thumbnailUrl };
+            return { ...prev, thumbnailUrl, isLoading: false, error: false };
           });
         }
       } catch (error) {
@@ -132,7 +153,7 @@ const useFetchMediaMessage = ({ isFromMe, message }: useFetchMessageArgs) => {
     };
 
     fetchVideoAndUpload();
-  }, [message, isFromMe, chatSlice, socket, Me?.user_id]);
+  }, [message, isFromMe, chatSlice, socket, Me?.user_id, shouldContinue]);
 
   return mediaState;
 };
@@ -153,15 +174,18 @@ const fetchThumbnailFromTheServer: fetchThumbnailFromTheServerFn = async ({ isFr
     const userId = isFromMe ? user_id : receiver_id;
     const videoThumbnailFetcherUrl = `api/file/get-attachment/${userId}/${message?.media?.id}-thumbnail/.png`;
     const imageThumbnailFetcherUrl = `api/file/get-attachment/${userId}/${message?.media?.id}/${message?.media?.ext}`;
-    const thumbnailBlob = await fetcher(message?.messageType === 'video' ? videoThumbnailFetcherUrl : imageThumbnailFetcherUrl, undefined, 'blob', 'static');
+    if (message?.messageType === 'image' || message?.messageType === 'video' || message?.messageType === 'svg') {
+      const thumbnailBlob = await fetcher(message?.messageType === 'video' ? videoThumbnailFetcherUrl : imageThumbnailFetcherUrl, undefined, 'blob', 'static');
 
-    if (thumbnailBlob instanceof Blob) {
-      const thumbnailUrl = URL.createObjectURL(thumbnailBlob);
-      return { thumbnailUrl };
-    } else {
-      // Handle the case where fetcher didn't return a Blob
-      return { thumbnailUrl: undefined };
+      if (thumbnailBlob instanceof Blob) {
+        const thumbnailUrl = URL.createObjectURL(thumbnailBlob);
+        return { thumbnailUrl };
+      } else {
+        // Handle the case where fetcher didn't return a Blob
+        return { thumbnailUrl: undefined };
+      }
     }
+    return { thumbnailUrl: undefined };
   } catch (error) {
     // Handle errors (e.g., network issues, fetcher failures)
     console.error('Error fetching thumbnail:', error);

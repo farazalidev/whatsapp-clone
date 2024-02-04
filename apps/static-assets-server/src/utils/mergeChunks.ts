@@ -21,5 +21,5 @@ export const mergeChunks = async (user_id: string, file_id: string, ext: string)
   writeStream.end();
 
   // Remove the chunks directory
-  await fs.promises.rm(chunkDir, { recursive: true });
+  // await fs.promises.rm(chunkDir, { recursive: true });
 };

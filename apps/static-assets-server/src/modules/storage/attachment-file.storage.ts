@@ -25,7 +25,7 @@ export const AttachmentFileStorage: MulterOptions = {
       callback(null, path);
     },
     filename(req, file, callback) {
-      callback(null, `${req.headers.file_id || v4()}-original${extname(file.originalname)}`);
+      callback(null, `${req.headers.file_id || v4()}${extname(file.originalname)}`);
     },
   }),
 };
