@@ -348,4 +348,27 @@ export class ChatService {
       };
     }
   }
+
+  async isMessageExistedService(user_id: string, chat_id: string, message_id: string): Promise<ResponseType<boolean>> {
+    try {
+      const message = await this.UserMessageRepo.createQueryBuilder('message')
+        .leftJoinAndSelect('message.from', 'fromUser')
+        .leftJoinAndSelect('message.media', 'media')
+        .leftJoinAndSelect('message.clear_for', 'clearForUser')
+        .leftJoinAndSelect('message.chat', 'chat')
+        .where('message.id = :id', { id: message_id })
+        .andWhere('chat.id = :chatId', { chatId: chat_id })
+        .andWhere('(fromUser.user_id = :userId OR clearForUser.user_id = :userId)', { userId: user_id })
+        .getOne();
+      console.log('🚀 ~ ChatService ~ isMessageExistedService ~ message:', message);
+
+      if (message) {
+        return { success: true, successMessage: 'message founded', data: true };
+      }
+      return { success: false, error: { message: 'message not founded', statusCode: 400 } };
+    } catch (error) {
+      console.log('🚀 ~ ChatService ~ isMessageExistedService ~ error:', error);
+      return { success: false, error: { message: 'Error while getting message', statusCode: 400 } };
+    }
+  }
 }

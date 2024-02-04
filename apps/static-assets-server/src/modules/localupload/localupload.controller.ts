@@ -1,4 +1,4 @@
-import { Controller, Get, HttpException, Param, Post, Req, Res, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { Controller, Get, HttpException, Param, Post, Query, Req, Res, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import 'multer';
 import { ProfilePicStorage } from '../storage/profile-pic.storage';
@@ -20,7 +20,6 @@ import { chunkStorage } from '../storage/chunk.storage';
 import { isAttachmentResumableResponseType } from './types/response.types';
 import { mergeChunks } from 'src/utils/mergeChunks';
 import { ExtendedReq } from 'src/guards/types';
-import { extname } from 'path';
 import { reduceImageQuality } from 'src/utils/reduceImageQuality';
 
 @Controller('file')
@@ -119,17 +118,20 @@ export class LocalUploadController {
   @Post('upload-attachment-file')
   @UseInterceptors(FileInterceptor('attachment-file', AttachmentFileStorage))
   async uploadFile(@GetUser() user: UserEntity, @UploadedFile() file: Express.Multer.File, @Res() res: Response, @Req() req: Request) {
-    const filePath = `${storage.main}${user.user_id}/attachments/${req.headers.file_id}-original${req.headers.ext}`;
-    const writePath = `${storage.main}${user.user_id}/attachments/${req.headers.file_id}${extname(file.originalname)}`;
+    const filePath = `${storage.main}${user.user_id}/attachments/${req.headers.file_id}${req.headers.ext}`;
+    const writePath = `${storage.main}${user.user_id}/attachments/${req.headers.file_id}${req.headers.ext}`;
+    console.log('🚀 ~ LocalUploadController ~ uploadFile ~ filePath:', filePath);
+    console.log('🚀 ~ LocalUploadController ~ uploadFile ~ writePath:', writePath);
     try {
       if (req.headers.ext === '.png' || req.headers.ext === 'jpeg' || req.headers.ext === '.jpg') {
-        await reduceImageQuality({ path: filePath, quality: 30, shouldRemove: true, writePath });
+        await reduceImageQuality({ path: filePath, quality: 30, shouldRemove: false, writePath });
       }
       res.send({
         filePath: req.headers.file_id,
       });
     } catch (error) {
-      fs.unlinkSync(filePath);
+      console.log('🚀 ~ LocalUploadController ~ uploadFile ~ error:', error);
+      // fs.unlinkSync(filePath);
       console.log(error);
     }
   }
@@ -159,30 +161,46 @@ export class LocalUploadController {
 
   @Post('chunk-upload')
   @UseInterceptors(FileInterceptor('attachment-chunk', chunkStorage))
-  async chunksUpload(@UploadedFile() file: Express.Multer.File, @Res() res: Response, @Req() req: ExtendedReq, @GetUser() user: UserEntity) {
-    const chunkNumber = req.headers.chunk_number;
-    const total_chunks = req.headers.total_chunks;
+  async chunksUpload(
+    @UploadedFile() file: Express.Multer.File,
+    @Res() res: Response,
+    @Req() req: ExtendedReq,
+    @GetUser() user: UserEntity,
+    @Query() query: { chunk: number; chunks: number },
+  ) {
+    const chunkNumber = query.chunk;
+    const total_chunks = query.chunks;
+    try {
+      console.log('🚀 ~ LocalUploadController ~ chunksUpload ~ chunkNumber:', chunkNumber, total_chunks, req.headers.file_name);
 
-    // if it is last chunk then merge the file and save it
-    if (Number(chunkNumber) === Number(total_chunks) - 1) {
-      await mergeChunks(user.user_id, req.headers.file_id as string, req.headers.ext);
+      // if it is last chunk then merge the file and save it
+      if (Number(chunkNumber) === Number(total_chunks) - 1) {
+        await mergeChunks(user.user_id, req.headers.file_name as string, req.headers.ext);
+      }
+
+      res.send({
+        chunkNumber,
+        success: true,
+      });
+    } catch (error) {
+      console.log('🚀 ~ LocalUploadController ~ error:', error);
+
+      res.send({
+        chunkNumber,
+        success: true,
+      });
     }
-
-    res.send({
-      filePath: file.originalname,
-    });
   }
 
-  @Get('is-attachment-existed/:path/:ext')
-  async isExisted(@Param() param: { path: string; ext: string }, @GetUser() user: UserEntity) {
-    console.log(param.path + '.' + param.ext);
-
+  @Get('is-attachment-existed/:path')
+  async isExisted(@Param() param: { path: string }, @GetUser() user: UserEntity, @Res() res: Response) {
     try {
-      const filePath = `${storage.main}${user.user_id}/attachments/${param.path}${param.ext}`;
-      fs.readFileSync(filePath);
-      return true;
+      const filePath = `${storage.main}${user.user_id}/attachments/${param.path}`;
+      fs.accessSync(filePath, fs.constants.F_OK);
+      res.send(true);
     } catch (error) {
-      return false;
+      console.log('🚀 ~ LocalUploadController ~ isExisted ~ error:', error);
+      res.send(false);
     }
   }
 

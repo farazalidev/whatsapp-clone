@@ -10,7 +10,10 @@ export const chunkStorage: MulterOptions = {
       callback(null, `${Date.now()}-${req.headers.chunk_number}`);
     },
     destination(req, file, callback) {
-      const path = `${storage.main}/${(req as ExtendedReq).user.user_id}/attachments-chunks/${req.headers.file_id}`;
+      const path = `${storage.main}/${(req as ExtendedReq).user.user_id}/attachments-chunks/${req.headers.file_name}/`;
+      const attachmentsChunksPath = `${storage.main}${(req as ExtendedReq).user.user_id}/attachments-chunks/`;
+      const isAttachmentsFolderExisted = fs.existsSync(attachmentsChunksPath);
+      if (!isAttachmentsFolderExisted) fs.mkdirSync(attachmentsChunksPath);
       const isPatchExisted = fs.existsSync(path);
       if (!isPatchExisted) fs.mkdirSync(path);
       callback(null, path);

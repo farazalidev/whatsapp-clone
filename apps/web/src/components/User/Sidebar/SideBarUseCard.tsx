@@ -3,6 +3,7 @@ import Avatar, { AvatarProps } from '../Avatar';
 import { cn } from '@/utils/cn';
 import SideBarUserCardOptions from './SideBarUserCardOptions';
 import UnreadCount from './UnreadCount';
+import { clampString } from '@/utils/clamp';
 
 interface SideBarUserCardProps extends AvatarProps {
   name: string;
@@ -40,11 +41,9 @@ const SideBarUserCard: FC<SideBarUserCardProps> = ({
       </span>
       <div className="border-whatsapp-light-secondary_bg dark:border-whatsapp-dark-secondary_bg flex w-full place-items-center  justify-between border-b-[1px] px-3">
         <div className="flex flex-col justify-evenly">
-          <span className="w-[50%] overflow-ellipsis whitespace-nowrap text-sm md:text-base">{`${
-            name && name?.length < 25 ? name : name?.slice(0, 25) + '...'
-          }`}</span>
+          <span className="w-[50%] overflow-ellipsis whitespace-nowrap text-sm md:text-base">{clampString(name, 25)}</span>
           <span className=" w-full text-ellipsis text-xs font-extralight text-gray-600 dark:text-gray-400 md:text-sm">
-            {last_message ? `${last_message?.length < 25 ? last_message : last_message?.slice(0, 25) + '...'}` : null}
+            {last_message ? clampString(last_message, 25) : null}
           </span>
         </div>
         {show_options ? (

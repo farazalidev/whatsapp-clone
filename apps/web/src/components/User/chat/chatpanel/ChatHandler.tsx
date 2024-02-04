@@ -62,7 +62,7 @@ const ChatHandler: FC<ChatHandlerProps> = () => {
 
   return (
     <>
-      <div className="flex h-full w-full flex-col gap-1 overflow-y-scroll px-4 py-2 scrollbar">
+      <div className="flex h-full w-full flex-col gap-1 overflow-y-scroll px-7 py-2 scrollbar">
         {chat?.messages
           ? [...chat.messages]
 
