@@ -1,5 +1,7 @@
 import { extname } from 'path';
 import { Mutation } from './fetcher';
+import { createFileChunk } from './file/createFileChunk';
+import { calculateChecksumPromise } from './file/calculateFileChecksum';
 
 type IPerformActionArgs = { chunksUploaded: number; totalChunks: number; progress: number };
 
@@ -7,8 +9,8 @@ export type IPerformAction = (args: IPerformActionArgs) => void | Promise<void>;
 
 export interface ResumableUploadProps {
   file: File | null;
-  startFromChunk: number | undefined;
   file_name: string;
+  startByte?: number;
   onProgress: (progress: number, isLoading: boolean) => void;
   performAction?: IPerformAction;
 }
@@ -16,21 +18,17 @@ export interface ResumableUploadProps {
 export class ResumableUpload {
   private file: File | null = null;
   private file_name: string | null;
-  private startFromChunk: number = 0;
-  private currentChunk: number = 0;
-  private totalChunks: number;
-  private chunks: Blob[] = [];
   private isLoading: boolean = true;
-  private onProgress: (progress: number, isLoading: boolean) => void;
+  private onProgress: (progress: number, isLoading: boolean, uploadedBytes: number) => void;
   private controller: AbortController | null = null;
-  private performAction: IPerformAction | undefined;
+  private startByte: number = 0;
+  private error: boolean = false;
 
   constructor(props: ResumableUploadProps) {
     this.file = props.file;
-    this.startFromChunk = props.startFromChunk || 0;
     this.file_name = props.file_name;
     this.onProgress = props.onProgress;
-    this.performAction = props.performAction;
+    this.startByte = props.startByte || 0;
 
     if (!this.controller) {
       this.controller = new AbortController();
@@ -38,85 +36,60 @@ export class ResumableUpload {
   }
 
   uploadChunk() {
-    if (this.file) {
-      if (!this.chunks || !this.totalChunks) {
-        this.splitFileIntoChunks();
-      }
-
-      const formData = new FormData();
-      formData.append('attachment-chunk', this.chunks[this.currentChunk]);
-
+    {
       this.isLoading = false;
-      this.sendChunk(formData);
+      this.uploadFileIntoChunks(this.startByte);
     }
   }
 
-  private splitFileIntoChunks() {
-    // if there is file and the signal is not aborted then resume upload
-    if (this.file && !this.controller?.signal.aborted) {
-      const totalChunks = Math.ceil(this.file?.size / (2 * 1024 * 1024));
-      const chunkSize = Math.ceil(this.file.size / totalChunks);
+  private async uploadFileIntoChunks(startByte: number) {
+    if (this.file && this.file.size) {
+      const fileSize = this.file.size;
+      const chunk = createFileChunk(this.file, this.startByte, 1);
+      const formData = new FormData();
+      formData.append('attachment-chunk', chunk);
+      const fileName = this.file.name;
 
-      const chunks = [];
+      calculateChecksumPromise(chunk)
+        .then((checksum) => {
+          Mutation<FormData, { success: boolean; uploadedSize: number }>('api/file/upload-chunk', formData, 'static', {
+            headers: {
+              file_name: this.file_name,
+              ext: extname(fileName),
+              sended_at: Date.now(),
+              bytesUploaded: this.startByte,
+              totalFileSize: fileSize,
+              checksum,
+            },
+            signal: this.controller?.signal,
+          })
+            .then((response) => {
+              console.log('🚀 ~ ResumableUpload ~ .then ~ response:', response);
+              // if chunk upload successful then plus the bytes
+              if (response.success) {
+                this.startByte += response.uploadedSize;
+                const progress = (this.startByte / fileSize) * 100;
+                this.onProgress(progress, this.isLoading, this.startByte);
+                if (startByte < fileSize) {
+                  this.uploadChunk();
+                }
+              }
 
-      // Splitting file into chunks starting from the specified index
-      for (let i = this.startFromChunk; i < totalChunks; i++) {
-        const start = i * chunkSize;
-        const end = (i + 1) * chunkSize;
-        chunks.push(this.file.slice(start, end));
-      }
-
-      this.totalChunks = totalChunks;
-      this.chunks = chunks;
-
-      if (this.currentChunk < this.totalChunks - 1) {
-        this.isLoading = false;
-      }
-
-      if (this.currentChunk === this.totalChunks - 1) {
-        this.isLoading = false;
-      }
-    }
-  }
-
-  private sendChunk(formData: FormData) {
-    if (this.currentChunk === this.totalChunks - 2) {
-      this.isLoading = true;
-    }
-    if (this.file) {
-      Mutation<FormData, { success: boolean; chunkNumber: number }>(
-        `api/file/chunk-upload?chunk=${this.currentChunk}&chunks=${this.totalChunks}`,
-        formData,
-        'static',
-        {
-          headers: {
-            file_name: this.file_name,
-            chunk_number: this.currentChunk,
-            ext: extname(this.file?.name),
-          },
-          signal: this.controller?.signal,
-        },
-      )
-        .then((response) => {
-          if (response.success) {
-            this.currentChunk++;
-
-            const progress = (this.currentChunk / this.totalChunks) * 100;
-
-            this.onProgress(progress, this.isLoading);
-
-            // perform action from the parent
-            if (this.performAction) {
-              this.performAction({ chunksUploaded: this.currentChunk, progress, totalChunks: this.totalChunks });
-            }
-
-            if (this.currentChunk < this.totalChunks) {
-              this.uploadChunk();
-            }
-          }
+              // if any chunk got corrupted then again upload that chunk
+              if (!response.success) {
+                if (startByte < fileSize) {
+                  this.uploadChunk();
+                }
+              }
+            })
+            .catch((err) => {
+              console.log('🚀 ~ ResumableUpload ~ uploadFileIntoChunks ~ err:', err);
+              return (this.error = true);
+            });
         })
-        .catch((err) => {
-          console.error(err);
+        .catch((er) => {
+          console.log('🚀 ~ ResumableUpload ~ uploadFileIntoChunks ~ er:', er);
+          return this.error === true;
         });
     }
   }

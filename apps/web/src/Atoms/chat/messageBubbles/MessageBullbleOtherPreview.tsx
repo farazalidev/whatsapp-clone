@@ -26,6 +26,7 @@ export const MessageBubbleOtherFilesPreview: FC<IMessageBubblePreview> = ({ mess
 
       if (isFileAvailableOnServer) {
         setState({ isLoading: false, progress: 100 })
+        return
       }
 
       // if the file is not available on the server
@@ -42,46 +43,30 @@ export const MessageBubbleOtherFilesPreview: FC<IMessageBubblePreview> = ({ mess
               setState(prev => { return { ...prev, progress, isLoading } })
 
             }
-            const manager = new ResumableUpload({ file: file.file, file_name: message?.media?.id, startFromChunk: message?.media?.chunksUploaded, onProgress })
+            const performAction: IPerformAction = async ({ chunksUploaded }) => {
+              await mainDb.mediaMessages.update(message?.id, { media: { ...message.media, chunksUploaded } });
+            }
+            const manager = new ResumableUpload({ file: file.file, file_name: message?.media?.id, onProgress, performAction, startByte: 0 })
             setUploadManager(manager)
 
           }
         }
+
+        // if the file is not on server and local db then add this message to DLQ
+        // TODO: DLQ implementation
+
       }
 
-
-      if (message?.media) {
-        const file = await mainDb.media.get(message?.media?.id)
-
-        // if file founded in indexed db
-        if (file) {
-          const onProgress = (progress: number, isLoading: boolean) => {
-            setState(prev => { return { ...prev, progress, isLoading } })
-          }
-
-          const performAction: IPerformAction = async ({ chunksUploaded }) => {
-            await mainDb.mediaMessages.update(message?.id, { media: { ...message.media, chunksUploaded } });
-          }
-
-          // before uploading the file we have to check if the file exists on the server or not
-          const manager = new ResumableUpload({ file: file.file, file_name: message?.media?.id, startFromChunk: message?.media?.chunksUploaded, onProgress, performAction })
-          setUploadManager(manager)
-
-        }
-      }
     }
-    getManager()
 
-  }, [message])
+    if (isFromMe) {
+      getManager()
 
-
-
-  useEffect(() => {
-    // if there is not a single chunk uploaded then we will automatically start the uploading
-    if (message?.media?.chunksUploaded === 0) {
-      uploadManager?.uploadChunk()
     }
-  }, [message?.media?.chunksUploaded, uploadManager])
+
+  }, [message, isFromMe])
+
+
 
   // manual upload
   const handleRetry = () => {
@@ -97,6 +82,11 @@ export const MessageBubbleOtherFilesPreview: FC<IMessageBubblePreview> = ({ mess
     console.log('pause clicked');
 
     uploadManager?.cancel()
+  }
+
+  const handleDownload = () => {
+    console.log('download clicked');
+
   }
 
 
@@ -115,7 +105,7 @@ export const MessageBubbleOtherFilesPreview: FC<IMessageBubblePreview> = ({ mess
         </div>
         <span className="flex justify-center place-items-center">
           {/* progress bar */}
-          <ProgressBar barStyle="circle" isLoading={state?.isLoading} progress={state?.progress || 0} showDownloadButton onRetryClick={handleRetry} onPauseClick={handlePause} />
+          <ProgressBar barStyle="circle" isLoading={state?.isLoading} progress={state?.progress || 0} showDownloadButton onRetryClick={handleRetry} onPauseClick={handlePause} onDownloadClick={handleDownload} />
         </span>
       </div>
       {isFromMe ?

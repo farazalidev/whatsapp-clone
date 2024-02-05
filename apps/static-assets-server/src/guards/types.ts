@@ -4,10 +4,14 @@ import { IncomingHttpHeaders } from 'http';
 import * as core from 'express-serve-static-core';
 
 interface NewHeaders {
-  file_id: string;
+  file_name: string;
   total_chunks: string;
   chunk_number: string;
   ext: string;
+  checksum: string;
+  sended_at: string;
+  bytesUploaded: number;
+  totalFileSize: number;
 }
 
 export interface ExtendedReq extends Request<core.ParamsDictionary, any, any, core.Query> {

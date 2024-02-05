@@ -13,12 +13,6 @@ export class MessageMediaEntity {
   @Column({ type: 'uuid' })
   path: string;
 
-  @Column({ nullable: true })
-  totalChunks?: number;
-
-  @Column({ nullable: true })
-  chunksUploaded?: number;
-
   @Column()
   ext: string;
 

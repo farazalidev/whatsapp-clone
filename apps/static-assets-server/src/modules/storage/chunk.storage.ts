@@ -7,7 +7,7 @@ import { ExtendedReq } from 'src/guards/types';
 export const chunkStorage: MulterOptions = {
   storage: diskStorage({
     filename(req, file, callback) {
-      callback(null, `${Date.now()}-${req.headers.chunk_number}`);
+      callback(null, `${req.headers.sended_at}`);
     },
     destination(req, file, callback) {
       const path = `${storage.main}/${(req as ExtendedReq).user.user_id}/attachments-chunks/${req.headers.file_name}/`;

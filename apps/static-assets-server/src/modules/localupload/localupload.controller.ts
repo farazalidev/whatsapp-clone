@@ -1,4 +1,4 @@
-import { Controller, Get, HttpException, Param, Post, Query, Req, Res, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { Controller, Get, HttpException, Param, Post, Req, Res, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import 'multer';
 import { ProfilePicStorage } from '../storage/profile-pic.storage';
@@ -6,7 +6,7 @@ import * as fs from 'fs';
 import { storage } from '../storage/storage';
 import { LocalUploadService } from './localupload.service';
 import { isSuccess } from '@server/utils/isSuccess.typeguard';
-import { Request, Response } from 'express';
+import { Response } from 'express';
 import { GetUser } from '@server/modules/auth/decorators/getuser.decorator';
 import { UserEntity } from '@server/modules/user/entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -21,6 +21,9 @@ import { isAttachmentResumableResponseType } from './types/response.types';
 import { mergeChunks } from 'src/utils/mergeChunks';
 import { ExtendedReq } from 'src/guards/types';
 import { reduceImageQuality } from 'src/utils/reduceImageQuality';
+import * as fsPromises from 'fs/promises';
+import { join } from 'path';
+import { calculateChecksum } from 'src/utils/calculateChecksum';
 
 @Controller('file')
 export class LocalUploadController {
@@ -60,7 +63,6 @@ export class LocalUploadController {
         maxAge: 300 * 1000,
       });
     } catch (error) {
-      console.log('🚀 ~ LocalUploadController ~ readProfilePic ~ error:', error);
       return res.status(404).json({ error: 'File not found' });
     }
   }
@@ -68,7 +70,6 @@ export class LocalUploadController {
   // read others profile pic
   @Get('read-other/profile-pic/:receiverid/:size')
   async readOtherProfilePic(@GetUser() user: UserEntity, @Res() res: Response, @Param() param: { path: string; size: string; receiverid: string }) {
-    console.log('🚀 ~ LocalUploadController ~ readOtherProfilePic ~ user:', user);
     try {
       const isIamAcceptor = await this.userChatRepo.findOne({ where: [{ chat_with: { user_id: user.user_id } }, { chat_for: { user_id: param.receiverid } }] });
 
@@ -86,14 +87,9 @@ export class LocalUploadController {
         });
       }
 
-      console.log('receiverid', param.receiverid);
-      console.log('user_id', user.user_id);
-
       const isUserInTheContact = await this.contactRepo.findOne({
         where: [{ contact_for: { user_id: param.receiverid } }, { contact: { user_id: user.user_id } }],
       });
-
-      console.log('🚀 ~ LocalUploadController ~ readOtherProfilePic ~ isUserInTheContact:', isUserInTheContact);
 
       if (!isUserInTheContact) {
         throw new HttpException('this user is not in your contact list', 400);
@@ -117,11 +113,9 @@ export class LocalUploadController {
 
   @Post('upload-attachment-file')
   @UseInterceptors(FileInterceptor('attachment-file', AttachmentFileStorage))
-  async uploadFile(@GetUser() user: UserEntity, @UploadedFile() file: Express.Multer.File, @Res() res: Response, @Req() req: Request) {
+  async uploadFile(@GetUser() user: UserEntity, @UploadedFile() file: Express.Multer.File, @Res() res: Response, @Req() req: ExtendedReq) {
     const filePath = `${storage.main}${user.user_id}/attachments/${req.headers.file_id}${req.headers.ext}`;
     const writePath = `${storage.main}${user.user_id}/attachments/${req.headers.file_id}${req.headers.ext}`;
-    console.log('🚀 ~ LocalUploadController ~ uploadFile ~ filePath:', filePath);
-    console.log('🚀 ~ LocalUploadController ~ uploadFile ~ writePath:', writePath);
     try {
       if (req.headers.ext === '.png' || req.headers.ext === 'jpeg' || req.headers.ext === '.jpg') {
         await reduceImageQuality({ path: filePath, quality: 30, shouldRemove: false, writePath });
@@ -130,14 +124,12 @@ export class LocalUploadController {
         filePath: req.headers.file_id,
       });
     } catch (error) {
-      console.log('🚀 ~ LocalUploadController ~ uploadFile ~ error:', error);
       // fs.unlinkSync(filePath);
-      console.log(error);
     }
   }
   @Post('upload-attachment-thumbnail')
   @UseInterceptors(FileInterceptor('attachment-thumbnail', AttachmentThumbnailStorage))
-  async uploadAttachmentsThumbnail(@GetUser() user, @UploadedFile() file: Express.Multer.File, @Res() res: Response, @Req() req: Request) {
+  async uploadAttachmentsThumbnail(@GetUser() user, @UploadedFile() file: Express.Multer.File, @Res() res: Response, @Req() req: ExtendedReq) {
     const path = `${storage.main}${user.user_id}/attachments/${req.headers.file_name}-original-thumbnail${req.headers.ext}`;
     const writePath = `${storage.main}${user.user_id}/attachments/${req.headers.file_name}-thumbnail${req.headers.ext}`;
 
@@ -159,39 +151,6 @@ export class LocalUploadController {
     });
   }
 
-  @Post('chunk-upload')
-  @UseInterceptors(FileInterceptor('attachment-chunk', chunkStorage))
-  async chunksUpload(
-    @UploadedFile() file: Express.Multer.File,
-    @Res() res: Response,
-    @Req() req: ExtendedReq,
-    @GetUser() user: UserEntity,
-    @Query() query: { chunk: number; chunks: number },
-  ) {
-    const chunkNumber = query.chunk;
-    const total_chunks = query.chunks;
-    try {
-      console.log('🚀 ~ LocalUploadController ~ chunksUpload ~ chunkNumber:', chunkNumber, total_chunks, req.headers.file_name);
-
-      // if it is last chunk then merge the file and save it
-      if (Number(chunkNumber) === Number(total_chunks) - 1) {
-        await mergeChunks(user.user_id, req.headers.file_name as string, req.headers.ext);
-      }
-
-      res.send({
-        chunkNumber,
-        success: true,
-      });
-    } catch (error) {
-      console.log('🚀 ~ LocalUploadController ~ error:', error);
-
-      res.send({
-        chunkNumber,
-        success: true,
-      });
-    }
-  }
-
   @Get('is-attachment-existed/:path')
   async isExisted(@Param() param: { path: string }, @GetUser() user: UserEntity, @Res() res: Response) {
     try {
@@ -199,7 +158,6 @@ export class LocalUploadController {
       fs.accessSync(filePath, fs.constants.F_OK);
       res.send(true);
     } catch (error) {
-      console.log('🚀 ~ LocalUploadController ~ isExisted ~ error:', error);
       res.send(false);
     }
   }
@@ -248,5 +206,72 @@ export class LocalUploadController {
   async getAllMediaOfChat(@Param() param: { chat_id: string }, @Res() res: Response) {
     const mediaMessages = await this.localUploadService.getAllMediaOfChatService(param.chat_id);
     res.json(mediaMessages);
+  }
+
+  @Post('upload-chunk')
+  @UseInterceptors(FileInterceptor('attachment-chunk', chunkStorage))
+  async uploadChunk(@Req() req: ExtendedReq, @GetUser() user: UserEntity, @UploadedFile() file: Express.Multer.File, @Res() res: Response) {
+    // we will receive a chunk of a file from the server
+    // The client side will send us the chunk and it md5 hash
+    // we will save the chunk in the storage and then we will perform SHA-256 checksum
+    // if the checksum was successful then we will send the success response
+    // else we wil remove that chunk from storage and then we will requests client to send
+    // that chunk again
+
+    const filePath = `${storage.main}${user.user_id}/attachments-chunks/${req.headers.file_name}/${req.headers.sended_at}`;
+    try {
+      const sendedFileHash = req.headers.checksum;
+
+      const bytesUploaded = req.headers.bytesUploaded;
+      const totalFileSize = req.headers.totalFileSize;
+
+      // file checksum
+      const fileSHA256hash = await calculateChecksum(filePath, 'SHA-256', 'hex');
+      // console.log('🚀 ~ LocalUploadController ~ uploadChunk ~ fileSHA256hash:', fileSHA256hash, '\n', sendedFileHash);
+      if (fileSHA256hash === sendedFileHash) {
+        // if the sended chunk is last chunk then merge all chunks
+        if (bytesUploaded === totalFileSize) {
+          await mergeChunks(user.user_id, req.headers.file_name, req.headers.ext);
+        }
+        return res.json({ success: true, uploadedSize: file.size });
+      }
+
+      fs.unlinkSync(filePath);
+
+      return res.json({ success: false, uploadedSize: file.size });
+    } catch (error) {
+      console.log('🚀 ~ LocalUploadController ~ uploadChunk ~ error:', error);
+      fs.unlinkSync(filePath);
+      return res.json({ success: false });
+    }
+  }
+
+  @Get('chunks-size/:dir')
+  async getChunksInfo(@GetUser() user: UserEntity, @Param() param: { dir: string }, @Res() res: Response) {
+    const directory = `${storage.main}${user.user_id}/attachments-chunks/${param.dir}/`;
+
+    try {
+      const files = await fsPromises.readdir(directory);
+
+      // Filtering files
+      const fileNames = files.filter(async (file) => (await fsPromises.stat(join(directory, file))).isFile());
+
+      let directorySize = 0;
+
+      for (let i = 0; i < fileNames.length; i++) {
+        const filePath = join(directory, fileNames[i]);
+
+        // Get file size in bytes
+        const fileSize = (await fsPromises.stat(filePath)).size;
+        console.log('🚀 ~ LocalUploadController ~ fileNames.forEach ~ fileSize:', fileSize);
+
+        directorySize += fileSize;
+      }
+
+      return res.json({ uploadedFileSize: directorySize });
+    } catch (err) {
+      console.error('🚀 ~ LocalUploadController ~ getChunksInfo ~ err:', err);
+      return res.json({ uploadedFileSize: 0 });
+    }
   }
 }
