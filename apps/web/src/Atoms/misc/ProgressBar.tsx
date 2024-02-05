@@ -13,9 +13,10 @@ interface ProgressBarProps extends React.DetailedHTMLProps<React.HTMLAttributes<
   showDownloadButton: boolean
   onRetryClick?: () => void
   onPauseClick?: () => void
+  onDownloadClick?: () => void
 }
 
-const ProgressBar: FC<ProgressBarProps> = ({ barStyle, isLoading, progress, showDownloadButton, onPauseClick, onRetryClick, ...props }) => {
+const ProgressBar: FC<ProgressBarProps> = ({ barStyle, isLoading, progress, showDownloadButton, onPauseClick, onRetryClick, onDownloadClick, ...props }) => {
   const circleControl = useAnimation();
 
 
@@ -31,10 +32,10 @@ const ProgressBar: FC<ProgressBarProps> = ({ barStyle, isLoading, progress, show
 
       {/* show the cancel button when the progress is less than 95 */}
       {!isLoading && progress > 0 && progress < 95 ?
-        <span onClick={onPauseClick}><Image src={'/icons/cross.svg'} alt='cancel' width={35} height={35} /></span> : progress < 100 ? <span onClick={onRetryClick}><Image src={'/icons/upload.svg'} alt='retry' width={15} height={15} /></span> : null
+        <span className='h-full w-full z-10'><Image onClick={onPauseClick} className="cursor-pointer border" src={'/icons/cross.svg'} alt='cancel' width={35} height={35} /></span> : progress < 100 ? <span className='h-full w-full z-10'><Image className="cursor-pointer" onClick={onRetryClick} src={'/icons/upload.svg'} alt='retry' width={15} height={15} /></span> : null
       }
 
-      {showDownloadButton && progress === 100 ? <span><Image src={'/icons/gallery-icons/download.svg'} width={35} height={35} alt='download' /></span> : null}
+      {showDownloadButton && progress === 100 ? <span><Image onClick={onDownloadClick} className='cursor-pointer' src={'/icons/gallery-icons/download.svg'} width={35} height={35} alt='download' /></span> : null}
 
 
       {isLoading ?

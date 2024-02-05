@@ -24,6 +24,8 @@ export interface SelectedFileType {
   width: number | null
   height: number | null
   original_name: string
+  fileChecksum: string
+
 }
 
 interface ISelectedFiles {
