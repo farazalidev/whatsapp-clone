@@ -2,53 +2,63 @@ import { extname } from 'path';
 import { Mutation } from './fetcher';
 import { createFileChunk } from './file/createFileChunk';
 import { calculateChecksumPromise } from './file/calculateFileChecksum';
+import { SelectedFileType } from '@/components/User/chat/chatpanel/SelectedFiles';
 
-type IPerformActionArgs = { chunksUploaded: number; totalChunks: number; progress: number };
+type IPerformActionArgs = { uploadedBytes: number | undefined; progress: number };
 
-export type IPerformAction = (args: IPerformActionArgs) => void | Promise<void>;
+export type IPerformAction = (args: IPerformActionArgs) => Promise<void>;
+
+export type IResumableUploadProgress = (progress: number, isLoading: boolean, uploadedBytes: number) => void;
 
 export interface ResumableUploadProps {
-  file: File | null;
-  file_name: string;
+  selectedFile: SelectedFileType | null | undefined;
+  file_name: string | undefined;
   startByte?: number;
-  onProgress: (progress: number, isLoading: boolean) => void;
-  performAction?: IPerformAction;
+  onProgress: IResumableUploadProgress;
+  lastAction?: IPerformAction;
 }
 
 export class ResumableUpload {
-  private file: File | null = null;
-  private file_name: string | null;
+  private selectedFile: SelectedFileType | null | undefined = null;
+  private file_name: string | null | undefined;
   private isLoading: boolean = true;
-  private onProgress: (progress: number, isLoading: boolean, uploadedBytes: number) => void;
+  private onProgress: IResumableUploadProgress;
   private controller: AbortController | null = null;
   private startByte: number = 0;
   private error: boolean = false;
+  private lastAction: IPerformAction | undefined;
 
   constructor(props: ResumableUploadProps) {
-    this.file = props.file;
+    this.selectedFile = props.selectedFile;
     this.file_name = props.file_name;
     this.onProgress = props.onProgress;
     this.startByte = props.startByte || 0;
+    this.isLoading = true;
+    this.lastAction = props.lastAction;
 
     if (!this.controller) {
       this.controller = new AbortController();
     }
   }
 
-  uploadChunk() {
+  uploadChunk(startByte?: number) {
     {
+      if (startByte) {
+        this.startByte = startByte;
+      }
+
       this.isLoading = false;
       this.uploadFileIntoChunks(this.startByte);
     }
   }
 
   private async uploadFileIntoChunks(startByte: number) {
-    if (this.file && this.file.size) {
-      const fileSize = this.file.size;
-      const chunk = createFileChunk(this.file, this.startByte, 1);
+    if (this.selectedFile && this.selectedFile.file.size) {
+      const fileSize = this.selectedFile.file.size;
+      const chunk = createFileChunk(this.selectedFile.file, this.startByte, 1);
       const formData = new FormData();
       formData.append('attachment-chunk', chunk);
-      const fileName = this.file.name;
+      const fileName = this.selectedFile.file.name;
 
       calculateChecksumPromise(chunk)
         .then((checksum) => {
@@ -57,19 +67,37 @@ export class ResumableUpload {
               file_name: this.file_name,
               ext: extname(fileName),
               sended_at: Date.now(),
-              bytesUploaded: this.startByte,
-              totalFileSize: fileSize,
+              bytes_uploaded: this.startByte,
+              total_file_size: fileSize,
               checksum,
+              file_checksum: this.selectedFile?.fileChecksum,
             },
             signal: this.controller?.signal,
           })
-            .then((response) => {
+            .then(async (response) => {
               console.log('🚀 ~ ResumableUpload ~ .then ~ response:', response);
               // if chunk upload successful then plus the bytes
               if (response.success) {
                 this.startByte += response.uploadedSize;
                 const progress = (this.startByte / fileSize) * 100;
+
+                if (progress === 99) {
+                  this.isLoading = true;
+                }
+
+                if (progress === 100) {
+                  this.isLoading = false;
+                }
+
                 this.onProgress(progress, this.isLoading, this.startByte);
+
+                if (startByte === fileSize) {
+                  if (this.lastAction) {
+                    this.isLoading = true;
+                    await this.lastAction({ uploadedBytes: this.startByte, progress });
+                    this.isLoading = false;
+                  }
+                }
                 if (startByte < fileSize) {
                   this.uploadChunk();
                 }
@@ -96,5 +124,9 @@ export class ResumableUpload {
 
   cancel() {
     this.controller?.abort();
+  }
+
+  resume() {
+    this.controller = new AbortController();
   }
 }
