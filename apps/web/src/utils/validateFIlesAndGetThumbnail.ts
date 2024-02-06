@@ -36,6 +36,7 @@ export const validateFilesAndGetThumbnails: validateFilesAndGetThumbnailsType = 
             original_name: file.file.name,
             width: null,
             fileChecksum,
+            uploadedFileSize: 0,
           });
         }
         // if the file actual type and extension matched
@@ -53,6 +54,7 @@ export const validateFilesAndGetThumbnails: validateFilesAndGetThumbnailsType = 
             width,
             original_name: file.file.name,
             fileChecksum,
+            uploadedFileSize: 0,
           });
         }
       }
@@ -76,6 +78,7 @@ export const validateFilesAndGetThumbnails: validateFilesAndGetThumbnailsType = 
             original_name: file.file.name,
             width: null,
             fileChecksum,
+            uploadedFileSize: 0,
           });
         }
         // if the file ext matched
@@ -93,6 +96,7 @@ export const validateFilesAndGetThumbnails: validateFilesAndGetThumbnailsType = 
             width: Math.round(dimensions.width),
             original_name: file.file.name,
             fileChecksum,
+            uploadedFileSize: 0,
           });
         }
       }
@@ -118,6 +122,7 @@ export const validateFilesAndGetThumbnails: validateFilesAndGetThumbnailsType = 
             original_name: file.file.name,
             width: null,
             fileChecksum,
+            uploadedFileSize: 0,
           });
         }
         // if the file ext matched
@@ -135,6 +140,7 @@ export const validateFilesAndGetThumbnails: validateFilesAndGetThumbnailsType = 
             original_name: file.file.name,
             width: Math.round(dimensions.width),
             fileChecksum,
+            uploadedFileSize: 0,
           });
         }
       }
@@ -158,6 +164,7 @@ export const validateFilesAndGetThumbnails: validateFilesAndGetThumbnailsType = 
             width: null,
             original_name: file.file.name,
             fileChecksum,
+            uploadedFileSize: 0,
           });
         }
         // if the file ext matched
@@ -173,6 +180,7 @@ export const validateFilesAndGetThumbnails: validateFilesAndGetThumbnailsType = 
             width: null,
             original_name: file.file.name,
             fileChecksum,
+            uploadedFileSize: 0,
           });
         }
       }
@@ -193,6 +201,7 @@ export const validateFilesAndGetThumbnails: validateFilesAndGetThumbnailsType = 
           width: null,
           original_name: file.file.name,
           fileChecksum,
+          uploadedFileSize: 0,
         });
       }
     }

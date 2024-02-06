@@ -13,7 +13,7 @@ export class MainDB extends Dexie {
   constructor() {
     super('mainDb');
     this.version(1.4).stores({
-      media: 'id, file, type, thumbnailUrl, url, attachedMessage, thumbnailPath,fileChecksum',
+      media: 'id, file, type, thumbnailUrl, url, attachedMessage, thumbnailPath,fileChecksum,uploadedFileSize',
       mediaMessages: 'id, content, sended_at, messageType, media, is_seen, received_at, seen_at, from, clear_for, sended,chat',
     });
   }

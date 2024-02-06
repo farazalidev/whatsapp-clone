@@ -10,8 +10,9 @@ interface NewHeaders {
   ext: string;
   checksum: string;
   sended_at: string;
-  bytesUploaded: number;
-  totalFileSize: number;
+  bytes_uploaded: number;
+  total_file_size: number;
+  file_checksum: string;
 }
 
 export interface ExtendedReq extends Request<core.ParamsDictionary, any, any, core.Query> {

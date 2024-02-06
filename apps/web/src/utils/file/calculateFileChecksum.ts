@@ -49,12 +49,3 @@ export const calculateChecksumPromise = (data: Blob | File) => {
     fileReader.readAsArrayBuffer(data);
   });
 };
-
-export const calculateChecksumNoRead = async (data: Blob | File): Promise<string> => {
-  const crypto = window.crypto;
-
-  const buffer = await crypto.subtle.digest('SHA-256', await crypto.subtle.digest('SHA-256', new Uint8Array(await data.arrayBuffer())));
-  const hashArray = Array.from(new Uint8Array(buffer));
-  const checksum = hashArray.map((byte) => byte.toString(16).padStart(2, '0')).join('');
-  return checksum;
-};

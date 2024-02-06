@@ -15,7 +15,6 @@ interface ISendMessageFnArgs {
 type SendMessageFnType = (args: ISendMessageFnArgs) => Promise<boolean>;
 
 export const sendMessageFn: SendMessageFnType = async ({ chatSlice, receiver_id, socket, message }) => {
-  console.log('🚀 ~ constsendMessageFn:SendMessageFnType= ~ message:', message);
   try {
     if (chatSlice.started_from === 'chat') {
       // if the user selects from chat and there is not chat existed
@@ -35,4 +34,23 @@ export const sendMessageFn: SendMessageFnType = async ({ chatSlice, receiver_id,
     console.error('Error while sending message');
     return false;
   }
+};
+
+export const sendMessageFnPromises: SendMessageFnType = async ({ chatSlice, message, receiver_id, socket }) => {
+  return new Promise<boolean>((resolve, reject) => {
+    if (chatSlice.started_from === 'chat') {
+      // if the user selects from chat and there is not chat existed
+      // then create a new chat
+
+      socket?.emit('send_message', { chat_id: chatSlice.id, message: { ...message }, receiverId: receiver_id });
+      if (message.messageType === 'text') {
+        store.dispatch(addNewMessage({ chat_id: chatSlice.id as string, message: message }));
+      }
+
+      resolve(true);
+    } else {
+      start_newChat(socket, chatSlice.id, message);
+      resolve(true);
+    }
+  });
 };

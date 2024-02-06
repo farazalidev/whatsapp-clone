@@ -25,7 +25,7 @@ export interface SelectedFileType {
   height: number | null
   original_name: string
   fileChecksum: string
-
+  uploadedFileSize?: number
 }
 
 interface ISelectedFiles {

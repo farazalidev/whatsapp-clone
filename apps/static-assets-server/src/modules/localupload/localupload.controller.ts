@@ -24,6 +24,7 @@ import { reduceImageQuality } from 'src/utils/reduceImageQuality';
 import * as fsPromises from 'fs/promises';
 import { join } from 'path';
 import { calculateChecksum } from 'src/utils/calculateChecksum';
+import * as fsExtra from 'fs-extra';
 
 @Controller('file')
 export class LocalUploadController {
@@ -222,17 +223,33 @@ export class LocalUploadController {
     try {
       const sendedFileHash = req.headers.checksum;
 
-      const bytesUploaded = req.headers.bytesUploaded;
-      const totalFileSize = req.headers.totalFileSize;
+      const bytesUploaded = req.headers.bytes_uploaded;
+      const totalFileSize = req.headers.total_file_size;
 
       // file checksum
       const fileSHA256hash = await calculateChecksum(filePath, 'SHA-256', 'hex');
-      // console.log('🚀 ~ LocalUploadController ~ uploadChunk ~ fileSHA256hash:', fileSHA256hash, '\n', sendedFileHash);
       if (fileSHA256hash === sendedFileHash) {
         // if the sended chunk is last chunk then merge all chunks
         if (bytesUploaded === totalFileSize) {
           await mergeChunks(user.user_id, req.headers.file_name, req.headers.ext);
+
+          // after merging chunks check checksum file
+          const savedFilePath = `${storage.main}${user.user_id}/attachments/${req.headers.file_name}${req.headers.ext}`;
+
+          const chunksPath = `${storage.main}${user.user_id}/attachments-chunks/${req.headers.file_name}/`;
+
+          const savedFileCheckSum = await calculateChecksum(savedFilePath, 'SHA-256', 'hex');
+
+          //  if the checksum unsuccessful
+          if (savedFileCheckSum !== req.headers.file_checksum) {
+            await fsExtra.remove(chunksPath);
+
+            fs.rm(savedFilePath, { force: true }, (err) => {
+              console.log('🚀 ~ LocalUploadController ~ fs.rm ~ err:', err);
+            });
+          }
         }
+
         return res.json({ success: true, uploadedSize: file.size });
       }
 
@@ -240,38 +257,50 @@ export class LocalUploadController {
 
       return res.json({ success: false, uploadedSize: file.size });
     } catch (error) {
-      console.log('🚀 ~ LocalUploadController ~ uploadChunk ~ error:', error);
       fs.unlinkSync(filePath);
       return res.json({ success: false });
     }
   }
 
   @Get('chunks-size/:dir')
-  async getChunksInfo(@GetUser() user: UserEntity, @Param() param: { dir: string }, @Res() res: Response) {
-    const directory = `${storage.main}${user.user_id}/attachments-chunks/${param.dir}/`;
+  async getChunksInfo(@GetUser() user: UserEntity, @Param() param: { dir: string }, @Res() res: Response, @Req() req: ExtendedReq) {
+    const chunksDirectory = `${storage.main}${user.user_id}/attachments-chunks/${param.dir}/`;
+    const fileDirectory = `${storage.main}${user.user_id}/attachments/${param.dir}${req.headers.ext}`;
 
     try {
-      const files = await fsPromises.readdir(directory);
+      const isChunksDirectoryExisted = fs.existsSync(chunksDirectory);
+
+      const isFileExisted = fs.existsSync(fileDirectory);
+
+      const files = await fsPromises.readdir(chunksDirectory);
 
       // Filtering files
-      const fileNames = files.filter(async (file) => (await fsPromises.stat(join(directory, file))).isFile());
+      const fileNames = files.filter(async (file) => (await fsPromises.stat(join(chunksDirectory, file))).isFile());
 
       let directorySize = 0;
 
       for (let i = 0; i < fileNames.length; i++) {
-        const filePath = join(directory, fileNames[i]);
+        const filePath = join(chunksDirectory, fileNames[i]);
 
         // Get file size in bytes
         const fileSize = (await fsPromises.stat(filePath)).size;
-        console.log('🚀 ~ LocalUploadController ~ fileNames.forEach ~ fileSize:', fileSize);
 
         directorySize += fileSize;
       }
 
-      return res.json({ uploadedFileSize: directorySize });
+      return res.json({ uploadedFileSize: directorySize, chunksDirectory: isChunksDirectoryExisted, isFileExisted });
     } catch (err) {
-      console.error('🚀 ~ LocalUploadController ~ getChunksInfo ~ err:', err);
-      return res.json({ uploadedFileSize: 0 });
+      return res.json({ uploadedFileSize: 0, chunksDirectory: false, isFileExisted: false });
+    }
+  }
+
+  @Get('merge-chunks/:dir')
+  async mergeChunks(@GetUser() user: UserEntity, @Param() param: { dir: string }, @Req() req: ExtendedReq, @Res() res: Response) {
+    try {
+      await mergeChunks(user.user_id, param.dir, req.headers.ext);
+      res.json({ success: true });
+    } catch (error) {
+      res.json({ success: false });
     }
   }
 }

@@ -1,6 +1,6 @@
 'use client';
 import axiosWithAuth from '@/middlewares/axiosInterceptor';
-import { AxiosRequestConfig, AxiosResponseTransformer } from 'axios';
+import { AxiosHeaders, AxiosRequestConfig, AxiosResponseTransformer, RawAxiosRequestHeaders } from 'axios';
 import { ResponseType } from 'axios';
 
 export async function fetcher<TResponse = any>(
@@ -8,8 +8,15 @@ export async function fetcher<TResponse = any>(
   transformResponse?: AxiosResponseTransformer,
   responseType?: ResponseType,
   server_type: 'static' | 'primary' | undefined = 'primary',
+  headers?: RawAxiosRequestHeaders | AxiosHeaders,
 ) {
-  return (await axiosWithAuth({ static_server: server_type === 'static' ? true : false }).get<TResponse>(url, { transformResponse, responseType })).data;
+  return (
+    await axiosWithAuth({ static_server: server_type === 'static' ? true : false }).get<TResponse>(url, {
+      transformResponse,
+      responseType,
+      headers,
+    })
+  ).data;
 }
 
 export async function multiFetcher(...urls: string[]) {

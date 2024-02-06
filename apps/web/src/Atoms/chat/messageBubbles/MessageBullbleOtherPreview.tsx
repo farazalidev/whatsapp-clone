@@ -1,117 +1,104 @@
-import { IMessageBubblePreview } from "@/Atoms/types/messageBubble.types"
-import { FC, useEffect, useState } from "react"
-import MediaMessageStatus from "./MediaMessageStatus"
-import Image from "next/image"
-import { convertFileSizeFromBytes } from "@/utils/getFIleSizeFromBytes"
-import { clampString } from "@/utils/clamp"
-import { IPerformAction, ResumableUpload } from "@/utils/resumeableUpload-alpha"
-import { mainDb } from "@/utils/mainIndexedDB"
-import ProgressBar from "@/Atoms/misc/ProgressBar"
-import { fetcher } from "@/utils/fetcher"
+import { IMessageBubblePreview } from '@/Atoms/types/messageBubble.types';
+import { FC, useCallback } from 'react';
+import MediaMessageStatus from './MediaMessageStatus';
+import Image from 'next/image';
+import { convertFileSizeFromBytes } from '@/utils/getFIleSizeFromBytes';
+import { clampString } from '@/utils/clamp';
+import ProgressBar from '@/Atoms/misc/ProgressBar';
+import useUpload from '@/hooks/useUpload';
+import { sendMessageFn } from '@/utils/sendMessageFn';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/global/store';
+import useSocket from '@/hooks/useSocket';
+import { MessageEntity } from '@server/modules/chat/entities/message.entity';
+import useCurrentChat from '@/hooks/useCurrentChat';
+import { mainDb } from '@/utils/mainIndexedDB';
 
 export const MessageBubbleOtherFilesPreview: FC<IMessageBubblePreview> = ({ message, messageLines, isFromMe }) => {
+  const chatSlice = useSelector((state: RootState) => state.ChatSlice);
 
-  const [uploadManager, setUploadManager] = useState<ResumableUpload | undefined>()
+  const { socket } = useSocket();
 
-  const [state, setState] = useState<{ progress: number, isLoading: boolean }>()
+  const { raw_chat } = useCurrentChat();
 
-  useEffect(() => {
+  const { Me } = useSelector((state: RootState) => state.UserSlice);
 
-    const getManager = async () => {
-      // first of all we have to check that if the file is available on server or not
-      // if the file exists then return
-      // if the file does not then check inside the indexed db , if the file
-      // founded inside the indexed db then we will upload it if not then this message will be added to DLQ
-      const isFileAvailableOnServer = await fetcher(`api/file/is-attachment-existed/${message?.media?.id}${message?.media?.ext}`, undefined, "json", "static")
+  const lastAction = useCallback(() => {
 
-      if (isFileAvailableOnServer) {
-        setState({ isLoading: false, progress: 100 })
-        return
-      }
-
-      // if the file is not available on the server
-      else {
-
-        // if we have message media
-        if (message?.media) {
-
-          const file = await mainDb.media.get(message?.media?.id)
-
-          // if we have file in indexed db
-          if (file) {
-            const onProgress = (progress: number, isLoading: boolean) => {
-              setState(prev => { return { ...prev, progress, isLoading } })
-
-            }
-            const performAction: IPerformAction = async ({ chunksUploaded }) => {
-              await mainDb.mediaMessages.update(message?.id, { media: { ...message.media, chunksUploaded } });
-            }
-            const manager = new ResumableUpload({ file: file.file, file_name: message?.media?.id, onProgress, performAction, startByte: 0 })
-            setUploadManager(manager)
-
-          }
+    console.log('sending message');
+    const lastAction = async () => {
+      if (message) {
+        const messageToSend: MessageEntity = {
+          id: message.id,
+          chat: raw_chat as any,
+          clear_for: null,
+          content: message?.content,
+          from: Me as any,
+          is_seen: false,
+          media: message?.media,
+          messageType: message.messageType,
+          received_at: null,
+          seen_at: null,
+          sended: false,
+          sended_at: new Date(),
+        };
+        const sended = await sendMessageFn({ chatSlice, message: messageToSend, receiver_id: chatSlice.receiver_id as string, socket })
+        if (sended) {
+          await mainDb.media.delete(message.media?.id as string)
+          await mainDb.mediaMessages.delete(message.id)
         }
-
-        // if the file is not on server and local db then add this message to DLQ
-        // TODO: DLQ implementation
-
       }
+    };
+    return lastAction()
+  }, [Me, chatSlice, message, raw_chat, socket])
 
-    }
-
-    if (isFromMe) {
-      getManager()
-
-    }
-
-  }, [message, isFromMe])
-
-
+  const { state, cancel, download, retry } = useUpload({ isFromMe, message, lastAction });
+  console.log("🚀 ~ state:", state)
 
   // manual upload
   const handleRetry = () => {
-    console.log('upload clicked');
-
-    if (uploadManager) {
-      uploadManager.uploadChunk()
-    }
-  }
-
-
+    retry();
+  };
   const handlePause = () => {
-    console.log('pause clicked');
-
-    uploadManager?.cancel()
-  }
+    cancel();
+  };
 
   const handleDownload = () => {
-    console.log('download clicked');
-
-  }
-
+    download();
+  };
 
   return (
-    <div className="w-[350px] h-[100px] rounded-md bg-whatsapp-misc-my_message_bg_light dark:bg-whatsapp-misc-my_message_bg_dark p-1 flex flex-col" >
-      <div className="bg-black bg-opacity-20 flex-1/3 h-full rounded-md flex justify-between place-items-center px-2">
-        <div className="flex gap-2 place-items-center" >
+    <div className="bg-whatsapp-misc-my_message_bg_light dark:bg-whatsapp-misc-my_message_bg_dark flex h-[100px] w-[350px] flex-col rounded-md p-1">
+      <div className="flex-1/3 flex h-full place-items-center justify-between rounded-md bg-black bg-opacity-20 px-2">
+        <div className="flex place-items-center gap-2">
           <Image src={'/icons/preview-generic.svg'} width={40} height={50} alt="file" />
           <div className="flex flex-col gap-2 text-white text-opacity-80">
-            <span className="text-sm line-clamp-1">{clampString(message?.media?.original_name || "file", 25)}</span>
-            <span className="text-xs text-[#86a3b3] flex gap-1">
+            <span className="line-clamp-1 text-sm">{clampString(message?.media?.original_name || 'file', 25)}</span>
+            <span className="flex gap-1 text-xs text-[#86a3b3]">
               <span>{message?.media?.ext}</span>
-              <span>{convertFileSizeFromBytes(message?.media?.size || 0, "•")}</span>
+              <span>{convertFileSizeFromBytes(message?.media?.size || 0, '•')}</span>
             </span>
           </div>
         </div>
-        <span className="flex justify-center place-items-center">
+        <span className="flex place-items-center justify-center">
           {/* progress bar */}
-          <ProgressBar barStyle="circle" isLoading={state?.isLoading} progress={state?.progress || 0} showDownloadButton onRetryClick={handleRetry} onPauseClick={handlePause} onDownloadClick={handleDownload} />
+          <ProgressBar
+            barStyle="circle"
+            isResumable={state?.isResumable}
+            isLoading={state?.isLoading}
+            progress={state?.progress}
+            showDownloadButton
+            onRetryClick={handleRetry}
+            onPauseClick={handlePause}
+            onDownloadClick={handleDownload}
+          />
         </span>
       </div>
-      {isFromMe ?
-        <div className="flex-1/3 h-[30%] relative">
+      {isFromMe ? (
+        <div className="flex-1/3 relative h-[30%]">
           <MediaMessageStatus isFromMe={isFromMe} message={message} messageLines={messageLines} />
-        </div> : null}
+        </div>
+      ) : null}
     </div>
-  )
-}
+  );
+};
