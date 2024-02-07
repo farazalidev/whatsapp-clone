@@ -14,8 +14,6 @@ async function bootstrap() {
   const redisAdapter = new RedisIoAdapter(app);
   await redisAdapter.connectToRedis();
 
-  // TODO: when the server crashes ro down remove all users online and remove all rooms
-
   app.useWebSocketAdapter(redisAdapter);
   app.use(cookieParser());
   app.useGlobalPipes(new ValidationPipe());

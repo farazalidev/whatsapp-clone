@@ -69,7 +69,7 @@ const SelectedFiles: FC<ISelectedFiles> = () => {
       dispatch(closeOverlay())
 
     } catch (error) {
-      toast.error("Error While uploading Files", { position: "top-center" })
+      toast.error("Error While uploading Files", { position: "bottom-left" })
     } finally {
       setIsLoading(false)
     }

@@ -1,4 +1,4 @@
-import { fetcher } from '@/utils/fetcher';
+import { Mutation, fetcher } from '@/utils/fetcher';
 import { mainDb } from '@/utils/mainIndexedDB';
 import { IPerformAction, IResumableUploadProgress, ResumableUpload } from '@/utils/resumeableUpload-beta';
 import { Dispatch, SetStateAction, useEffect, useState } from 'react';
@@ -38,6 +38,7 @@ const useUpload: IUseUpload = ({ isFromMe, message, lastAction }) => {
         const isFileExisted = await fetcher<isFileExistedType>(`api/file/chunks-size/${message?.media?.id}`, undefined, 'json', 'static', {
           ext: extname(localFile?.file.name as string),
         });
+        console.log('🚀 ~ getManager ~ isFileExisted:', isFileExisted);
 
         setState((prev) => {
           return { ...prev, isResumable: false, uploadedFileSize: isFileExisted.uploadedFileSize, progress: 100 };
@@ -53,12 +54,28 @@ const useUpload: IUseUpload = ({ isFromMe, message, lastAction }) => {
 
         // if the chunksDirectory does not existed and file does not exists at all then we will start the upload automatically
         else if (!isFileExisted.isFileExisted && !isFileExisted.chunksDirectory && isFileExisted.uploadedFileSize === 0) {
+          if (message.messageType === 'video') {
+            setState((prev) => {
+              return { ...prev, isLoading: true, isResumable: false };
+            });
+            const thumbnailBlob = localFile.thumbnail;
+            await uploadThumbnail(thumbnailBlob, message);
+          }
+
           const onProgress: IResumableUploadProgress = async (progress, isLoading, uploadedBytes) => {
             setState((prev) => {
               return { ...prev, isResumable: false, isLoading, progress, uploadedFileSize: uploadedBytes };
             });
           };
-          const manager = new ResumableUpload({ selectedFile: localFile, file_name: localFile?.id, startByte: 0, onProgress, lastAction });
+          const manager = new ResumableUpload({
+            selectedFile: localFile,
+            file_name: localFile?.id,
+            startByte: 0,
+            onProgress,
+            lastAction,
+            height: message.media.height,
+            width: message.media.width,
+          });
           setState((prev) => {
             return { ...prev, isLoading: true, isResumable: false };
           });
@@ -78,6 +95,8 @@ const useUpload: IUseUpload = ({ isFromMe, message, lastAction }) => {
             startByte: isFileExisted.uploadedFileSize,
             onProgress,
             lastAction,
+            height: message.media.height,
+            width: message.media.width,
           });
           setUploadManager(manager);
           setState((prev) => {
@@ -107,7 +126,7 @@ const useUpload: IUseUpload = ({ isFromMe, message, lastAction }) => {
     if (isFromMe) {
       getManager();
     }
-  }, [isFromMe, message?.media?.id, message?.media?.size, lastAction]);
+  }, [isFromMe, message?.media?.id, message?.media?.size, lastAction, message]);
 
   const retry = () => {
     if (uploadManager) {
@@ -151,3 +170,21 @@ const useUpload: IUseUpload = ({ isFromMe, message, lastAction }) => {
 };
 
 export default useUpload;
+
+const uploadThumbnail = async (thumbnailBlob: string | Blob | null | undefined, message: MessageEntity) => {
+  if (thumbnailBlob) {
+    try {
+      const formData = new FormData();
+      console.log(thumbnailBlob);
+      formData.append('attachment-thumbnail', thumbnailBlob);
+      const ext = '.png';
+      const response = await Mutation<FormData, { success: boolean }>(`api/file/upload-attachment-thumbnail`, formData, 'static', {
+        headers: { file_name: message.media?.id, ext, height: message.media?.height, width: message.media?.width },
+      });
+      return response.success;
+    } catch (error) {
+      return false;
+    }
+  }
+  return false;
+};

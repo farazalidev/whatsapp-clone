@@ -13,6 +13,8 @@ interface NewHeaders {
   bytes_uploaded: number;
   total_file_size: number;
   file_checksum: string;
+  height: number;
+  width: number;
 }
 
 export interface ExtendedReq extends Request<core.ParamsDictionary, any, any, core.Query> {
