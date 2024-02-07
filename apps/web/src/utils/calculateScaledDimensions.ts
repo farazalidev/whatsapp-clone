@@ -7,6 +7,7 @@ export const calculateScaledDimensions = (
   minHeight: number,
 ) => {
   if (originalWidth && originalHeight) {
+    console.log('🚀 ~ originalWidth:', originalWidth, originalHeight);
     const aspectRatio = originalWidth / originalHeight;
 
     let newWidth = originalWidth;
@@ -46,6 +47,7 @@ export const calculateScaledDimensions = (
       newWidth = newHeight * aspectRatio;
     }
 
+    console.log('🚀 ~ originalWidth:', newWidth, newHeight);
     return { width: newWidth, height: newHeight };
   }
 

@@ -16,6 +16,8 @@ export interface ResumableUploadProps {
   startByte?: number;
   onProgress: IResumableUploadProgress;
   lastAction?: IPerformAction;
+  height: number | null;
+  width: number | null;
 }
 
 export class ResumableUpload {
@@ -27,6 +29,8 @@ export class ResumableUpload {
   private startByte: number = 0;
   private error: boolean = false;
   private lastAction: IPerformAction | undefined;
+  private height: number | null;
+  private width: number | null;
 
   constructor(props: ResumableUploadProps) {
     this.selectedFile = props.selectedFile;
@@ -35,6 +39,8 @@ export class ResumableUpload {
     this.startByte = props.startByte || 0;
     this.isLoading = true;
     this.lastAction = props.lastAction;
+    this.height = props.height;
+    this.width = props.width;
 
     if (!this.controller) {
       this.controller = new AbortController();
@@ -71,6 +77,8 @@ export class ResumableUpload {
               total_file_size: fileSize,
               checksum,
               file_checksum: this.selectedFile?.fileChecksum,
+              height: this.height,
+              width: this.width,
             },
             signal: this.controller?.signal,
           })

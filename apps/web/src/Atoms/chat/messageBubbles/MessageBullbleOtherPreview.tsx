@@ -24,7 +24,6 @@ export const MessageBubbleOtherFilesPreview: FC<IMessageBubblePreview> = ({ mess
   const { Me } = useSelector((state: RootState) => state.UserSlice);
 
   const lastAction = useCallback(() => {
-
     console.log('sending message');
     const lastAction = async () => {
       if (message) {
@@ -42,18 +41,18 @@ export const MessageBubbleOtherFilesPreview: FC<IMessageBubblePreview> = ({ mess
           sended: false,
           sended_at: new Date(),
         };
-        const sended = await sendMessageFn({ chatSlice, message: messageToSend, receiver_id: chatSlice.receiver_id as string, socket })
+        const sended = await sendMessageFn({ chatSlice, message: messageToSend, receiver_id: chatSlice.receiver_id as string, socket });
         if (sended) {
-          await mainDb.media.delete(message.media?.id as string)
-          await mainDb.mediaMessages.delete(message.id)
+          await mainDb.media.delete(message.media?.id as string);
+          await mainDb.mediaMessages.delete(message.id);
         }
       }
     };
-    return lastAction()
-  }, [Me, chatSlice, message, raw_chat, socket])
+    return lastAction();
+  }, [Me, chatSlice, message, raw_chat, socket]);
 
   const { state, cancel, download, retry } = useUpload({ isFromMe, message, lastAction });
-  console.log("🚀 ~ state:", state)
+  console.log('🚀 ~ state:', state);
 
   // manual upload
   const handleRetry = () => {
@@ -68,9 +67,14 @@ export const MessageBubbleOtherFilesPreview: FC<IMessageBubblePreview> = ({ mess
   };
 
   return (
-    <div className="bg-whatsapp-misc-my_message_bg_light dark:bg-whatsapp-misc-my_message_bg_dark flex h-[100px] w-[350px] flex-col rounded-md p-1">
-      <div className="flex-1/3 flex h-full place-items-center justify-between rounded-md bg-black bg-opacity-20 px-2">
-        <div className="flex place-items-center gap-2">
+    <div
+      className={`bg-whatsapp-misc-my_message_bg_light dark:bg-whatsapp-misc-my_message_bg_dark flex ${isFromMe ? 'h-[100px]' : 'h-fit border-[2px] border-whatsapp-light-placeholder_text dark:border-whatsapp-dark-placeholder_text'} w-[350px] flex-col rounded-md p-1${isFromMe
+        ? 'bg-whatsapp-misc-my_message_bg_light dark:bg-whatsapp-misc-my_message_bg_dark dark:text-whatsapp-dark-text text-whatsapp-light-text '
+        : 'bg-whatsapp-misc-other_message_bg_light dark:bg-whatsapp-misc-other_message_bg_dark dark:text-whatsapp-dark-text text-whatsapp-light-text'
+        } `}
+    >
+      <div className={`flex-1/3 flex h-fit place-items-center justify-between rounded-md bg-black bg-opacity-20 ${isFromMe ? 'p-1' : 'p-2'}`}>
+        <div className="flex place-items-center gap-2 p-2">
           <Image src={'/icons/preview-generic.svg'} width={40} height={50} alt="file" />
           <div className="flex flex-col gap-2 text-white text-opacity-80">
             <span className="line-clamp-1 text-sm">{clampString(message?.media?.original_name || 'file', 25)}</span>
@@ -82,17 +86,25 @@ export const MessageBubbleOtherFilesPreview: FC<IMessageBubblePreview> = ({ mess
         </div>
         <span className="flex place-items-center justify-center">
           {/* progress bar */}
-          <ProgressBar
-            barStyle="circle"
-            isResumable={state?.isResumable}
-            isLoading={state?.isLoading}
-            progress={state?.progress}
-            showDownloadButton
-            onRetryClick={handleRetry}
-            onPauseClick={handlePause}
-            onDownloadClick={handleDownload}
-          />
+          {isFromMe ? (
+            <ProgressBar
+              barStyle="circle"
+              isResumable={state?.isResumable}
+              isLoading={state?.isLoading}
+              progress={state?.progress}
+              showActionButton
+              onRetryClick={handleRetry}
+              onPauseClick={handlePause}
+              onActionButtonClick={handleDownload}
+              messageType={message?.messageType}
+            />
+          ) : null}
         </span>
+        {!isFromMe ? (
+          <span className="flex h-12 w-12 cursor-pointer place-items-center justify-center rounded-full bg-black bg-opacity-40">
+            <Image src={'/icons/gallery-icons/download.svg'} height={25} width={25} alt="download" />
+          </span>
+        ) : null}
       </div>
       {isFromMe ? (
         <div className="flex-1/3 relative h-[30%]">

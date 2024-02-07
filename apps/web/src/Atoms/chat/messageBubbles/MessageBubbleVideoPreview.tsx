@@ -1,21 +1,68 @@
 import { IMessageBubblePreview } from "@/Atoms/types/messageBubble.types"
 import Image from "next/image"
-import { FC, useMemo } from "react"
+import { FC, useCallback, useMemo } from "react"
 import MediaMessageBubbleWrapper from "./MediaMessageBubbleWrapper"
 import MediaMessageStatus from "./MediaMessageStatus"
-import CircularProgressBar from "@/Atoms/misc/RoundedProgressBar"
-import { useDispatch } from "react-redux"
+import { useDispatch, useSelector } from "react-redux"
 import { toggleGalleryOverlay } from "@/global/features/overlaySlice"
 import { setActiveGalleryMedia } from "@/global/features/GallerySlice"
-import useFetchMediaMessage from "@/hooks/useFetchMediaMessage"
 import { calculateScaledDimensions } from "@/utils/calculateScaledDimensions"
+import useUpload from "@/hooks/useUpload"
+import ProgressBar from "@/Atoms/misc/ProgressBar"
+import { useFetchMediaThumbnail } from "@/hooks/useFetchMediaThumbnail"
+import { RootState } from "@/global/store"
+import useCurrentChat from "@/hooks/useCurrentChat"
+import useSocket from "@/hooks/useSocket"
+import { mainDb } from "@/utils/mainIndexedDB"
+import { sendMessageFn } from "@/utils/sendMessageFn"
+import { MessageEntity } from "@server/modules/chat/entities/message.entity"
 
 export const MessageBubbleVideoPreview: FC<IMessageBubblePreview> = ({ message, isFromMe }) => {
 
+  const chatSlice = useSelector((state: RootState) => state.ChatSlice);
+
+  const { socket } = useSocket();
+
+  const { raw_chat } = useCurrentChat();
+
+  const { Me } = useSelector((state: RootState) => state.UserSlice);
+
+  const lastAction = useCallback(() => {
+
+    console.log('sending message');
+    const lastAction = async () => {
+      if (message) {
+        const messageToSend: MessageEntity = {
+          id: message.id,
+          chat: raw_chat as any,
+          clear_for: null,
+          content: message?.content,
+          from: Me as any,
+          is_seen: false,
+          media: message?.media,
+          messageType: message.messageType,
+          received_at: null,
+          seen_at: null,
+          sended: false,
+          sended_at: new Date(),
+        };
+        const sended = await sendMessageFn({ chatSlice, message: messageToSend, receiver_id: chatSlice.receiver_id as string, socket })
+        if (sended) {
+          await mainDb.media.delete(message.media?.id as string)
+          await mainDb.mediaMessages.delete(message.id)
+        }
+      }
+    };
+    return lastAction()
+  }, [Me, chatSlice, message, raw_chat, socket])
+
+  const dimensions = useMemo(() => calculateScaledDimensions(message?.media?.width, message?.media?.height, 300, 400, 200, 300), [message?.media?.height, message?.media?.width])
+
   const dispatch = useDispatch()
 
-  const { isLoading, thumbnailUrl, uploadProgress, isResumable } = useFetchMediaMessage({ isFromMe, message })
-  console.log("🚀 ~ isResumable:", isResumable)
+  const { thumbnailState } = useFetchMediaThumbnail({ isFromMe, message })
+
+  const { cancel, download, retry, state } = useUpload({ isFromMe, message, lastAction })
 
   const handleGalleryOverlay = (id: string | undefined) => {
     if (id) {
@@ -24,7 +71,17 @@ export const MessageBubbleVideoPreview: FC<IMessageBubblePreview> = ({ message, 
     dispatch(toggleGalleryOverlay())
   }
 
-  const dimensions = useMemo(() => calculateScaledDimensions(message?.media?.width, message?.media?.height, 300, 400, 250, 300), [message?.media?.height, message?.media?.width])
+
+  const handleRetry = () => {
+    retry()
+  }
+  const handlePause = () => {
+    cancel()
+  }
+  const handleDownload = () => {
+    download()
+  }
+
 
 
   return (
@@ -33,13 +90,22 @@ export const MessageBubbleVideoPreview: FC<IMessageBubblePreview> = ({ message, 
         <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-b from-transparent to-gray-900 z-10"></div>
 
         {/* progress bar */}
-        {uploadProgress === 100 ?
-          <span className="z-10 w-14 h-14 absolute rounded-full bg-black bg-opacity-70 cursor-pointer flex place-items-center justify-center">
-            <Image src={'/icons/play.svg'} width={30} height={30} alt="play" />
-          </span> : uploadProgress && uploadProgress > 0 || !thumbnailUrl ? <CircularProgressBar loading={isLoading} percentage={uploadProgress} /> : null}
+        {isFromMe ?
+          <span className="absolute">
+            <ProgressBar
+              barStyle="circle"
+              isResumable={state?.isResumable}
+              isLoading={state?.isLoading}
+              progress={state?.progress}
+              showActionButton={true}
+              messageType={message?.messageType}
+              onRetryClick={handleRetry}
+              onPauseClick={handlePause}
+              onActionButtonClick={handleDownload}
+            /> </span> : null}
 
         {/* thumbnail */}
-        {thumbnailUrl ? <Image src={thumbnailUrl} alt="video" layout="responsive" width={dimensions.width} height={dimensions.height} /> : null}
+        {thumbnailState.thumbnail ? <Image src={thumbnailState.thumbnail} alt="video" className="blur-[2px]" fill /> : null}
 
         <MediaMessageStatus isFromMe={isFromMe} message={message} key={message?.id} />
       </MediaMessageBubbleWrapper>}
