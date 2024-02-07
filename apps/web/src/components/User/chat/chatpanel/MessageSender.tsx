@@ -1,19 +1,20 @@
 import React, { ChangeEvent, FormEvent, useState } from 'react';
 import OptionIcon from '../../Sidebar/OptionIcon';
 import MessageInput from '@/Atoms/Input/MessageInput';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import useSocket from '@/hooks/useSocket';
 import { RootState } from '../../../../global/store';
-import { addNewMessage } from '@/global/features/messagesSlice';
+import Attachments from './Attachments';
+import { sendMessageFn } from '@/utils/sendMessageFn';
+import { toast } from 'sonner';
 import { v4 } from 'uuid';
 import { MessageEntity } from '@server/modules/chat/entities/message.entity';
-import { start_newChat } from '@/utils/start_newChat';
-import Attachments from './Attachments';
+import useCurrentChat from '@/hooks/useCurrentChat';
 
 const MessageSender = ({ receiver_id, chat_id }: { receiver_id: string; chat_id: string | undefined }) => {
   const { message_input_loading } = useSelector((state: RootState) => state.LoadingSlice);
 
-  const { id, started_from } = useSelector((state: RootState) => state.ChatSlice);
+  const chatSlice = useSelector((state: RootState) => state.ChatSlice);
 
   const { Me } = useSelector((state: RootState) => state.UserSlice);
 
@@ -23,7 +24,7 @@ const MessageSender = ({ receiver_id, chat_id }: { receiver_id: string; chat_id:
 
   const [messageValue, setMessageValue] = useState<string>();
 
-  const dispatch = useDispatch();
+  const { raw_chat } = useCurrentChat()
 
   const handleMessageChange = (e: ChangeEvent<HTMLInputElement>) => {
     setMessageValue(e.target.value);
@@ -58,24 +59,14 @@ const MessageSender = ({ receiver_id, chat_id }: { receiver_id: string; chat_id:
       from: Me as any,
       clear_for: null,
       sended: false,
+      chat: raw_chat as any
     };
-    try {
-      if (started_from === 'chat') {
-        // if the user selects from chat and there is not chat existed
-        // then create a new chat
-
-        socket?.emit('send_message', { chat_id: id, message: { ...newMessage }, receiverId: receiver_id });
-        dispatch(addNewMessage({ chat_id: id as string, message: newMessage }));
-        setMessageValue('');
-
-        return;
-      }
-
-      await start_newChat(socket, id, newMessage);
-      setMessageValue('');
-    } catch (error) {
-      console.error('Error while sending message');
+    const isSended = await sendMessageFn({ chatSlice, receiver_id, socket, message: newMessage })
+    if (!isSended) {
+      toast("Failed to send Message", { position: "top-center" })
+      setMessageValue("")
     }
+    setMessageValue("")
   };
 
   return (

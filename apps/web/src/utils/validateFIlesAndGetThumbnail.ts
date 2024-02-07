@@ -1,8 +1,10 @@
 import { SelectedFileType } from '@/components/User/chat/chatpanel/SelectedFiles';
 import fileType from 'file-type';
-import { getSnapShotOfVideo } from './getSnapShot';
+import { getSnapShotOfVideoBlob } from './getSnapShot';
 import { isSVG } from './isSvg';
 import { IFiles, filesFromType } from '@/global/features/filesSlice';
+import { getImageDimensions } from './getImageDimensions';
+import { calculateChecksumAwait } from './file/calculateFileChecksum';
 
 type validateFilesAndGetThumbnailsArgs = {
   from: filesFromType | null;
@@ -13,74 +15,198 @@ type validateFilesAndGetThumbnailsArgs = {
 type validateFilesAndGetThumbnailsType = (args: validateFilesAndGetThumbnailsArgs) => Promise<SelectedFileType[]>;
 export const validateFilesAndGetThumbnails: validateFilesAndGetThumbnailsType = async ({ files, thumbnailDimensions, from }) => {
   let result: SelectedFileType[] = [];
+  try {
+    for (const file of files) {
+      // if the file is video by extension based
+      if (file.file.type.startsWith('video/')) {
+        const actualType = await fileType.fromBuffer(await file.file.arrayBuffer());
 
-  for (const file of files) {
-    // if the file is video by extension based
-    if (file.file.type.startsWith('video/')) {
-      const actualType = await fileType.fromBuffer(await file.file.arrayBuffer());
+        const fileChecksum = await calculateChecksumAwait(file.file);
 
-      // if the provided video extension is video but the file is not seems to be video
-      if (!actualType?.mime.startsWith('video/')) {
-        result.push({ thumbnailUrl: undefined, type: 'others', file: file.file, url: undefined, id: file.id, attachedMessage: null });
+        // if the provided video extension is video but the file is not seems to be video
+        if (!actualType?.mime.startsWith('video/')) {
+          result.push({
+            thumbnail: undefined,
+            type: 'others',
+            file: file.file,
+            url: undefined,
+            id: file.id,
+            attachedMessage: null,
+            height: null,
+            original_name: file.file.name,
+            width: null,
+            fileChecksum,
+            uploadedFileSize: 0,
+          });
+        }
+        // if the file actual type and extension matched
+        else {
+          const videoUrl = URL.createObjectURL(file.file);
+          const { blob, height, width } = await getSnapShotOfVideoBlob(videoUrl, 15, thumbnailDimensions.height, thumbnailDimensions.width);
+          result.push({
+            file: file.file,
+            thumbnail: blob,
+            type: 'video',
+            url: videoUrl,
+            id: file.id,
+            attachedMessage: null,
+            height,
+            width,
+            original_name: file.file.name,
+            fileChecksum,
+            uploadedFileSize: 0,
+          });
+        }
       }
-      // if the file actual type and extension matched
+
+      // if the provided file extension is image
+      else if (file.file.type.startsWith('image/') && !file.file.type.startsWith('image/svg')) {
+        const actualType = await fileType.fromBuffer(await file.file.arrayBuffer());
+
+        const fileChecksum = await calculateChecksumAwait(file.file);
+
+        // if the image is not actually an image
+        if (!actualType?.mime.startsWith('image/')) {
+          result.push({
+            file: file.file,
+            thumbnail: undefined,
+            type: 'others',
+            url: undefined,
+            id: file.id,
+            attachedMessage: null,
+            height: null,
+            original_name: file.file.name,
+            width: null,
+            fileChecksum,
+            uploadedFileSize: 0,
+          });
+        }
+        // if the file ext matched
+        else {
+          const url = URL.createObjectURL(file.file);
+          const dimensions = await getImageDimensions(url);
+          result.push({
+            file: file.file,
+            thumbnail: url,
+            type: 'image',
+            url,
+            id: file.id,
+            attachedMessage: null,
+            height: Math.round(dimensions.height),
+            width: Math.round(dimensions.width),
+            original_name: file.file.name,
+            fileChecksum,
+            uploadedFileSize: 0,
+          });
+        }
+      }
+
+      // if the file is an svg
+      else if (file.file.type.startsWith('image/svg')) {
+        const fileArrayBuffer = await file.file.arrayBuffer();
+
+        const is = isSVG(Buffer.from(fileArrayBuffer));
+
+        const fileChecksum = await calculateChecksumAwait(file.file);
+
+        // if its not an svg
+        if (!is) {
+          result.push({
+            file: file.file,
+            id: file.id,
+            thumbnail: undefined,
+            type: 'others',
+            url: undefined,
+            attachedMessage: null,
+            height: null,
+            original_name: file.file.name,
+            width: null,
+            fileChecksum,
+            uploadedFileSize: 0,
+          });
+        }
+        // if the file ext matched
+        else {
+          const url = URL.createObjectURL(file.file);
+          const dimensions = await getImageDimensions(url);
+          result.push({
+            file: file.file,
+            id: file.id,
+            thumbnail: url,
+            type: 'svg',
+            url,
+            attachedMessage: null,
+            height: Math.round(dimensions.height),
+            original_name: file.file.name,
+            width: Math.round(dimensions.width),
+            fileChecksum,
+            uploadedFileSize: 0,
+          });
+        }
+      }
+
+      // if the provided file is an pdf file
+      else if (file.file.type.startsWith('application/pdf') || file.file.type.startsWith('pdf/')) {
+        const actualType = await fileType.fromBuffer(await file.file.arrayBuffer());
+
+        const fileChecksum = await calculateChecksumAwait(file.file);
+
+        // if the file is not actually a pdf file
+        if (!actualType?.mime.startsWith('application/pdf')) {
+          result.push({
+            file: file.file,
+            thumbnail: undefined,
+            type: 'others',
+            url: undefined,
+            id: file.id,
+            attachedMessage: null,
+            height: null,
+            width: null,
+            original_name: file.file.name,
+            fileChecksum,
+            uploadedFileSize: 0,
+          });
+        }
+        // if the file ext matched
+        else {
+          result.push({
+            file: file.file,
+            thumbnail: undefined,
+            type: 'pdf',
+            url: undefined,
+            id: file.id,
+            attachedMessage: null,
+            height: null,
+            width: null,
+            original_name: file.file.name,
+            fileChecksum,
+            uploadedFileSize: 0,
+          });
+        }
+      }
+
+      // if none of the recognized types, handle as 'others'
       else {
-        const videoUrl = URL.createObjectURL(file.file);
-        const videoThumbnail = await getSnapShotOfVideo(videoUrl, 15, thumbnailDimensions.height, thumbnailDimensions.width);
-        result.push({ file: file.file, thumbnailUrl: videoThumbnail, type: 'video', url: videoUrl, id: file.id, attachedMessage: null });
+        const fileChecksum = await calculateChecksumAwait(file.file);
+        console.log('🚀 ~ constvalidateFilesAndGetThumbnails:validateFilesAndGetThumbnailsType= ~ fileChecksum:', fileChecksum);
+
+        result.push({
+          file: file.file,
+          thumbnail: undefined,
+          type: 'others',
+          url: undefined,
+          id: file.id,
+          attachedMessage: null,
+          height: null,
+          width: null,
+          original_name: file.file.name,
+          fileChecksum,
+          uploadedFileSize: 0,
+        });
       }
     }
-
-    // if the provided file extension is image
-    else if (file.file.type.startsWith('image/') && !file.file.type.startsWith('image/svg')) {
-      const actualType = await fileType.fromBuffer(await file.file.arrayBuffer());
-
-      // if the image is not actually an image
-      if (!actualType?.mime.startsWith('image/')) {
-        result.push({ file: file.file, thumbnailUrl: undefined, type: 'others', url: undefined, id: file.id, attachedMessage: null });
-      }
-      // if the file ext matched
-      else {
-        const url = URL.createObjectURL(file.file);
-        result.push({ file: file.file, thumbnailUrl: url, type: 'image', url, id: file.id, attachedMessage: null });
-      }
-    }
-
-    // if the file is an svg
-    else if (file.file.type.startsWith('image/svg')) {
-      const fileArrayBuffer = await file.file.arrayBuffer();
-
-      const is = isSVG(Buffer.from(fileArrayBuffer));
-
-      // if its not an svg
-      if (!is) {
-        result.push({ file: file.file, id: file.id, thumbnailUrl: undefined, type: 'others', url: undefined, attachedMessage: null });
-      }
-      // if the file ext matched
-      else {
-        const url = URL.createObjectURL(file.file);
-        result.push({ file: file.file, id: file.id, thumbnailUrl: url, type: 'svg', url, attachedMessage: null });
-      }
-    }
-
-    // if the provided file is an pdf file
-    else if (file.file.type.startsWith('application/pdf') || file.file.type.startsWith('pdf/')) {
-      const actualType = await fileType.fromBuffer(await file.file.arrayBuffer());
-
-      // if the file is not actually a pdf file
-      if (!actualType?.mime.startsWith('application/pdf')) {
-        result.push({ file: file.file, thumbnailUrl: undefined, type: 'others', url: undefined, id: file.id, attachedMessage: null });
-      }
-      // if the file ext matched
-      else {
-        result.push({ file: file.file, thumbnailUrl: undefined, type: 'pdf', url: undefined, id: file.id, attachedMessage: null });
-      }
-    }
-
-    // if none of the recognized types, handle as 'others'
-    else {
-      result.push({ file: file.file, thumbnailUrl: undefined, type: 'others', url: undefined, id: file.id, attachedMessage: null });
-    }
+  } catch (error) {
+    console.log(error);
   }
 
   // removing unmatched files

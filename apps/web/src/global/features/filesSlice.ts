@@ -83,6 +83,12 @@ export const filesSlice = createSlice({
         fileToPreview: payload,
       };
     },
+    addThumbnailPathOfLoadedFile: (state, { payload }: { payload: AddThumbnailPathOfLoadedFile }) => {
+      const foundedFile = state.loadedFiles.find((file) => file.id === payload.id);
+      if (foundedFile) {
+        foundedFile.thumbnailPath = payload.path;
+      }
+    },
     removeFile: (state, { payload }: { payload: removeFilePayload }) => {
       const filteredLoadedFiles = state.loadedFiles.filter((loadedFile) => loadedFile.id !== payload.id);
       const firstLoadedFile = filteredLoadedFiles[0];
@@ -104,7 +110,8 @@ export const filesSlice = createSlice({
   },
 });
 
-export const { addFiles, removeFile, resetFiles, addLoadedFiles, addFileToPreview, addAttachedMessage, addMoreFiles } = filesSlice.actions;
+export const { addFiles, removeFile, resetFiles, addLoadedFiles, addFileToPreview, addAttachedMessage, addMoreFiles, addThumbnailPathOfLoadedFile } =
+  filesSlice.actions;
 
 export interface AddFilePayload {
   from: filesFromType;
@@ -117,4 +124,9 @@ export type removeFilePayload = {
 
 export interface AddLoadedFilesPayload {
   loadedFiles: SelectedFileType[];
+}
+
+export interface AddThumbnailPathOfLoadedFile {
+  id: string;
+  path: string;
 }

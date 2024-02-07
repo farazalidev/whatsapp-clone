@@ -1,6 +1,6 @@
 import React, { FC, useMemo } from 'react';
 import { MessageEntity } from '@server/modules/chat/entities/message.entity';
-import MessageBubble from './MessageBubble';
+import MessageBubble from './messageBubbles/MessageBubble';
 
 interface IMessagePreview extends React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement> {
   message: MessageEntity;

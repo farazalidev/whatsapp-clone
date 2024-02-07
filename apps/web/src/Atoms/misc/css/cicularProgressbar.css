@@ -1,0 +1,40 @@
+/* CircularProgressBar.css */
+.circular-progress-bar {
+  position: relative;
+  width: 100px;
+}
+
+.circular-progress-bar__circle {
+  width: 50px;
+  display: flex;
+  justify-content: center;
+  place-items: center;
+  padding-bottom:50px;
+  border-radius: 50%;
+  background: #e0e0e0;
+  position: relative;
+  overflow: hidden;
+}
+
+.circular-progress-bar__mask {
+  clip: rect(0px, 50px, 100px, 0px);
+  border-radius: 50%;
+  position: absolute;
+}
+
+.full {
+  clip: rect(auto, auto, auto, auto);
+}
+
+.half {
+  clip: rect(0px, 50px, 100px, 0px);
+}
+
+.circular-progress-bar__fill {
+  border-radius: 50%;
+  position: absolute;
+  background: #34d399;
+  width: 100%;
+  height: 100%;
+  clip: rect(0px, 100px, 100px, 50px);
+}

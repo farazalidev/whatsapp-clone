@@ -90,6 +90,9 @@ export class MessageGateway implements OnGatewayInit {
       content: payload.message.content,
       id: payload.message.id,
       sended_at: payload.message.sended_at,
+      media: payload.message.media,
+      messageType: payload.message.messageType,
+      clear_for: null,
     });
 
     // processing message

@@ -7,7 +7,7 @@ import { expectedFileTypes, } from '@shared/types';
 
 export interface ThumbnailProps {
   id: string
-  url: string | undefined;
+  url: string | Blob | undefined;
   width: number;
   height: number;
   active?: boolean;
@@ -39,11 +39,11 @@ export const Thumbnail: FC<ThumbnailProps> = ({ url, height, width, active, onCl
       {url ? (
         <>
           {type === 'image' ? (
-            <ImageThumbnail url={url} />
+            <ImageThumbnail url={url as string} />
           ) : type === 'video' ? (
-            <VideoThumbnail url={url} />
+            <VideoThumbnail url={url as string} />
           ) : (
-            <ImageThumbnail url={url} />
+            <ImageThumbnail url={url as string} />
           )}
         </>
       ) : (
@@ -66,15 +66,21 @@ const ImageThumbnail: FC<IImageThumbnail> = ({ url, }) => {
 }
 
 interface IVideoThumbnail {
-  url: string
+  url: string | Blob
 
 }
 
 const VideoThumbnail: FC<IVideoThumbnail> = ({ url, }) => {
+  let thumbnailUrl = url
+  if (url instanceof Blob) {
+
+    thumbnailUrl = URL.createObjectURL(url)
+  }
+  console.log(thumbnailUrl);
 
 
   return <span className="flex place-items-center justify-center">
-    <Image src={url} alt="Thumbnail" fill objectFit="cover" />
+    <Image src={thumbnailUrl as string} alt="Thumbnail" fill objectFit="cover" />
     <span className="absolute top-0 flex h-full w-full place-items-center justify-center bg-black bg-opacity-30">
       <span className="relative h-5 w-5">
         <Image src={'/icons/play.svg'} alt="play" fill />
@@ -91,6 +97,6 @@ interface IGenericThumbnail {
 const GenericThumbnail: FC<IGenericThumbnail> = () => {
 
 
-  return <span><Image src={'/icons/preview-generic.svg'} alt="Thumbnail" height={30} width={30} className='relative' />
+  return <span><Image src={'/icons/svg.svg'} alt="Thumbnail" height={30} width={30} className='relative' />
   </span>
 }

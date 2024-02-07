@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '@/global/store';
 import useSocket from '@/hooks/useSocket';
 import { addNewMessage, updateMessageStatus, updateMessageStatusBulk } from '@/global/features/messagesSlice';
+import useCurrentChat from '@/hooks/useCurrentChat';
 
 interface ChatHandlerProps { }
 
@@ -12,13 +13,11 @@ const ChatHandler: FC<ChatHandlerProps> = () => {
 
   const dispatch = useDispatch();
 
-  const { id } = useSelector((state: RootState) => state.ChatSlice);
-
   const Me = useSelector((state: RootState) => state.UserSlice.Me);
 
   const divRef = useRef<HTMLDivElement>(null);
 
-  const chat = useSelector((state: RootState) => state.messagesSlice.chats.find((chat) => chat.chat_id === id));
+  const { chat, id } = useCurrentChat()
 
   useEffect(() => {
 
@@ -63,7 +62,7 @@ const ChatHandler: FC<ChatHandlerProps> = () => {
 
   return (
     <>
-      <div className="flex h-full w-full flex-col gap-1 overflow-y-scroll px-4 py-2 scrollbar">
+      <div className="flex h-full w-full flex-col gap-1 overflow-y-scroll px-7 py-2 scrollbar">
         {chat?.messages
           ? [...chat.messages]
 

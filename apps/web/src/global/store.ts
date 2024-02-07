@@ -7,6 +7,7 @@ import { messagesSlice } from './features/messagesSlice';
 import { LoadingSlice } from './loadingSlice';
 import { overlaySlice } from './features/overlaySlice';
 import { filesSlice } from './features/filesSlice';
+import { GallerySlice } from './features/GallerySlice';
 
 export const store = configureStore({
   reducer: {
@@ -16,6 +17,7 @@ export const store = configureStore({
     ChatSlice: ChatSlice.reducer,
     messagesSlice: messagesSlice.reducer,
     overlaySlice: overlaySlice.reducer,
+    GallerySlice: GallerySlice.reducer,
     filesSlice: filesSlice.reducer,
     LoadingSlice: LoadingSlice.reducer,
   },

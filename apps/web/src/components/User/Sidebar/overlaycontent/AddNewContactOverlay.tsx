@@ -14,6 +14,7 @@ import { fetcher } from '@/utils/fetcher';
 import { SuccessResponseType } from '@server/Misc/ResponseType.type';
 import { UserChatEntity } from '@server/modules/chat/entities/userchat.entity';
 import { RootState } from '../../../../global/store';
+import { isIamReceiver } from '@/utils/isIamReceiver';
 
 const AddNewContactOverlay = () => {
   const dispatch = useDispatch();
@@ -33,7 +34,7 @@ const AddNewContactOverlay = () => {
        * If the chat is not started with user
        * then loads user info from the contact
        */
-      dispatch(setUserChatEntity({ id: user_id, started_from: 'contact' }));
+      dispatch(setUserChatEntity({ id: user_id, started_from: 'contact', receiver_id: user_id }));
       // closing overlay
       dispatch(setShow(false));
       // resetting overlay
@@ -45,7 +46,8 @@ const AddNewContactOverlay = () => {
        * then loads the chat and go to the chat panel
        * **/
 
-      dispatch(setUserChatEntity({ id: isChatStarted.data?.id as string, started_from: 'chat' }));
+      const receiver_id = isIamReceiver(isChatStarted.data?.chat_with.user_id, data.Me?.user_id) ? isChatStarted.data?.chat_for.user_id : isChatStarted.data?.chat_with.user_id
+      dispatch(setUserChatEntity({ id: isChatStarted.data?.id as string, started_from: 'chat', receiver_id }));
       // closing overlay
       dispatch(setShow(false));
       // resetting overlay

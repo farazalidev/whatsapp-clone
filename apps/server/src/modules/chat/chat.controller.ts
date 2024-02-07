@@ -79,4 +79,13 @@ export class ChatController {
 
     return response;
   }
+  @Get('message-existed/:chat_id/:message_id')
+  async isMessageExisted(@GetUser() user: UserEntity, @Param() param: { chat_id: string; message_id: string }) {
+    const response = await this.chatSer.isMessageExistedService(user.user_id, param.chat_id, param.message_id);
+    if (!isSuccess(response)) {
+      throw new HttpException(response.error.message, response.error.statusCode);
+    }
+
+    return response;
+  }
 }
