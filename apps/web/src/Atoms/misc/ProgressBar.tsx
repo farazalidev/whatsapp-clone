@@ -12,6 +12,7 @@ interface ProgressBarProps extends React.DetailedHTMLProps<React.HTMLAttributes<
    * show the download button when the loading is false and progress is 100%
    */
   showActionButton: boolean;
+  isFromMe?: boolean
   messageType: expectedFileTypes | 'text' | undefined;
   onRetryClick?: () => void;
   onPauseClick?: () => void;
@@ -28,6 +29,7 @@ const ProgressBar: FC<ProgressBarProps> = ({
   onRetryClick,
   messageType,
   onActionButtonClick,
+  isFromMe,
   ...props
 }) => {
   const circleControl = useAnimation();
@@ -53,16 +55,20 @@ const ProgressBar: FC<ProgressBarProps> = ({
         </span>
       ) : null}
 
+
       {/* action button */}
       {showActionButton && progress === 100 && !isLoading ? (
         <span onClick={onActionButtonClick} className="z-10 cursor-pointer">
           {messageType === 'others' ? (
             <Image src={'/icons/gallery-icons/download.svg'} alt="download" height={25} width={25} />
-          ) : messageType === 'video' ? (
+          ) : messageType === 'video' && isFromMe ? (
             <Image src={'/icons/play.svg'} alt="play" height={25} width={25} />
           ) : null}
         </span>
       ) : null}
+
+
+      {messageType === "video" && !isFromMe && !isLoading ? <><Image src={'/icons/play.svg'} alt="play" height={25} width={25} /></> : null}
 
       {isLoading ? (
         <div role="status">

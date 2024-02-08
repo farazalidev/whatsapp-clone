@@ -4,6 +4,7 @@ import { isValidToken } from '../../../utils/isValidToken';
 import { LoginPayload } from '../auth.service';
 import { Repository } from 'typeorm';
 import { UserEntity } from '../../user/entities/user.entity';
+import { decryptCookie } from '../../../utils/encdecCookie';
 
 export type SocketMiddleware = (socket: Socket, next: (err?: Error) => void) => void;
 
@@ -16,7 +17,9 @@ export const WsAuthMiddleware = (userRepo: Repository<UserEntity>): SocketMiddle
         return next(new WsIoException('Unauthorized', 401));
       }
 
-      const isValidAccessToken = await isValidToken<LoginPayload>(accessToken, process.env.ACCESS_TOKEN_SECRET);
+      const decryptedAccessToken = decryptCookie(accessToken);
+
+      const isValidAccessToken = await isValidToken<LoginPayload>(decryptedAccessToken, process.env.ACCESS_TOKEN_SECRET);
 
       if (!isValidAccessToken.success) {
         return next(new WsIoException('Forbidden', 403));

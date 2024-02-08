@@ -75,7 +75,7 @@ const UserSideBar = () => {
                       }
                       active={chat.id === id}
                       for_other
-                      user_id={chat.chat_with.user_id}
+                      user_id={isIamReceiver(chat.chat_with.user_id, Me?.user_id) ? chat.chat_for.user_id : chat.chat_with.user_id}
                       onClick={() => handleChat(chat.id, chat.unread_messages?.unread_messages?.length)}
                       unread_message_count={chat.unread_messages?.unread_messages.length}
                     />

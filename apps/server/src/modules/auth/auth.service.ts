@@ -217,6 +217,7 @@ export class AuthService {
         };
       }
     } catch (error) {
+      console.log('🚀 ~ AuthService ~ LoginService ~ error:', error);
       return {
         success: false,
         error: {

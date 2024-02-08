@@ -90,22 +90,21 @@ export const MessageBubbleVideoPreview: FC<IMessageBubblePreview> = ({ message, 
         <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-b from-transparent to-gray-900 z-10"></div>
 
         {/* progress bar */}
-        {isFromMe ?
-          <span className="absolute">
-            <ProgressBar
-              barStyle="circle"
-              isResumable={state?.isResumable}
-              isLoading={state?.isLoading}
-              progress={state?.progress}
-              showActionButton={true}
-              messageType={message?.messageType}
-              onRetryClick={handleRetry}
-              onPauseClick={handlePause}
-              onActionButtonClick={handleDownload}
-            /> </span> : null}
+        <span className="absolute">
+          <ProgressBar
+            barStyle="circle"
+            isResumable={state?.isResumable}
+            isLoading={state?.isLoading}
+            progress={state?.progress}
+            showActionButton={true}
+            messageType={message?.messageType}
+            onRetryClick={handleRetry}
+            onPauseClick={handlePause}
+            onActionButtonClick={handleDownload}
+          /> </span>
 
         {/* thumbnail */}
-        {thumbnailState.thumbnail ? <Image src={thumbnailState.thumbnail} alt="video" className="blur-[2px]" fill /> : null}
+        {thumbnailState.thumbnail ? <Image src={thumbnailState.thumbnail} loading="lazy" alt="video" className="blur-[2px]" fill /> : null}
 
         <MediaMessageStatus isFromMe={isFromMe} message={message} key={message?.id} />
       </MediaMessageBubbleWrapper>}

@@ -6,6 +6,7 @@ import { Reflector } from '@nestjs/core';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserEntity } from '../../user/entities/user.entity';
 import { Repository } from 'typeorm';
+import { decryptCookie } from '../../../utils/encdecCookie';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -28,7 +29,8 @@ export class AuthGuard implements CanActivate {
       throw new UnauthorizedException();
     }
     try {
-      const payload: LoginPayload = await this.jwt.verifyAsync(accessToken, { secret: process.env.ACCESS_TOKEN_SECRET });
+      const decryptedAccessToken = decryptCookie(accessToken);
+      const payload: LoginPayload = await this.jwt.verifyAsync(decryptedAccessToken, { secret: process.env.ACCESS_TOKEN_SECRET });
       const user = await this.UserRepo.findOne({ where: { user_id: payload.user_id } });
       req['user'] = user;
       return true;

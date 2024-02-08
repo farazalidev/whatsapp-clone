@@ -84,7 +84,7 @@ export const MessageBubbleImagePreview: FC<IMessageBubblePreview> = ({ message, 
 
   return (
     <MediaMessageBubbleWrapper isFromMe={isFromMe} messageType={message?.messageType} className="flex justify-center place-items-center" height={dimensions.height} width={dimensions.width} onClick={() => handleGalleryOverlay(message?.media?.id)}>
-      {thumbnailState.thumbnail ? <Image src={thumbnailState.thumbnail} alt={message?.media?.type || "image"} fill /> : null}
+      {thumbnailState.thumbnail ? <Image src={thumbnailState.thumbnail} loading="lazy" alt={message?.media?.type || "image"} fill /> : null}
 
       <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-b from-transparent to-gray-900"></div>
       {/* progress bar */}

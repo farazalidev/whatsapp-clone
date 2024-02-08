@@ -15,6 +15,7 @@ export interface AvatarProps extends React.DetailedHTMLProps<React.HTMLAttribute
 }
 
 const Avatar: FC<AvatarProps> = ({ user_id, for_other, isAbsolute, absolute_src, name, height = 55, width = 55, ...props }) => {
+  console.log("🚀 ~ user_id:", user_id)
 
   const getProfilePic = async () => {
     const blob = await fetcher(`api/file/get-profile-pic/${user_id}/small`, undefined, "blob", "static")
@@ -23,7 +24,7 @@ const Avatar: FC<AvatarProps> = ({ user_id, for_other, isAbsolute, absolute_src,
   }
 
   // const { data } = useSwr(for_other ? user_id : 'profile-pic', isAbsolute ? null : for_other ? fetchOtherProfilePic : fetchProfilePic);
-  const { data } = useSwr(user_id || 'profile-pic', isAbsolute ? null : getProfilePic);
+  const { data } = useSwr(user_id, isAbsolute ? null : getProfilePic);
 
   return (
     <Suspense fallback={'loading'}>

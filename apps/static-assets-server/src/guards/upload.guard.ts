@@ -7,6 +7,7 @@ import { UserEntity } from '@server/modules/user/entities/user.entity';
 import { LoginPayload } from '@server/modules/auth/auth.service';
 import { ExtendedReq } from './types';
 import { getCookieValue } from 'src/utils/getCookieFromHeader';
+import { decryptCookie } from '@server/utils/encdecCookie';
 
 @Injectable()
 export class Upload_Guard implements CanActivate {
@@ -25,11 +26,12 @@ export class Upload_Guard implements CanActivate {
     const req = context.switchToHttp().getRequest<ExtendedReq>();
     const accessTokenFromHeaders = getCookieValue(req.headers.cookie, process.env.ACCESS_TOKEN_NAME);
     const accessToken = req.headers['authorization']?.split(' ')[1] || accessTokenFromHeaders;
+    const decryptedAccessToken = decryptCookie(accessToken);
     if (!accessToken) {
       throw new UnauthorizedException();
     }
     try {
-      const payload: LoginPayload = await this.jwt.verifyAsync(accessToken, { secret: process.env.ACCESS_TOKEN_SECRET });
+      const payload: LoginPayload = await this.jwt.verifyAsync(decryptedAccessToken, { secret: process.env.ACCESS_TOKEN_SECRET });
       const user = await this.UserRepo.findOne({ where: { user_id: payload.user_id } });
       req['user'] = user;
       return true;
