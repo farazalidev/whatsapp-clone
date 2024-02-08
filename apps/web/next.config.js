@@ -7,20 +7,18 @@ const { composePlugins, withNx } = require('@nx/next');
  * @type {import('@nx/next/plugins/with-nx').WithNxOptions}
  **/
 const nextConfig = {
-  images: {
-    dangerouslyAllowSVG: true,
-    remotePatterns: [{ hostname: 'res.cloudinary.com', protocol: 'https' }],
+  async rewrites() {
+    return [
+      {
+        source: '/api/file/attachment-download/:user_id*/:file_id*',
+        destination: `${process.env.NEXT_PUBLIC_STATIC_ASSETS_SERVER_URL}api/file/attachment-download/:user_id*/:file_id*`,
+      },
+    ];
   },
   nx: {
     svgr: true,
   },
   reactStrictMode: false,
-
-  serverRuntimeConfig: {
-    CLOUDINARY_NAME: 'dqgmwfomj',
-    CLOUDINARY_API_KEY: '779485947724676',
-    CLOUDINARY_API_SECRET: 'hWyKzST_hL_cI2iodFlqHpoX1-M',
-  },
   webpack: (config, { isServer }) => {
     if (!isServer) {
       config.resolve.fallback = {

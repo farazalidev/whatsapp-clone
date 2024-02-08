@@ -161,6 +161,7 @@ export class UserService {
         data: contacts,
       };
     } catch (error) {
+      console.log('🚀 ~ UserService ~ getUserContacts ~ error:', error);
       return {
         success: false,
         error: { message: 'Internal Server Error', statusCode: HttpStatus.INTERNAL_SERVER_ERROR },

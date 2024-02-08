@@ -14,11 +14,15 @@ export class ChatController {
   // get user chats
   @Get('user-chats')
   async getUserChats(@GetUser() user: LoginPayload): Promise<UserChatEntity[]> {
-    const response = await this.chatSer.getUserChats(user.user_id);
-    if (!isSuccess(response)) {
-      throw new HttpException(response.error.message, response.error.statusCode);
+    try {
+      const response = await this.chatSer.getUserChats(user.user_id);
+      if (!isSuccess(response)) {
+        throw new HttpException(response.error.message, response.error.statusCode);
+      }
+      return response.data;
+    } catch (error) {
+      console.log('🚀 ~ ChatController ~ getUserChats ~ error:', error);
     }
-    return response.data;
   }
 
   // create a new Chat

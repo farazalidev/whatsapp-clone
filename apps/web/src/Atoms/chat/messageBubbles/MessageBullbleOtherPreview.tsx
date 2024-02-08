@@ -101,7 +101,7 @@ export const MessageBubbleOtherFilesPreview: FC<IMessageBubblePreview> = ({ mess
           ) : null}
         </span>
         {!isFromMe ? (
-          <span className="flex h-12 w-12 cursor-pointer place-items-center justify-center rounded-full bg-black bg-opacity-40">
+          <span className="flex h-12 w-12 cursor-pointer place-items-center justify-center rounded-full bg-black bg-opacity-40" onClick={handleDownload}>
             <Image src={'/icons/gallery-icons/download.svg'} height={25} width={25} alt="download" />
           </span>
         ) : null}

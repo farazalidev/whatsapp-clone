@@ -8,7 +8,7 @@ export class MessageMediaEntity {
   id: string;
 
   @OneToOne(() => MessageEntity, (message) => message.media, { onDelete: 'CASCADE' })
-  message: string;
+  message: MessageEntity;
 
   @Column({ type: 'uuid' })
   path: string;

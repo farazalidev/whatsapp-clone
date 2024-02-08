@@ -25,6 +25,8 @@ import { join } from 'path';
 import { calculateChecksum } from 'src/utils/calculateChecksum';
 import * as fsExtra from 'fs-extra';
 import { dirExists } from 'src/utils/dirExists';
+import { getContentType } from 'src/utils/getContentType';
+import { MessageMediaEntity } from '@server/modules/chat/entities/messageMedia.entity';
 
 @Controller('file')
 export class LocalUploadController {
@@ -32,6 +34,7 @@ export class LocalUploadController {
     private localUploadService: LocalUploadService,
     @InjectRepository(ContactEntity) private contactRepo: Repository<ContactEntity>,
     @InjectRepository(UserChatEntity) private userChatRepo: Repository<UserChatEntity>,
+    @InjectRepository(MessageMediaEntity) private messageMediaRepo: Repository<MessageMediaEntity>,
   ) {}
 
   @Post('upload/profile-pic')
@@ -64,6 +67,7 @@ export class LocalUploadController {
         maxAge: 300 * 1000,
       });
     } catch (error) {
+      console.log('🚀 ~ LocalUploadController ~ readProfilePic ~ error:', error);
       return res.status(404).json({ error: 'File not found' });
     }
   }
@@ -109,6 +113,53 @@ export class LocalUploadController {
       });
     } catch (error) {
       throw new HttpException('unable to get profile pic', 500);
+    }
+  }
+
+  @Get('get-profile-pic/:user_id/:size')
+  async getProfilePic(@Res() res: Response, @GetUser() user: UserEntity, @Param() param: { user_id: string; size: string }) {
+    try {
+      // byMe means if the user request profile pic of its own
+      const byMe = param.user_id === user.user_id;
+      console.log('🚀 ~ LocalUploadController ~ getProfilePic ~ byMe:', byMe);
+
+      if (byMe) {
+        const filePath = `${storage.main}${param.user_id}/profile-pics/${param.size}.webp`;
+        const isFileExists = fs.existsSync(filePath);
+        if (!isFileExists) {
+          throw new HttpException('File not found', 404);
+        }
+        return res.sendFile(`${param.size}.webp`, {
+          root: `${storage.main}${param.user_id}/profile-pics/`,
+          cacheControl: true,
+          dotfiles: 'deny',
+          maxAge: 300 * 1000,
+        });
+      }
+
+      // TODO: profile pic privacy implementation
+      // check for user relation with the requested user
+
+      // const isUserRelated = await this.contactRepo.findOne({ where: { contact_for: { user_id: param.user_id }, contact: { user_id: user.user_id } } });
+      // console.log('🚀 ~ LocalUploadController ~ getProfilePic ~ isUserRelated:', isUserRelated);
+
+      // if (!isUserRelated) {
+      //   return res.json({ success: false, error: 'no relation with user' });
+      // }
+
+      const filePath = `${storage.main}${param.user_id}/profile-pics/${param.size}.webp`;
+      const isFileExists = fs.existsSync(filePath);
+      if (!isFileExists) {
+        throw new HttpException('File not found', 404);
+      }
+      return res.sendFile(`${param.size}.webp`, {
+        root: `${storage.main}${param.user_id}/profile-pics/`,
+        cacheControl: true,
+        dotfiles: 'deny',
+        maxAge: 300 * 1000,
+      });
+    } catch (error) {
+      console.log(error);
     }
   }
 
@@ -158,6 +209,39 @@ export class LocalUploadController {
       dotfiles: 'deny',
       maxAge: parseInt(process.env.PROFILE_IMAGE_CACHE_MAX_AGE) * 1000 || 0,
     });
+  }
+
+  /**
+   * user_id should be the file uploader user_id
+   */
+  @Get('attachment-download/:user_id/:file_id')
+  async download(@Res() res: Response, @Param() param: { user_id: string; file_id: string }) {
+    // const isUserIdValidUUID = isUUID(param.user_id);
+    // const isFileIdValidUUID = isUUID(param.file_id);
+
+    // if (!isUserIdValidUUID || isFileIdValidUUID) {
+    //   return res.json({ success: false, error: 'invalidate data' });
+    // }
+
+    const foundedFile = await this.messageMediaRepo.findOneOrFail({
+      where: { id: param.file_id, message: { chat: [{ chat_for: { user_id: param.user_id } }, { chat_with: { user_id: param.user_id } }] } },
+    });
+
+    const filePath = `${storage.main}${param.user_id}/attachments/${param.file_id}${foundedFile.ext}`;
+
+    if (!foundedFile) {
+      return res.status(404).json({ success: false, error: 'file not be founded or unauthorized' });
+    }
+
+    try {
+      res.setHeader('Content-disposition', 'attachment; filename=' + foundedFile.original_name);
+      res.setHeader('Content-type', getContentType(foundedFile.ext));
+      const fileStream = fs.createReadStream(filePath);
+      return fileStream.pipe(res);
+    } catch (error) {
+      console.log('🚀 ~ LocalUploadController ~ download ~ error:', error);
+      res.status(404).send('File not found');
+    }
   }
 
   @Get('get-all-media/:chat_id')

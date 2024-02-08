@@ -6,6 +6,7 @@ import { Repository } from 'typeorm';
 import { UserEntity } from '@server/modules/user/entities/user.entity';
 import { LoginPayload } from '@server/modules/auth/auth.service';
 import { ExtendedReq } from './types';
+import { getCookieValue } from 'src/utils/getCookieFromHeader';
 
 @Injectable()
 export class Upload_Guard implements CanActivate {
@@ -22,7 +23,8 @@ export class Upload_Guard implements CanActivate {
       return true;
     }
     const req = context.switchToHttp().getRequest<ExtendedReq>();
-    const accessToken = req.headers['authorization']?.split(' ')[1];
+    const accessTokenFromHeaders = getCookieValue(req.headers.cookie, process.env.ACCESS_TOKEN_NAME);
+    const accessToken = req.headers['authorization']?.split(' ')[1] || accessTokenFromHeaders;
     if (!accessToken) {
       throw new UnauthorizedException();
     }
