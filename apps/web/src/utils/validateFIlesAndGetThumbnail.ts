@@ -37,6 +37,7 @@ export const validateFilesAndGetThumbnails: validateFilesAndGetThumbnailsType = 
             width: null,
             fileChecksum,
             uploadedFileSize: 0,
+            mime: actualType?.mime || 'application/octet-stream',
           });
         }
         // if the file actual type and extension matched
@@ -55,6 +56,7 @@ export const validateFilesAndGetThumbnails: validateFilesAndGetThumbnailsType = 
             original_name: file.file.name,
             fileChecksum,
             uploadedFileSize: 0,
+            mime: actualType?.mime || 'application/octet-stream',
           });
         }
       }
@@ -79,6 +81,7 @@ export const validateFilesAndGetThumbnails: validateFilesAndGetThumbnailsType = 
             width: null,
             fileChecksum,
             uploadedFileSize: 0,
+            mime: actualType?.mime || 'application/octet-stream',
           });
         }
         // if the file ext matched
@@ -97,6 +100,7 @@ export const validateFilesAndGetThumbnails: validateFilesAndGetThumbnailsType = 
             original_name: file.file.name,
             fileChecksum,
             uploadedFileSize: 0,
+            mime: actualType?.mime || 'application/octet-stream',
           });
         }
       }
@@ -123,6 +127,7 @@ export const validateFilesAndGetThumbnails: validateFilesAndGetThumbnailsType = 
             width: null,
             fileChecksum,
             uploadedFileSize: 0,
+            mime: 'application/octet-stream',
           });
         }
         // if the file ext matched
@@ -141,6 +146,7 @@ export const validateFilesAndGetThumbnails: validateFilesAndGetThumbnailsType = 
             width: Math.round(dimensions.width),
             fileChecksum,
             uploadedFileSize: 0,
+            mime: 'image/svg',
           });
         }
       }
@@ -165,6 +171,7 @@ export const validateFilesAndGetThumbnails: validateFilesAndGetThumbnailsType = 
             original_name: file.file.name,
             fileChecksum,
             uploadedFileSize: 0,
+            mime: actualType?.mime || 'application/octet-stream',
           });
         }
         // if the file ext matched
@@ -181,6 +188,7 @@ export const validateFilesAndGetThumbnails: validateFilesAndGetThumbnailsType = 
             original_name: file.file.name,
             fileChecksum,
             uploadedFileSize: 0,
+            mime: actualType?.mime || 'application/octet-stream',
           });
         }
       }
@@ -202,6 +210,7 @@ export const validateFilesAndGetThumbnails: validateFilesAndGetThumbnailsType = 
           original_name: file.file.name,
           fileChecksum,
           uploadedFileSize: 0,
+          mime: 'application/octet-stream',
         });
       }
     }

@@ -17,7 +17,7 @@ const ChatHandler: FC<ChatHandlerProps> = () => {
 
   const divRef = useRef<HTMLDivElement>(null);
 
-  const { chat, id } = useCurrentChat()
+  const { chat, id, } = useCurrentChat()
 
   useEffect(() => {
 
@@ -44,8 +44,7 @@ const ChatHandler: FC<ChatHandlerProps> = () => {
       socket.off('message_status');
       socket.off('update_message_status_bulk');
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [socket, dispatch]);
+  }, [socket, dispatch, id]);
 
   // scroll to bottom
   useEffect(() => {
@@ -60,6 +59,12 @@ const ChatHandler: FC<ChatHandlerProps> = () => {
     }
   }, [chat?.messages]);
 
+  const { receiver_id } = useSelector((state: RootState) => state.ChatSlice);
+
+
+  const chatSlice = useSelector((state: RootState) => state.ChatSlice);
+
+
   return (
     <>
       <div className="flex h-full w-full flex-col gap-1 overflow-y-scroll px-7 py-2 scrollbar">
@@ -71,7 +76,7 @@ const ChatHandler: FC<ChatHandlerProps> = () => {
               const dateB = new Date(b?.sended_at)?.getTime();
               return dateA - dateB;
             })
-            .map((message) => <MessagePreview isFromMe={Me?.user_id === message?.from?.user_id} message={message} key={message?.id} />)
+            .map((message) => <MessagePreview isFromMe={Me?.user_id === message?.from?.user_id} message={message} key={message?.id} ChatSlice={chatSlice} receiver_id={receiver_id} socket={socket} Me={Me} />)
           : null}
         <div ref={divRef} />
       </div>

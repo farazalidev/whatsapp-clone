@@ -79,6 +79,7 @@ export class ResumableUpload {
               file_checksum: this.selectedFile?.fileChecksum,
               height: this.height,
               width: this.width,
+              mime: this.selectedFile?.mime,
             },
             signal: this.controller?.signal,
           })

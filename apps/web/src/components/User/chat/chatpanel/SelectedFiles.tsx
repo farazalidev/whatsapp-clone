@@ -17,6 +17,7 @@ export interface SelectedFileType {
   id: string;
   file: File;
   type: expectedFileTypes;
+  mime: string
   thumbnail: string | Blob | undefined | null;
   url: string | undefined;
   attachedMessage: string | null

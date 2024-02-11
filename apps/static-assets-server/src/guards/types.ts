@@ -15,6 +15,8 @@ interface NewHeaders {
   file_checksum: string;
   height: number;
   width: number;
+  range: string;
+  mime: string;
 }
 
 export interface ExtendedReq extends Request<core.ParamsDictionary, any, any, core.Query> {

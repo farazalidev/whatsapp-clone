@@ -15,8 +15,6 @@ export interface AvatarProps extends React.DetailedHTMLProps<React.HTMLAttribute
 }
 
 const Avatar: FC<AvatarProps> = ({ user_id, for_other, isAbsolute, absolute_src, name, height = 55, width = 55, ...props }) => {
-  console.log("🚀 ~ user_id:", user_id)
-
   const getProfilePic = async () => {
     const blob = await fetcher(`api/file/get-profile-pic/${user_id}/small`, undefined, "blob", "static")
     const url = URL.createObjectURL(blob)

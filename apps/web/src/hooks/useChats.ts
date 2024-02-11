@@ -7,6 +7,7 @@ import { addNewChat, addRawChats } from '@/global/features/messagesSlice';
 import { AxiosError } from 'axios';
 import { mainDb } from '@/utils/mainIndexedDB';
 import { MessageEntity } from '@server/modules/chat/entities/message.entity';
+import { useMemo } from 'react';
 
 const useChats = () => {
   const dispatch = useDispatch();
@@ -24,12 +25,13 @@ const useChats = () => {
       localMessages = await mainDb?.mediaMessages.toArray();
     }
 
-    result.data?.chats.forEach(async (chat) => {
-      dispatch(addNewChat({ chat_id: chat.id, messages: [...chat.messages, ...localMessages] }));
+    result.data?.chats.map((chat) => {
+      const chatMessages = localMessages.filter((localMessage) => localMessage.chat.id === chat.id);
+      dispatch(addNewChat({ chat_id: chat.id, messages: [...chat.messages, ...chatMessages] }));
     });
   };
   saveChat();
-  return result;
+  return useMemo(() => result, [result]);
 };
 
 export default useChats;

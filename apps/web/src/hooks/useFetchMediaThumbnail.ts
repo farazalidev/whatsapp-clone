@@ -22,11 +22,11 @@ export const useFetchMediaThumbnail: IUseFetchMediaThumbnail = ({ message, isFro
 
       const user_id = isFromMe ? Me?.user_id : receiver_id;
 
-      if (message?.messageType === 'video' || message?.messageType === 'image' || message?.messageType === 'svg') {
+      if (message?.messageType === 'video' || message?.messageType === 'image') {
         try {
           const ext = message.messageType === 'video' ? '.png' : message.media?.ext;
-          const path = message.messageType === 'video' ? `${message.media?.id}-thumbnail${ext}` : `${message.media?.id}${ext}`;
-          const responseBlob = await fetcher(`api/file/get-attachment-thumbnail/${user_id}/${path}`, undefined, 'blob', 'static');
+          const path = `${message.media?.id}`;
+          const responseBlob = await fetcher(`api/file/get-attachment-thumbnail/${user_id}/${path}/sm`, undefined, 'blob', 'static', { ext });
           const thumbnail = URL.createObjectURL(responseBlob);
           setThumbnailState((prev) => {
             return { ...prev, thumbnail };

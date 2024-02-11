@@ -61,11 +61,13 @@ const useUpload: IUseUpload = ({ isFromMe, message, lastAction }) => {
 
         // if the chunksDirectory does not existed and file does not exists at all then we will start the upload automatically
         else if (!isFileExisted.isFileExisted && !isFileExisted.chunksDirectory && isFileExisted.uploadedFileSize === 0) {
-          if (message.messageType === 'video') {
+          if (message.messageType === 'video' || message.messageType === 'image') {
             setState((prev) => {
               return { ...prev, isLoading: true, isResumable: false };
             });
-            const thumbnailBlob = localFile.thumbnail;
+
+            const ImageBlob = new Blob([localFile.file]);
+            const thumbnailBlob = message.messageType === 'video' ? localFile.thumbnail : ImageBlob;
             await uploadThumbnail(thumbnailBlob, message);
           }
 
@@ -132,6 +134,10 @@ const useUpload: IUseUpload = ({ isFromMe, message, lastAction }) => {
 
     if (isFromMe) {
       getManager();
+    } else {
+      setState((prev) => {
+        return { ...prev, isResumable: false, error: false, isLoading: false, progress: 100 };
+      });
     }
   }, [isFromMe, message?.media?.id, message?.media?.size, lastAction, message]);
 
@@ -190,9 +196,9 @@ const uploadThumbnail = async (thumbnailBlob: string | Blob | null | undefined, 
       const formData = new FormData();
       console.log(thumbnailBlob);
       formData.append('attachment-thumbnail', thumbnailBlob);
-      const ext = '.png';
+      const ext = message.messageType === 'video' ? '.png' : message.media?.ext;
       const response = await Mutation<FormData, { success: boolean }>(`api/file/upload-attachment-thumbnail`, formData, 'static', {
-        headers: { file_name: message.media?.id, ext, height: message.media?.height, width: message.media?.width },
+        headers: { file_name: message.media?.id, ext, height: message.media?.height, width: message.media?.width, mime: message.media?.mime },
       });
       return response.success;
     } catch (error) {

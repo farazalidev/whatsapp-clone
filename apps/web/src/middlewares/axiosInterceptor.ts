@@ -1,5 +1,6 @@
 import { getCookie } from '@/utils/getCookie';
 import axios from 'axios';
+import axiosRetry from 'axios-retry';
 
 const axiosWithAuth = ({ static_server }: { static_server?: boolean }) => {
   const instance = axios.create({
@@ -9,6 +10,7 @@ const axiosWithAuth = ({ static_server }: { static_server?: boolean }) => {
     },
     withCredentials: true,
   });
+  axiosRetry(instance, { retries: 5, retryDelay: () => 5000 });
 
   instance.interceptors.response.use(
     (response) => response,

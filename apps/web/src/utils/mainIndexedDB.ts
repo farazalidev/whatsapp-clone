@@ -12,8 +12,8 @@ export class MainDB extends Dexie {
 
   constructor() {
     super('mainDb');
-    this.version(1.4).stores({
-      media: 'id, file, type, thumbnailUrl, url, attachedMessage, thumbnailPath,fileChecksum,uploadedFileSize',
+    this.version(1.5).stores({
+      media: 'id, file, type, thumbnailUrl, url, attachedMessage, thumbnailPath,fileChecksum,uploadedFileSize,mime',
       mediaMessages: 'id, content, sended_at, messageType, media, is_seen, received_at, seen_at, from, clear_for, sended,chat',
     });
   }

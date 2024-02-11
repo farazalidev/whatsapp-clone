@@ -8,7 +8,7 @@ const GalleryFooter: FC<IGalleryFooter> = () => {
 
 
   return (
-    <div className='h-[110px] flex border-t-[1px] border-gray-300 dark:border-gray-600'>
+    <div className='h-[110px] border-t-[1px] border-gray-300 dark:border-gray-600'>
       <GalleryFooterCarousel />
     </div>
   )

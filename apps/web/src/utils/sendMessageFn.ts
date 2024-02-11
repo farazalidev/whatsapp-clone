@@ -6,8 +6,8 @@ import { ISocket_Client } from './createSocket';
 import { store } from '@/global/store';
 
 interface ISendMessageFnArgs {
-  socket: ISocket_Client;
-  chatSlice: IChatSlice;
+  socket: ISocket_Client | undefined;
+  chatSlice: IChatSlice | undefined;
   receiver_id: string;
   message: MessageEntity;
 }
@@ -16,7 +16,7 @@ type SendMessageFnType = (args: ISendMessageFnArgs) => Promise<boolean>;
 
 export const sendMessageFn: SendMessageFnType = async ({ chatSlice, receiver_id, socket, message }) => {
   try {
-    if (chatSlice.started_from === 'chat') {
+    if (chatSlice?.started_from === 'chat') {
       // if the user selects from chat and there is not chat existed
       // then create a new chat
 
@@ -28,7 +28,7 @@ export const sendMessageFn: SendMessageFnType = async ({ chatSlice, receiver_id,
       return true;
     }
 
-    start_newChat(socket, chatSlice.id, message);
+    start_newChat(socket, chatSlice?.id, message);
     return true;
   } catch (error) {
     console.error('Error while sending message');
@@ -38,7 +38,7 @@ export const sendMessageFn: SendMessageFnType = async ({ chatSlice, receiver_id,
 
 export const sendMessageFnPromises: SendMessageFnType = async ({ chatSlice, message, receiver_id, socket }) => {
   return new Promise<boolean>((resolve, reject) => {
-    if (chatSlice.started_from === 'chat') {
+    if (chatSlice?.started_from === 'chat') {
       // if the user selects from chat and there is not chat existed
       // then create a new chat
 
@@ -49,7 +49,7 @@ export const sendMessageFnPromises: SendMessageFnType = async ({ chatSlice, mess
 
       resolve(true);
     } else {
-      start_newChat(socket, chatSlice.id, message);
+      start_newChat(socket, chatSlice?.id, message);
       resolve(true);
     }
   });

@@ -18,7 +18,7 @@ export const AttachmentThumbnailStorage: MulterOptions = {
       callback(null, path);
     },
     filename(req, file, callback) {
-      callback(null, `${req.headers.file_name}-thumbnail-org${req.headers.ext}`);
+      callback(null, `${req.headers.file_name}-thumbnail-unp${req.headers.ext}`);
     },
   }),
 };

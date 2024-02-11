@@ -1,11 +1,17 @@
-import { IMessageBubblePreview } from '@/Atoms/types/messageBubble.types'
 import OptionIcon from '@/components/User/Sidebar/OptionIcon'
 import dayjs from 'dayjs'
 import React, { FC } from 'react'
+import { MessageEntity } from '@server/modules/chat/entities/message.entity';
 
 
 
-const MediaMessageStatus: FC<IMessageBubblePreview> = ({ isFromMe, message }) => {
+interface IMediaMessageStatus {
+  message: MessageEntity | undefined;
+  isFromMe: boolean | undefined;
+  messageLines?: number
+}
+
+const MediaMessageStatus: FC<IMediaMessageStatus> = ({ isFromMe, message }) => {
   return isFromMe ? (
     <span className={`flex place-items-center justify-evenly gap-1 pl-1  absolute bottom-0 right-0 mt-4'`}>
       <span className="mt-1 flex text-[10px] text-white text-opacity-70 z-20">{message?.sended_at ? dayjs(message.sended_at).format('hh:mm A') : ''}</span>

@@ -1,27 +1,31 @@
-import { IMediaThumbnail } from '@/components/User/Gallery/GalleryOverlay';
 import { createSlice } from '@reduxjs/toolkit';
+import { MessageEntity } from '@server/modules/chat/entities/message.entity';
+
+export interface MessageEntityGalleryExtended extends MessageEntity {
+  url: string | undefined;
+}
 
 interface IGallerySlice {
-  active_id: string | null;
-  thumbnails: IMediaThumbnail[];
+  activeMediaMessage: MessageEntity | null;
+  MediaMessages: MessageEntityGalleryExtended[];
 }
 
 const initialState: IGallerySlice = {
-  active_id: null,
-  thumbnails: [],
+  activeMediaMessage: null,
+  MediaMessages: [],
 };
 
 export const GallerySlice = createSlice({
   name: 'gallery-slice',
   initialState,
   reducers: {
-    addThumbnails: (state, { payload }: { payload: { thumbnails: IMediaThumbnail[] | undefined } }) => {
-      if (payload.thumbnails) {
-        state.thumbnails = payload.thumbnails;
+    addThumbnails: (state, { payload }: { payload: { messages: MessageEntityGalleryExtended[] | undefined } }) => {
+      if (payload.messages) {
+        state.MediaMessages = payload.messages;
       }
     },
-    setActiveGalleryMedia: (state, { payload }: { payload: string }) => {
-      state.active_id = payload;
+    setActiveGalleryMedia: (state, { payload }: { payload: MessageEntity }) => {
+      state.activeMediaMessage = payload;
     },
   },
 });

@@ -1,31 +1,38 @@
-import React, { FC } from 'react'
-import Image from 'next/image'
-import { cn } from '@/utils/cn'
-import { MessageMediaEntity } from '@server/modules/chat/entities/messageMedia.entity'
-import { useDispatch } from 'react-redux'
-import { setActiveGalleryMedia } from '@/global/features/GallerySlice'
+import React, { FC } from 'react';
+import Image from 'next/image';
+import { cn } from '@/utils/cn';
+import { useDispatch } from 'react-redux';
+import { MessageEntityGalleryExtended, setActiveGalleryMedia } from '@/global/features/GallerySlice';
 
 interface ICarousalItemProps {
-  data: MessageMediaEntity | null
-  url: string
-  active: boolean
+  data: MessageEntityGalleryExtended | null;
+  user_id: string | undefined;
+  url: string;
+  active: boolean;
 }
 
 const CarouselItem: FC<ICarousalItemProps> = ({ active = false, url, data }) => {
+  const dispatch = useDispatch();
 
-  const dispatch = useDispatch()
-
-  const handleActiveMedia = (id: string | undefined) => {
-    if (id) {
-      dispatch(setActiveGalleryMedia(id))
+  const handleActiveMedia = (message: MessageEntityGalleryExtended | undefined | null) => {
+    if (message) {
+      dispatch(setActiveGalleryMedia(message));
     }
-  }
+  };
 
   return (
-    <div className={cn(['bg-gray-50 text-white w-[78px] h-[78px] flex-shrink-0 flex-grow-0  relative rounded-md border-[5px] border-whatsapp-light-secondary_bg cursor-pointer dark:border-whatsapp-dark-secondary_bg transition-all', active ? 'w-[65px] h-[65px] border-gray-300 dark:border-gray-500' : ""])} onClick={() => handleActiveMedia(data?.id)}>
-      <Image src={url || '/placeholders/placholder-image.png'} fill objectFit='cover' alt='thumbnail' />
+    <div
+      className={cn([
+        'border-whatsapp-light-secondary_bg box-content relative max-h-[60px] max-w-[60px] h-[60px] w-[60px] dark:border-whatsapp-dark-secondary_bg flex-shrink-0 flex-grow-0 cursor-pointer rounded-md border-[5px] bg-gray-50 text-white transition-all',
+        active ? 'border-gray-700 dark:border-gray-300' : '',
+        'hover:border-gray-300',
+        data?.messageType === "svg" ? 'bg-gray-300' : ''
+      ])}
+      onClick={() => handleActiveMedia(data)}
+    >
+      <Image src={url || '/placeholders/placholder-image.png'} fill objectFit="contain" alt="thumbnail" className='overflow-hidden' />
     </div>
-  )
-}
+  );
+};
 
-export default CarouselItem
+export default CarouselItem;

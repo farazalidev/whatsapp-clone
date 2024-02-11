@@ -11,12 +11,12 @@ export const TextMessagePreview: FC<IMessageBubblePreview> = ({ message, message
         : 'bg-whatsapp-misc-other_message_bg_light dark:bg-whatsapp-misc-other_message_bg_dark dark:text-whatsapp-dark-text text-whatsapp-light-text'
         }`}
     >
-      <span style={{ whiteSpace: 'pre-wrap' }} className={`w-fit max-w-full break-words  ${messageLines && messageLines > 2 ? 'pb-2' : ''}`}>
+      <span style={{ whiteSpace: 'pre-wrap' }} className={`w-fit max-w-full break-words text-balance ${messageLines && messageLines > 2 ? 'pb-2' : ''}`}>
         {message?.content}
       </span>
       {isFromMe ? (
         <span className={`flex place-items-center justify-evenly gap-1 pl-1  ${messageLines && messageLines > 2 ? 'absolute bottom-0 right-0 mt-4' : 'place-self-end'}`}>
-          <span className="mt-1 flex text-[10px] text-white text-opacity-70">{message?.sended_at ? dayjs(message.sended_at).format('hh:mm A') : ''}</span>
+          <span className="mt-1 flex whitespace-nowrap text-[10px] text-white text-opacity-70">{message?.sended_at ? dayjs(message.sended_at).format('hh:mm A') : ''}</span>
           <span className="flex place-items-center ">
             {message?.seen_at ? (
               // Render the icon for seen messages

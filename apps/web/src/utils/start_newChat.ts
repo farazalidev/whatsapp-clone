@@ -10,7 +10,7 @@ import { ISocket_Client } from './createSocket';
 import { setLoading } from '@/global/loadingSlice';
 import { mutate } from 'swr';
 
-type IStartANewChat = (socket: ISocket_Client, receiver_id: string | undefined, message: MessageEntity) => void;
+type IStartANewChat = (socket: ISocket_Client | undefined, receiver_id: string | undefined, message: MessageEntity) => void;
 
 /**
  * This function has responsibility to start a new chat

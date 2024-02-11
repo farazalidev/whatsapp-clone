@@ -7,7 +7,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { RootState } from '@/global/store'
 import Image from 'next/image'
 import { MessageMediaEntity } from '@server/modules/chat/entities/messageMedia.entity'
-import { addThumbnails } from '@/global/features/GallerySlice'
+import { MessageEntityGalleryExtended, addThumbnails } from '@/global/features/GallerySlice'
 import useCurrentChat from '@/hooks/useCurrentChat'
 
 
@@ -24,7 +24,7 @@ const GalleryOverlay: FC<IGalleryOverlay> = ({ onClose, show }) => {
   const [state, setState] = useState<{ loading: boolean, error: boolean }>({ error: false, loading: true })
   const { Me } = useSelector((state: RootState) => state.UserSlice)
   const { raw_chat } = useCurrentChat()
-  const { chats } = useSelector((state: RootState) => state.messagesSlice)
+  const { receiver_id } = useSelector((state: RootState) => state.ChatSlice)
 
   const dispatch = useDispatch()
 
@@ -38,17 +38,24 @@ const GalleryOverlay: FC<IGalleryOverlay> = ({ onClose, show }) => {
           messages.sort((a, b) => new Date(a.sended_at).getTime() - new Date(b.sended_at).getTime());
 
           // fetching all the thumbnails of the media
-          const mediaThumbnails: IMediaThumbnail[] = []
-          for (let i = 0; i < messages.length; i++) {
+          const mediaThumbnails: MessageEntityGalleryExtended[] = []
 
-            const thumbnailBlob = await fetcher(`api/file/get-attachment/${Me?.user_id}/${messages[i]?.media?.path}-thumbnail/.png`, undefined, "blob", "static")
+          for (let i = 0; i < messages.length; i++) {
+            const user_id = messages[i].from.user_id === Me?.user_id ? Me.user_id : receiver_id
+            const ext = messages[i].messageType === "video" ? '.png' : messages[i].media?.ext
+            const pathUrl = messages[i].media?.mime.startsWith('image/svg') ? `api/file/get-attachment/${user_id}/${messages[i].media?.id}` : `api/file/get-attachment-thumbnail/${user_id}/${messages[i].media?.id}/sm`
+            const thumbnailBlob = await fetcher(pathUrl, undefined, "blob", "static", { ext })
             const url = URL.createObjectURL(thumbnailBlob)
-            mediaThumbnails.push({ media: messages[i].media, url })
+            mediaThumbnails.push({ ...messages[i], url })
           }
-          dispatch(addThumbnails({ thumbnails: mediaThumbnails }))
+          console.log(mediaThumbnails);
+
+          dispatch(addThumbnails({ messages: mediaThumbnails }))
         }
 
+
       } catch (error) {
+        console.log("🚀 ~ getAllMediaOfChat ~ error:", error)
         setState(prev => { return { ...prev, error: true } })
       } finally {
         setState(prev => { return { ...prev, loading: false } })
@@ -57,7 +64,7 @@ const GalleryOverlay: FC<IGalleryOverlay> = ({ onClose, show }) => {
     if (id) {
       getAllMediaOfChat()
     }
-  }, [Me?.user_id, id, dispatch, chats, raw_chat?.messages])
+  }, [Me?.user_id, id, dispatch, raw_chat?.messages])
 
 
   return show ? (

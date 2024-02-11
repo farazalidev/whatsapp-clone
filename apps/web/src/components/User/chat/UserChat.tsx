@@ -3,7 +3,6 @@ import ChatBanner from './ChatBanner';
 import ChatPanel from './chatpanel/ChatPanel';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/global/store';
-// import ChatPanel from './chatpanel/ChatPanel';
 
 const UserChat = () => {
   const { id } = useSelector((state: RootState) => state.ChatSlice);

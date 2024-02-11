@@ -1,5 +1,4 @@
 import { IMessageBubblePreview } from "@/Atoms/types/messageBubble.types"
-import Image from "next/image"
 import { FC, useCallback, useMemo } from "react"
 import MediaMessageBubbleWrapper from "./MediaMessageBubbleWrapper"
 import MediaMessageStatus from "./MediaMessageStatus"
@@ -62,11 +61,11 @@ export const MessageBubbleVideoPreview: FC<IMessageBubblePreview> = ({ message, 
 
   const { thumbnailState } = useFetchMediaThumbnail({ isFromMe, message })
 
-  const { cancel, download, retry, state } = useUpload({ isFromMe, message, lastAction })
+  const { cancel, retry, state } = useUpload({ isFromMe, message, lastAction })
 
   const handleGalleryOverlay = (id: string | undefined) => {
     if (id) {
-      dispatch(setActiveGalleryMedia(id))
+      dispatch(setActiveGalleryMedia(message as MessageEntity))
     }
     dispatch(toggleGalleryOverlay())
   }
@@ -78,33 +77,30 @@ export const MessageBubbleVideoPreview: FC<IMessageBubblePreview> = ({ message, 
   const handlePause = () => {
     cancel()
   }
-  const handleDownload = () => {
-    download()
-  }
 
 
 
   return (
     <>
-      {<MediaMessageBubbleWrapper isFromMe={isFromMe} messageType={message?.messageType} className="flex place-items-center justify-center cursor-pointer" onClick={() => handleGalleryOverlay(message?.media?.id)} height={dimensions.height} width={dimensions.width}>
+      {<MediaMessageBubbleWrapper isFromMe={isFromMe} messageType={message?.messageType} className="flex place-items-center justify-center" height={dimensions.height} width={dimensions.width}>
         <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-b from-transparent to-gray-900 z-10"></div>
 
         {/* progress bar */}
-        <span className="absolute">
-          <ProgressBar
-            barStyle="circle"
-            isResumable={state?.isResumable}
-            isLoading={state?.isLoading}
-            progress={state?.progress}
-            showActionButton={true}
-            messageType={message?.messageType}
-            onRetryClick={handleRetry}
-            onPauseClick={handlePause}
-            onActionButtonClick={handleDownload}
-          /> </span>
+        <ProgressBar
+          barStyle="circle"
+          isResumable={state?.isResumable}
+          isLoading={state?.isLoading}
+          progress={state?.progress}
+          showActionButton={true}
+          messageType={message?.messageType}
+          onRetryClick={handleRetry}
+          onPauseClick={handlePause}
+          onActionButtonClick={() => handleGalleryOverlay(message?.media?.id)}
+          className="absolute"
+        />
 
         {/* thumbnail */}
-        {thumbnailState.thumbnail ? <Image src={thumbnailState.thumbnail} loading="lazy" alt="video" className="blur-[2px]" fill /> : null}
+        {thumbnailState.thumbnail ? <span style={{ width: "100%", height: "100%", backgroundImage: `url(${thumbnailState.thumbnail})`, backgroundSize: "cover", backgroundPosition: "center" }} className="blur-sm" /> : null}
 
         <MediaMessageStatus isFromMe={isFromMe} message={message} key={message?.id} />
       </MediaMessageBubbleWrapper>}

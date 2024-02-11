@@ -19,7 +19,7 @@ import { AttachmentThumbnailStorage } from '../storage/attachemt-thumbnail.stora
 import { chunkStorage } from '../storage/chunk.storage';
 import { mergeChunks } from 'src/utils/mergeChunks';
 import { ExtendedReq } from 'src/guards/types';
-import { reduceImageQuality } from 'src/utils/reduceImageQuality';
+import { reduceImageQuality, reduceThumbnailQuality } from 'src/utils/reduceImageQuality';
 import * as fsPromises from 'fs/promises';
 import { join } from 'path';
 import { calculateChecksum } from 'src/utils/calculateChecksum';
@@ -49,71 +49,6 @@ export class LocalUploadController {
       throw new HttpException(response.error.message, response.error.statusCode);
     }
     return response;
-  }
-
-  // read own profile pic
-  @Get('read/profile-pic/:size')
-  readProfilePic(@GetUser() user: UserEntity, @Param() param: { size: string }, @Req() req, @Res() res: Response) {
-    try {
-      const filePath = `${storage.main}${user.user_id}/profile-pics/${param.size}.webp`;
-      const isFileExists = fs.existsSync(filePath);
-      if (!isFileExists) {
-        throw new Error('File not found');
-      }
-      return res.sendFile(`${param.size}.webp`, {
-        root: `${storage.main}${user.user_id}/profile-pics/`,
-        cacheControl: true,
-        dotfiles: 'deny',
-        maxAge: 300 * 1000,
-      });
-    } catch (error) {
-      console.log('🚀 ~ LocalUploadController ~ readProfilePic ~ error:', error);
-      return res.status(404).json({ error: 'File not found' });
-    }
-  }
-
-  // read others profile pic
-  @Get('read-other/profile-pic/:receiverid/:size')
-  async readOtherProfilePic(@GetUser() user: UserEntity, @Res() res: Response, @Param() param: { path: string; size: string; receiverid: string }) {
-    try {
-      const isIamAcceptor = await this.userChatRepo.findOne({ where: [{ chat_with: { user_id: user.user_id } }, { chat_for: { user_id: param.receiverid } }] });
-
-      if (isIamAcceptor) {
-        const filePath = `${storage.main}${param.receiverid}/profile-pics/${param.size}.webp`;
-        const isFileExists = fs.existsSync(filePath);
-        if (!isFileExists) {
-          throw new HttpException('File not found', 404);
-        }
-        return res.sendFile(`${param.size}.webp`, {
-          root: `${storage.main}${param.receiverid}/profile-pics/`,
-          cacheControl: true,
-          dotfiles: 'deny',
-          maxAge: parseInt(process.env.PROFILE_IMAGE_CACHE_MAX_AGE) * 1000 || 0,
-        });
-      }
-
-      const isUserInTheContact = await this.contactRepo.findOne({
-        where: [{ contact_for: { user_id: param.receiverid } }, { contact: { user_id: user.user_id } }],
-      });
-
-      if (!isUserInTheContact) {
-        throw new HttpException('this user is not in your contact list', 400);
-      }
-
-      const filePath = `${storage.main}${param.receiverid}/profile-pics/${param.size}.webp`;
-      const isFileExists = fs.existsSync(filePath);
-      if (!isFileExists) {
-        throw new HttpException('File not found', 404);
-      }
-      return res.sendFile(`${param.size}.webp`, {
-        root: `${storage.main}${param.receiverid}/profile-pics/`,
-        cacheControl: true,
-        dotfiles: 'deny',
-        maxAge: 300 * 1000,
-      });
-    } catch (error) {
-      throw new HttpException('unable to get profile pic', 500);
-    }
   }
 
   @Get('get-profile-pic/:user_id/:size')
@@ -169,27 +104,30 @@ export class LocalUploadController {
     const filePath = `${storage.main}${user.user_id}/attachments/${req.headers.file_id}${req.headers.ext}`;
     const writePath = `${storage.main}${user.user_id}/attachments/${req.headers.file_id}${req.headers.ext}`;
     try {
-      if (req.headers.ext === '.png' || req.headers.ext === 'jpeg' || req.headers.ext === '.jpg') {
+      if (req.headers.mime.startsWith('image/') && !req.headers.mime.startsWith('image/svg')) {
         await reduceImageQuality({ path: filePath, quality: 70, shouldRemove: false, writePath, height: req.headers.height, width: req.headers.width });
       }
       res.send({
         filePath: req.headers.file_id,
       });
     } catch (error) {
-      // fs.unlinkSync(filePath);
+      fs.unlinkSync(filePath);
     }
   }
 
   @Post('upload-attachment-thumbnail')
   @UseInterceptors(FileInterceptor('attachment-thumbnail', AttachmentThumbnailStorage))
   async uploadAttachmentsThumbnail(@GetUser() user, @UploadedFile() file: Express.Multer.File, @Res() res: Response, @Req() req: ExtendedReq) {
-    console.log('🚀 ~ LocalUploadController ~ uploadAttachmentsThumbnail ~ file:', file);
-    const path = `${storage.main}${user.user_id}/attachments/${req.headers.file_name}-thumbnail-org${req.headers.ext}`;
+    const path = `${storage.main}${user.user_id}/attachments/${req.headers.file_name}-thumbnail-unp${req.headers.ext}`;
     try {
-      const writePath = `${storage.main}${user.user_id}/attachments/${req.headers.file_name}-thumbnail${req.headers.ext}`;
-
-      if (req.headers.ext === '.png' || req.headers.ext === '.jpeg' || req.headers.ext === '.jpg') {
-        await reduceImageQuality({ path, quality: 15, shouldRemove: true, writePath, height: req.headers.height, width: req.headers.width });
+      if ((req.headers.mime?.startsWith('image/') || req.headers.mime.startsWith('video/')) && !req.headers.mime.startsWith('image/svg')) {
+        await reduceThumbnailQuality({
+          path,
+          shouldRemove: true,
+          ext: req.headers.ext,
+          file_name: req.headers.file_name,
+          root_path: `${user.user_id}/attachments/`,
+        });
       }
       res.json({ success: true });
     } catch (error) {
@@ -199,9 +137,63 @@ export class LocalUploadController {
     }
   }
 
-  @Get('get-attachment-thumbnail/:user_id/:file_id')
-  async getAttachmentThumbnail(@GetUser() user: UserEntity, @Param() param: { file_id: string; user_id: string }, @Res() res: Response) {
-    const filePath = `${param.file_id}`;
+  @Get('get-attachment/:user_id/:file_id')
+  async getAttachment(@Res() res: Response, @Param() param: { user_id: string; file_id: string }, @Req() req: ExtendedReq) {
+    try {
+      const foundedFile = await this.messageMediaRepo.findOne({
+        where: { id: param.file_id, message: { chat: [{ chat_for: { user_id: param.user_id } }, { chat_with: { user_id: param.user_id } }] } },
+      });
+
+      // if the file is an image
+      if (foundedFile.mime?.startsWith('image/')) {
+        if (!foundedFile) {
+          return res.json({ success: false, error: 'you are not supposed to access this file.' });
+        }
+
+        const filePath = `${param.file_id}${foundedFile.ext}`;
+        const root = `${storage.main}${param.user_id}/attachments/`;
+        return res.sendFile(filePath, { root });
+      }
+
+      // if the file is vide
+      if (foundedFile.mime.startsWith('video/')) {
+        const videoPath = `${storage.main}${param.user_id}/attachments/${param.file_id}${foundedFile.ext}`;
+        const range = req.headers.range;
+
+        if (range) {
+          const videoSize = fs.statSync(videoPath).size;
+          const chunkSize = 0.5 * 1024 * 1024;
+          const start = Number(range.replace(/\D/g, ''));
+          const end = Math.min(start + chunkSize, videoSize - 1);
+
+          const contentLength = end - start + 1;
+          const headers = {
+            'Content-Range': `bytes ${start}-${end}/${videoSize}`,
+            'Accept-Ranges': 'bytes',
+            'Content-Length': contentLength,
+            'Content-Type': 'video/mp4',
+          };
+          res.writeHead(206, headers);
+          const stream = fs.createReadStream(videoPath, { start, end });
+          stream.pipe(res);
+        }
+
+        return 'video';
+      }
+    } catch (error) {
+      console.log('🚀 ~ LocalUploadController ~ getAttachment ~ error:', error);
+      return res.json({ success: false, error: 'error while fetching this file.' });
+    }
+  }
+
+  @Get('get-attachment-thumbnail/:user_id/:file_id/:suffix')
+  async getAttachmentThumbnail(
+    @GetUser() user: UserEntity,
+    @Param() param: { file_id: string; user_id: string; suffix: string },
+    @Res() res: Response,
+    @Req() req: ExtendedReq,
+  ) {
+    const filePath = `${param.file_id}-thumbnail-${param.suffix || 'sm'}${req.headers.ext}`;
     const rootPath = `${storage.main}${param.user_id}/attachments/`;
     return res.sendFile(filePath, {
       root: rootPath,
@@ -216,13 +208,6 @@ export class LocalUploadController {
    */
   @Get('attachment-download/:user_id/:file_id')
   async download(@Res() res: Response, @Param() param: { user_id: string; file_id: string }) {
-    // const isUserIdValidUUID = isUUID(param.user_id);
-    // const isFileIdValidUUID = isUUID(param.file_id);
-
-    // if (!isUserIdValidUUID || isFileIdValidUUID) {
-    //   return res.json({ success: false, error: 'invalidate data' });
-    // }
-
     const foundedFile = await this.messageMediaRepo.findOneOrFail({
       where: { id: param.file_id, message: { chat: [{ chat_for: { user_id: param.user_id } }, { chat_with: { user_id: param.user_id } }] } },
     });

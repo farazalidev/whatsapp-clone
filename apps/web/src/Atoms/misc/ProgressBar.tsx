@@ -61,14 +61,13 @@ const ProgressBar: FC<ProgressBarProps> = ({
         <span onClick={onActionButtonClick} className="z-10 cursor-pointer">
           {messageType === 'others' ? (
             <Image src={'/icons/gallery-icons/download.svg'} alt="download" height={25} width={25} />
-          ) : messageType === 'video' && isFromMe ? (
+          ) : messageType === 'video' ? (
             <Image src={'/icons/play.svg'} alt="play" height={25} width={25} />
           ) : null}
         </span>
       ) : null}
 
 
-      {messageType === "video" && !isFromMe && !isLoading ? <><Image src={'/icons/play.svg'} alt="play" height={25} width={25} /></> : null}
 
       {isLoading ? (
         <div role="status">

@@ -9,19 +9,15 @@ import useUpload from '@/hooks/useUpload';
 import { sendMessageFn } from '@/utils/sendMessageFn';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/global/store';
-import useSocket from '@/hooks/useSocket';
 import { MessageEntity } from '@server/modules/chat/entities/message.entity';
 import useCurrentChat from '@/hooks/useCurrentChat';
 import { mainDb } from '@/utils/mainIndexedDB';
 
-export const MessageBubbleOtherFilesPreview: FC<IMessageBubblePreview> = ({ message, messageLines, isFromMe }) => {
+export const MessageBubbleOtherFilesPreview: FC<IMessageBubblePreview> = ({ message, messageLines, isFromMe, Me, socket }) => {
+
   const chatSlice = useSelector((state: RootState) => state.ChatSlice);
 
-  const { socket } = useSocket();
-
   const { raw_chat } = useCurrentChat();
-
-  const { Me } = useSelector((state: RootState) => state.UserSlice);
 
   const lastAction = useCallback(() => {
     console.log('sending message');

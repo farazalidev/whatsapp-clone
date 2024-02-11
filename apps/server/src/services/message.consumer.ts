@@ -22,9 +22,6 @@ export class MessageConsumer implements OnModuleInit {
       topic: { topic: 'MESSAGE', fromBeginning: true },
       onMessage: async (data) => {
         const message = JSON.parse(data.value as unknown as string) as unknown as MessageJSON;
-        console.log(message.message.media);
-
-        console.log(JSON.stringify(message, null, 4));
         const chat = await this.UserChatRepo.findOne({ where: { id: message.chat_id } });
         if (!chat.messages || chat.messages.length === 0) {
           chat.messages = [];
