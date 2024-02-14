@@ -1,4 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit';
+import { UserEntity } from '@server/modules/user/entities/user.entity';
 
 export interface IChatSlice {
   /**
@@ -12,12 +13,15 @@ export interface IChatSlice {
   started_from: 'chat' | 'contact' | null;
 
   receiver_id: string | undefined;
+
+  chat_receiver: UserEntity | undefined;
 }
 
 const initialState: IChatSlice = {
   started_from: null,
   id: undefined,
   receiver_id: undefined,
+  chat_receiver: undefined,
 };
 
 export const ChatSlice = createSlice({

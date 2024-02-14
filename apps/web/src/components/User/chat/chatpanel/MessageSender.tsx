@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import { v4 } from 'uuid';
 import { MessageEntity } from '@server/modules/chat/entities/message.entity';
 import useCurrentChat from '@/hooks/useCurrentChat';
+import VoiceMessage from './VoiceMessage';
 
 const MessageSender = ({ receiver_id, chat_id }: { receiver_id: string; chat_id: string | undefined }) => {
   const { message_input_loading } = useSelector((state: RootState) => state.LoadingSlice);
@@ -86,9 +87,7 @@ const MessageSender = ({ receiver_id, chat_id }: { receiver_id: string; chat_id:
             </button>
           </>
         ) : (
-          <>
-            <OptionIcon src="/icons/mic.svg" tooltip="" />
-          </>
+          <VoiceMessage />
         )}
       </span>
     </form>

@@ -14,6 +14,12 @@ export class KafkaProducer implements IProducer {
   ) {
     this.kafka = new Kafka({
       brokers: [broker],
+      ssl: process.env.NODE_ENV == 'development' ? false : true,
+      // sasl: {
+      //   mechanism: 'scram-sha-256',
+      //   username: process.env.KAFKA_USER_NAME,
+      //   password: process.env.KAFKA_PASSWORD,
+      // },
     });
     this.producer = this.kafka.producer({ createPartitioner: Partitioners.DefaultPartitioner });
     this.logger = new Logger(topic);

@@ -17,6 +17,7 @@ type getDetailsForChatPanelResponse = {
   name: string | undefined;
   receiver_id: string | undefined;
   chat_id: string | undefined;
+  receiver_email: string | undefined;
 };
 
 export function useUserChatDetails(chat_slice: IChatSlice, userData: UserDataType): getDetailsForChatPanelResponse {
@@ -39,6 +40,7 @@ export function useUserChatDetails(chat_slice: IChatSlice, userData: UserDataTyp
       name: contact?.contact.name,
       receiver_id: contact?.contact.user_id,
       chat_id: undefined,
+      receiver_email: contact?.contact.email,
     };
   }
 
@@ -53,5 +55,6 @@ export function useUserChatDetails(chat_slice: IChatSlice, userData: UserDataTyp
     name: isReceiver ? chat?.chat_for.name : chat?.chat_with.name,
     receiver_id: isReceiver ? chat?.chat_for.user_id : chat?.chat_with.user_id,
     chat_id: chat?.id,
+    receiver_email: isReceiver ? chat?.chat_for.email : chat?.chat_with.email,
   };
 }

@@ -26,7 +26,7 @@ const useChats = () => {
     }
 
     result.data?.chats.map((chat) => {
-      const chatMessages = localMessages.filter((localMessage) => localMessage.chat.id === chat.id);
+      const chatMessages = localMessages.filter((localMessage) => localMessage.chat?.id === chat.id);
       dispatch(addNewChat({ chat_id: chat.id, messages: [...chat.messages, ...chatMessages] }));
     });
   };

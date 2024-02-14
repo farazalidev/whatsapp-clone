@@ -4,5 +4,6 @@
     "onlineusers",
     "rpush",
     "sidebaroverlay"
-  ]
+  ],
+  "typescript.tsdk": "node_modules/typescript/lib"
 }

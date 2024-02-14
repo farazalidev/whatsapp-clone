@@ -4,14 +4,20 @@ import OptionIcon from '../../Sidebar/OptionIcon';
 import Typography from '@/Atoms/Typography/Typography';
 import useSocket from '@/hooks/useSocket';
 import useGetUserOnlineStatus from '@/hooks/useGetUserOnlineStatus';
+import { useDispatch } from 'react-redux';
+import ChatPanelHeaderWrapper from './ChatPanelHeaderWrapper';
+import { setCurrentUserProfilePreview } from '@/global/features/ProfilePreviewSlice';
 
 interface ChatPanelHeaderProps extends AvatarProps {
   header_name: string;
   receiver_id: string | undefined;
   chat_id: string | undefined;
+  receiver_email: string | undefined
 }
 
-const ChatPanelHeader: FC<ChatPanelHeaderProps> = ({ header_name = 'Name', receiver_id, chat_id, ...props }) => {
+const ChatPanelHeader: FC<ChatPanelHeaderProps> = ({ header_name = 'Name', receiver_id, chat_id, receiver_email, ...props }) => {
+  const dispatch = useDispatch()
+
   const { status } = useGetUserOnlineStatus({ user_id: receiver_id });
 
   const [isTyping, setIsTyping] = useState(false);
@@ -41,9 +47,15 @@ const ChatPanelHeader: FC<ChatPanelHeaderProps> = ({ header_name = 'Name', recei
     };
   }, [socket, receiver_id, chat_id]);
 
+  const handleProfilePreview = () => {
+    console.log(receiver_email, receiver_id, header_name);
+
+    dispatch(setCurrentUserProfilePreview(receiver_id))
+  }
+
   return (
-    <div className="bg-whatsapp-light-secondary_bg dark:bg-whatsapp-dark-secondary_bg inline-flex w-full place-items-center justify-between  border-l-[1px] border-l-gray-100 px-4 py-2 dark:border-l-gray-800">
-      <div className="flex place-items-center gap-4">
+    <ChatPanelHeaderWrapper className='flex place-items-center justify-between'>
+      <div className="flex place-items-center gap-4 cursor-pointer" onClick={handleProfilePreview}>
         <Avatar {...props} height={40} width={40} />
         <div>
           <span className="text-whatsapp-light-text dark:text-whatsapp-dark-text">{header_name}</span>
@@ -56,7 +68,7 @@ const ChatPanelHeader: FC<ChatPanelHeaderProps> = ({ header_name = 'Name', recei
           <OptionIcon src="/icons/option.svg" tooltip="search" height={30} width={30} />
         </span>
       </div>
-    </div>
+    </ChatPanelHeaderWrapper>
   );
 };
 

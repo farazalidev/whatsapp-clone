@@ -14,7 +14,15 @@ export class KafkaConsumer implements IConsumer {
     config: ConsumerConfig,
     broker: string,
   ) {
-    this.kafka = new Kafka({ brokers: [broker] });
+    this.kafka = new Kafka({
+      brokers: [broker],
+      ssl: process.env.NODE_ENV == 'development' ? false : true,
+      // sasl: {
+      //   mechanism: 'scram-sha-256',
+      //   username: process.env.KAFKA_USER_NAME,
+      //   password: process.env.KAFKA_PASSWORD,
+      // },
+    });
     this.consumer = this.kafka.consumer(config);
     this.logger = new Logger(`${topic.topic}-${config.groupId}`);
   }

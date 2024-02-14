@@ -25,12 +25,15 @@ export class UserController {
 
   @Get('me')
   async getMe(@GetUser() user: LoginPayload) {
-    const response = await this.userSer.getUser(user.user_id);
+    if (user.user_id) {
+      const response = await this.userSer?.getUser(user.user_id);
 
-    if (!isSuccess(response)) {
-      throw new HttpException(response.error.message, response.error.statusCode);
+      if (!isSuccess(response)) {
+        throw new HttpException(response.error.message, response.error.statusCode);
+      }
+      return response.data;
     }
-    return response.data;
+    throw new HttpException('session may be expired', 400);
   }
 
   // search user

@@ -145,7 +145,7 @@ export class LocalUploadController {
       });
 
       // if the file is an image
-      if (foundedFile.mime?.startsWith('image/')) {
+      if (foundedFile?.mime?.startsWith('image/')) {
         if (!foundedFile) {
           return res.json({ success: false, error: 'you are not supposed to access this file.' });
         }
@@ -156,7 +156,7 @@ export class LocalUploadController {
       }
 
       // if the file is vide
-      if (foundedFile.mime.startsWith('video/')) {
+      if (foundedFile?.mime.startsWith('video/')) {
         const videoPath = `${storage.main}${param.user_id}/attachments/${param.file_id}${foundedFile.ext}`;
         const range = req.headers.range;
 

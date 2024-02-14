@@ -14,7 +14,7 @@ interface IMediaMessageWrapper extends React.DetailedHTMLProps<React.HTMLAttribu
 const MediaMessageBubbleWrapper: FC<IMediaMessageWrapper> = ({ isFromMe, messageType, height, width, children, ...props }) => {
 
   return (
-    <span style={{ height: height, minHeight: height || 300, width: width, minWidth: width || 300, maxWidth: width, maxHeight: height }} {...props} className={cn([`relative flex rounded-md overflow-hidden border-[4px] bg-gray-300 ${isFromMe
+    <span style={{ height: height, minHeight: height || 300, width: width, minWidth: width || 300, maxWidth: width, maxHeight: height }} {...props} className={cn([`relative flex rounded-md overflow-hidden border-[3px] bg-gray-300 ${isFromMe
       ? 'border-whatsapp-misc-my_message_bg_light dark:border-whatsapp-misc-my_message_bg_dark dark:text-whatsapp-dark-text text-whatsapp-light-text'
       : 'border-whatsapp-misc-other_message_bg_light dark:border-whatsapp-misc-other_message_bg_dark dark:text-whatsapp-dark-text text-whatsapp-light-text'
       } ${messageType === "svg" ? "bg-gray-300" : ""}`, props.className])} >

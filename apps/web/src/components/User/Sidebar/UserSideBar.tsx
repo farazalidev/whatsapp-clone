@@ -16,6 +16,7 @@ import { getLatestMessage } from '@/utils/getLatestMessage';
 import { AnimatePresence, Reorder } from 'framer-motion';
 import { ICombinedData } from '@/global/features/types/types';
 import useCombinedData from '@/hooks/useCombinedData';
+import { setCurrentUserProfilePreview } from '@/global/features/ProfilePreviewSlice';
 
 const UserSideBar = () => {
   const dispatch = useDispatch();
@@ -30,14 +31,25 @@ const UserSideBar = () => {
 
   const { Me } = useSelector((state: RootState) => state.UserSlice)
 
+  const { user_id: currentProfilePreviewUserId } = useSelector((state: RootState) => state.ProfilePreviewSlice)
+
   const handleChat = async (chat_id: string, unread_messages_length: number | undefined) => {
 
     const raw_chat = store.getState().messagesSlice.chats_raw.find(chat => chat.id === chat_id)
-    const receiver_id = isIamReceiver(raw_chat?.chat_with.user_id, Me?.user_id) ? raw_chat?.chat_for.user_id : raw_chat?.chat_with.user_id
 
-    dispatch(setUserChatEntity({ id: chat_id, started_from: 'chat', receiver_id }));
+    const isMeReceiver = isIamReceiver(raw_chat?.chat_with.user_id, Me?.user_id)
+
+    const receiver_id = isMeReceiver ? raw_chat?.chat_for.user_id : raw_chat?.chat_with.user_id
+
+    const receiver_user = isMeReceiver ? raw_chat?.chat_for : raw_chat?.chat_with
+
+    dispatch(setUserChatEntity({ id: chat_id, started_from: 'chat', receiver_id, chat_receiver: receiver_user }));
 
     await updateData(chat_id, unread_messages_length);
+
+    if (receiver_id !== currentProfilePreviewUserId) {
+      dispatch(setCurrentUserProfilePreview(undefined))
+    }
   };
 
   const [chatsData, setChatsData] = useState<ICombinedData[]>(combinedData);

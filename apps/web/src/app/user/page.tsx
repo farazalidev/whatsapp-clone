@@ -16,12 +16,18 @@ import useSocket from '@/hooks/useSocket';
 import { setUser } from '@/global/features/UserSlice';
 import useChats from '@/hooks/useChats';
 import useContacts from '@/hooks/useContacts';
+import ProfilePreview from '@/components/User/profilePreview/ProfilePreview';
+import { AnimatePresence, motion } from 'framer-motion';
+import { profilePreviewAnimation } from '@/animation/profilePreviewAnimation';
 
 type Props = {
   searchParams: Record<string, string> | null | undefined;
 };
 
 const UserPage: FC<Props> = () => {
+
+  const { user_id } = useSelector((state: RootState) => state.ProfilePreviewSlice)
+
   const { socket } = useSocket();
 
   const dispatch = useDispatch();
@@ -64,6 +70,13 @@ const UserPage: FC<Props> = () => {
         <div className="w-fit flex-1 flex-grow overflow-x-hidden">
           <UserChat />
         </div>
+        <AnimatePresence key={'profile-preview'}>
+          {user_id ?
+            <motion.div className='w-[30% h-full] relative' {...profilePreviewAnimation}>
+              <ProfilePreview />
+            </motion.div> : null}
+        </AnimatePresence>
+
         <Modal onClose={() => dispatch(toggleAddContactModal())} isOpen={AddContactModalIsOpen} content={<AddNewContactModalContent />} />
       </div>
     </UserPageLayout>

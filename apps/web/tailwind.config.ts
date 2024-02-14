@@ -50,6 +50,7 @@ const config: Config = {
             other_message_bg_light: '#FFFFFF',
             attachment_bg_hover: '#374248',
             whatsapp_primary_green_light: '#00A884',
+            delete_red: '#F15C6D',
           },
         },
       },
