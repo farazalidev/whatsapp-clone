@@ -18,12 +18,12 @@ export interface SelectedFileType {
   file: File;
   type: expectedFileTypes;
   mime: string
-  thumbnail: string | Blob | undefined | null;
-  url: string | undefined;
-  attachedMessage: string | null
+  thumbnail?: string | Blob | undefined | null;
+  url?: string | undefined;
+  attachedMessage?: string | null
   thumbnailPath?: string
-  width: number | null
-  height: number | null
+  width?: number | null
+  height?: number | null
   original_name: string
   fileChecksum: string
   uploadedFileSize?: number
@@ -98,7 +98,7 @@ const SelectedFiles: FC<ISelectedFiles> = () => {
               type={file.type}
               url={file.type === 'video' ? (file.thumbnail as string) : file.url}
               active={fileToPreview.id === file.id}
-              onClick={() => selectFileTOPreview({ id: file.id, name: file.file.name, size: file.file.size, type: file.type, url: file.url, attachedMessage: file.attachedMessage })}
+              onClick={() => selectFileTOPreview({ id: file.id, name: file.file.name, size: file.file.size, type: file.type, url: file.url, attachedMessage: file?.attachedMessage as string })}
             />
           );
         })}

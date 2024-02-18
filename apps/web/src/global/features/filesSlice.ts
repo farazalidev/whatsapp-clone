@@ -100,7 +100,8 @@ export const filesSlice = createSlice({
           ...firstLoadedFile,
           name: firstLoadedFile.file.name,
           size: firstLoadedFile.file.size,
-          attachedMessage: firstLoadedFile.attachedMessage,
+          attachedMessage: firstLoadedFile.attachedMessage as any,
+          url: URL.createObjectURL(firstLoadedFile.file),
         };
         state.fileToPreview = newFileToPreview;
       }

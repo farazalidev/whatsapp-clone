@@ -26,10 +26,10 @@ export class Upload_Guard implements CanActivate {
     const req = context.switchToHttp().getRequest<ExtendedReq>();
     const accessTokenFromHeaders = getCookieValue(req.headers.cookie, process.env.ACCESS_TOKEN_NAME);
     const accessToken = req.headers['authorization']?.split(' ')[1] || accessTokenFromHeaders;
-    const decryptedAccessToken = decryptCookie(accessToken);
     if (!accessToken) {
       throw new UnauthorizedException();
     }
+    const decryptedAccessToken = decryptCookie(accessToken);
     try {
       const payload: LoginPayload = await this.jwt.verifyAsync(decryptedAccessToken, { secret: process.env.ACCESS_TOKEN_SECRET });
       const user = await this.UserRepo.findOne({ where: { user_id: payload.user_id } });

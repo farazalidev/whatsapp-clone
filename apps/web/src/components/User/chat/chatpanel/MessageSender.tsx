@@ -1,7 +1,7 @@
 import React, { ChangeEvent, FormEvent, useState } from 'react';
 import OptionIcon from '../../Sidebar/OptionIcon';
 import MessageInput from '@/Atoms/Input/MessageInput';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import useSocket from '@/hooks/useSocket';
 import { RootState } from '../../../../global/store';
 import Attachments from './Attachments';
@@ -10,9 +10,15 @@ import { toast } from 'sonner';
 import { v4 } from 'uuid';
 import { MessageEntity } from '@server/modules/chat/entities/message.entity';
 import useCurrentChat from '@/hooks/useCurrentChat';
-import VoiceMessage from './VoiceMessage';
+import { toggleVoiceMessagePanelOverlay } from '@/global/features/overlaySlice';
+import VoiceMessagePanel from './VoiceMessagePanel';
+import MessageSenderWrapper from './MessageSenderWrapper';
 
 const MessageSender = ({ receiver_id, chat_id }: { receiver_id: string; chat_id: string | undefined }) => {
+  const dispatch = useDispatch()
+
+  const isVoicePanelOpen = useSelector((state: RootState) => state.overlaySlice.voiceMessagePanelIsOpen)
+
   const { message_input_loading } = useSelector((state: RootState) => state.LoadingSlice);
 
   const chatSlice = useSelector((state: RootState) => state.ChatSlice);
@@ -70,26 +76,32 @@ const MessageSender = ({ receiver_id, chat_id }: { receiver_id: string; chat_id:
     setMessageValue("")
   };
 
-  return (
+  const handleVoiceMessagePanel = () => {
+    dispatch(toggleVoiceMessagePanelOverlay())
+  }
+
+  return isVoicePanelOpen ? <MessageSenderWrapper> <VoiceMessagePanel /></MessageSenderWrapper> : (
     <form
       onSubmit={(e) => handleSendMessage(e)}
-      className="bg-whatsapp-light-sender_bg dark:bg-whatsapp-dark-sender_bg flex place-items-center justify-between gap-[16px] px-[20px] py-[5px]"
+      className="bg-whatsapp-light-sender_bg dark:bg-whatsapp-dark-sender_bg flex place-items-center justify-between gap-[16px] px-[20px] py-[5px] min-h-[57px]"
     >
-      <Attachments />
-      <span className="w-full">
-        <MessageInput onChange={handleMessageChange} value={messageValue} />
-      </span>
-      <span>
-        {messageValue ? (
-          <>
-            <button type="submit" disabled={message_input_loading}>
-              <OptionIcon src="/icons/send.svg" tooltip="" />
-            </button>
-          </>
-        ) : (
-          <VoiceMessage />
-        )}
-      </span>
+      <>
+        <Attachments />
+        <span className="w-full">
+          <MessageInput onChange={handleMessageChange} value={messageValue} />
+        </span>
+        <span>
+          {messageValue ? (
+            <>
+              <button type="submit" disabled={message_input_loading}>
+                <OptionIcon src="/icons/send.svg" tooltip="" />
+              </button>
+            </>
+          ) : (
+            <OptionIcon src="/icons/mic.svg" tooltip="" onClick={handleVoiceMessagePanel} />
+          )}
+        </span>
+      </>
     </form>
   );
 };

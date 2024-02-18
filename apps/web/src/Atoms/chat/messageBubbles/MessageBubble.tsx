@@ -7,6 +7,7 @@ import { MessageBubbleOtherFilesPreview } from './MessageBullbleOtherPreview';
 import { IChatSlice } from '@/global/features/ChatSlice';
 import { ISocket_Client } from '@/utils/createSocket';
 import { UserEntity } from '@server/modules/user/entities/user.entity';
+import MessageBubbleVoicePreview from './MessageBubbleVoicePreview';
 
 export interface IMessageBubble {
   isFromMe?: boolean | undefined;
@@ -37,6 +38,8 @@ const MessageBubble: FC<IMessageBubble> = ({ isFromMe, message, ...props }) => {
         <MessageBubbleVideoPreview isFromMe={isFromMe} message={message} key={message?.id} messageLines={messageLines} {...props} />
       ) : message?.messageType === 'text' ? (
         <TextMessagePreview isFromMe={isFromMe} message={message} messageLines={messageLines} {...props} />
+      ) : message?.messageType === 'audio' ? (
+        <MessageBubbleVoicePreview isFromMe={isFromMe} message={message} key={message?.id} messageLines={messageLines} {...props} />
       ) : message?.messageType === 'others' ? (
         <MessageBubbleOtherFilesPreview isFromMe={isFromMe} message={message} key={message.id} messageLines={messageLines} {...props} />
       ) : null}

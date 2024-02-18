@@ -1,9 +1,4 @@
 {
-  "cSpell.words": [
-    "dotfiles",
-    "onlineusers",
-    "rpush",
-    "sidebaroverlay"
-  ],
+  "cSpell.words": ["barheigth", "dotfiles", "onlineusers", "rpush", "sidebaroverlay"],
   "typescript.tsdk": "node_modules/typescript/lib"
 }

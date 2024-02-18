@@ -7,7 +7,7 @@ export class MessageMediaEntity {
   @PrimaryColumn({ type: 'uuid' })
   id: string;
 
-  @OneToOne(() => MessageEntity, (message) => message.media, { onDelete: 'CASCADE' })
+  @OneToOne(() => MessageEntity, (message) => message.media, { onDelete: 'CASCADE', nullable: true })
   message?: MessageEntity;
 
   @Column({ type: 'uuid' })
@@ -26,10 +26,10 @@ export class MessageMediaEntity {
   width: number | null;
 
   @Column({ nullable: true })
-  original_name: string | null;
+  original_name?: string | null;
 
   @Column({ type: 'varchar', nullable: true })
-  thumbnail_path: string | null;
+  thumbnail_path?: string | null;
 
   @Column({ type: 'varchar' })
   type: expectedFileTypes;

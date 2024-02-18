@@ -51,6 +51,7 @@ const config: Config = {
             attachment_bg_hover: '#374248',
             whatsapp_primary_green_light: '#00A884',
             delete_red: '#F15C6D',
+            playerBg: '#3B4A54',
           },
         },
       },

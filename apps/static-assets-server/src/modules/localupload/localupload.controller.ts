@@ -27,6 +27,9 @@ import * as fsExtra from 'fs-extra';
 import { dirExists } from 'src/utils/dirExists';
 import { getContentType } from 'src/utils/getContentType';
 import { MessageMediaEntity } from '@server/modules/chat/entities/messageMedia.entity';
+import { VoiceMessageStorage } from '../storage/voiceMessageStorage';
+import { MessageEntity } from '@server/modules/chat/entities/message.entity';
+import { Public } from '../decorators/public.decorator';
 
 @Controller('file')
 export class LocalUploadController {
@@ -35,6 +38,7 @@ export class LocalUploadController {
     @InjectRepository(ContactEntity) private contactRepo: Repository<ContactEntity>,
     @InjectRepository(UserChatEntity) private userChatRepo: Repository<UserChatEntity>,
     @InjectRepository(MessageMediaEntity) private messageMediaRepo: Repository<MessageMediaEntity>,
+    @InjectRepository(MessageEntity) private messagesRepo: Repository<MessageEntity>,
   ) {}
 
   @Post('upload/profile-pic')
@@ -177,8 +181,7 @@ export class LocalUploadController {
           const stream = fs.createReadStream(videoPath, { start, end });
           stream.pipe(res);
         }
-
-        return 'video';
+        return { error: 'range is not specified' };
       }
     } catch (error) {
       console.log('🚀 ~ LocalUploadController ~ getAttachment ~ error:', error);
@@ -336,6 +339,46 @@ export class LocalUploadController {
       res.json({ success: true });
     } catch (error) {
       res.json({ success: false });
+    }
+  }
+
+  @Post('upload-voice-message')
+  @UseInterceptors(FileInterceptor('voice-message', VoiceMessageStorage))
+  async uploadVoiceMessage(@UploadedFile() file: Express.Multer.File, @GetUser() user: UserEntity, @Req() req: ExtendedReq) {
+    try {
+      const uploadedFilePath = `${storage.main}${user.user_id}/voice-messages/${req.headers.file_name}`;
+
+      await fsExtra.exists(uploadedFilePath);
+      return true;
+    } catch (error) {
+      console.log('🚀 ~ LocalUploadController ~ async ~ error:', error);
+      return false;
+    }
+  }
+
+  @Get('get-voice-message/:message_id/:sender_id')
+  async getVoiceMessage(
+    @GetUser() user: UserEntity,
+    @Param() param: { message_id: string; chat_id: string; sender_id: string },
+    @Req() req: ExtendedReq,
+    @Res() res: Response,
+  ) {
+    // first check if this voice message belongs to user
+    const isMessageExisted = await this.messagesRepo.findOne({
+      where: { id: param.message_id, chat: [{ chat_for: { user_id: user.user_id } }, { chat_with: { user_id: user.user_id } }] },
+    });
+
+    if (isMessageExisted) {
+      const messagePath = `${storage.main}${param.sender_id}/voice-messages/${isMessageExisted.media.id}`;
+
+      const audioSize = fs.statSync(messagePath).size;
+
+      res.writeHead(200, {
+        'Content-Type': 'audio/webm',
+        'Content-Length': audioSize,
+      });
+      const readStream = fs.createReadStream(messagePath);
+      readStream.pipe(res);
     }
   }
 }

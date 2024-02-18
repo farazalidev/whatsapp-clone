@@ -13,7 +13,7 @@ import SideBarOptionCard from '@/Atoms/Cards/SideBarOptionCard';
 import { fetcher } from '@/utils/fetcher';
 import { SuccessResponseType } from '@server/Misc/ResponseType.type';
 import { UserChatEntity } from '@server/modules/chat/entities/userchat.entity';
-import { RootState } from '../../../../global/store';
+import { RootState, store } from '../../../../global/store';
 import { isIamReceiver } from '@/utils/isIamReceiver';
 
 const AddNewContactOverlay = () => {
@@ -34,7 +34,7 @@ const AddNewContactOverlay = () => {
        * If the chat is not started with user
        * then loads user info from the contact
        */
-      dispatch(setUserChatEntity({ id: user_id, started_from: 'contact', receiver_id: user_id }));
+      dispatch(setUserChatEntity({ id: user_id, started_from: 'contact', receiver_id: user_id, chat_receiver: undefined }));
       // closing overlay
       dispatch(setShow(false));
       // resetting overlay
@@ -46,8 +46,16 @@ const AddNewContactOverlay = () => {
        * then loads the chat and go to the chat panel
        * **/
 
+      const raw_chat = store.getState().messagesSlice.chats_raw.find((chat) => chat.id === isChatStarted.data?.id);
+      const { Me } = store.getState().UserSlice;
+
+      const isMeReceiver = isIamReceiver(raw_chat?.chat_with.user_id, Me?.user_id);
+
+      const receiver_user = isMeReceiver ? raw_chat?.chat_for : raw_chat?.chat_with;
+
+
       const receiver_id = isIamReceiver(isChatStarted.data?.chat_with.user_id, data.Me?.user_id) ? isChatStarted.data?.chat_for.user_id : isChatStarted.data?.chat_with.user_id
-      dispatch(setUserChatEntity({ id: isChatStarted.data?.id as string, started_from: 'chat', receiver_id }));
+      dispatch(setUserChatEntity({ id: isChatStarted.data?.id as string, started_from: 'chat', receiver_id, chat_receiver: receiver_user }));
       // closing overlay
       dispatch(setShow(false));
       // resetting overlay

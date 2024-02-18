@@ -9,6 +9,7 @@ import { setUserChatEntity } from '@/global/features/ChatSlice';
 import { ISocket_Client } from './createSocket';
 import { setLoading } from '@/global/loadingSlice';
 import { mutate } from 'swr';
+import { isIamReceiver } from './isIamReceiver';
 
 type IStartANewChat = (socket: ISocket_Client | undefined, receiver_id: string | undefined, message: MessageEntity) => void;
 
@@ -46,11 +47,18 @@ export const start_newChat: IStartANewChat = async (socket, receiver_id, message
         socket?.emit('send_message', { chat_id: response.data?.chat_id, message, receiverId: receiver_id as string });
       }
     }
+    const raw_chat = store.getState().messagesSlice.chats_raw.find((chat) => chat.id === chat_id);
+    const { Me } = store.getState().UserSlice;
+
+    const isMeReceiver = isIamReceiver(raw_chat?.chat_with.user_id, Me?.user_id);
+
+    const receiver_user = isMeReceiver ? raw_chat?.chat_for : raw_chat?.chat_with;
+
     mutate('api/chats');
-    store.dispatch(setUserChatEntity({ id: response.data?.chat_id, started_from: 'chat', receiver_id }));
+    store.dispatch(setUserChatEntity({ id: response.data?.chat_id, started_from: 'chat', receiver_id, chat_receiver: receiver_user }));
   } catch (error) {
     toast.error('Error while starting a new chat');
-    store.dispatch(setUserChatEntity({ id: '', started_from: null, receiver_id }));
+    store.dispatch(setUserChatEntity({ id: '', started_from: null, receiver_id, chat_receiver: undefined }));
     store.dispatch(removeChat({ chat_id }));
   } finally {
     store.dispatch(setLoading({ message_input_loading: false }));

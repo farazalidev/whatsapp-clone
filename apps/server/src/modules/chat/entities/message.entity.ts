@@ -21,7 +21,7 @@ export class MessageEntity {
   media: MessageMediaEntity | null;
 
   @Column({ nullable: true })
-  content: string;
+  content?: string;
 
   @ManyToOne(() => UserEntity, { nullable: true })
   clear_for: UserEntity | null;

@@ -1,1 +1,1 @@
-export type expectedFileTypes = 'image' | 'video' | 'pdf' | 'others' | 'svg' | null;
+export type expectedFileTypes = 'image' | 'video' | 'pdf' | 'others' | 'svg' | 'audio' | null;
