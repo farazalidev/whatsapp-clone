@@ -28,7 +28,6 @@ export const MessageBubbleVideoPreview: FC<IMessageBubblePreview> = ({ message, 
 
   const lastAction = useCallback(() => {
 
-    console.log('sending message');
     const lastAction = async () => {
       if (message) {
         const messageToSend: MessageEntity = {

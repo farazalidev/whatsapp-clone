@@ -59,7 +59,6 @@ export class LocalUploadController {
     try {
       // byMe means if the user request profile pic of its own
       const byMe = param.user_id === user.user_id;
-      console.log('🚀 ~ LocalUploadController ~ getProfilePic ~ byMe:', byMe);
 
       if (byMe) {
         const filePath = `${storage.main}${param.user_id}/profile-pics/${param.size}.webp`;
@@ -79,7 +78,6 @@ export class LocalUploadController {
       // check for user relation with the requested user
 
       // const isUserRelated = await this.contactRepo.findOne({ where: { contact_for: { user_id: param.user_id }, contact: { user_id: user.user_id } } });
-      // console.log('🚀 ~ LocalUploadController ~ getProfilePic ~ isUserRelated:', isUserRelated);
 
       // if (!isUserRelated) {
       //   return res.json({ success: false, error: 'no relation with user' });
@@ -96,9 +94,7 @@ export class LocalUploadController {
         dotfiles: 'deny',
         maxAge: 300 * 1000,
       });
-    } catch (error) {
-      console.log(error);
-    }
+    } catch (error) {}
   }
 
   @Post('upload-attachment-file')
@@ -135,7 +131,6 @@ export class LocalUploadController {
       res.json({ success: true });
     } catch (error) {
       fs.rmSync(path);
-      console.log('🚀 ~ LocalUploadController ~ uploadAttachmentsThumbnail ~ error:', error);
       res.json({ success: false });
     }
   }
@@ -183,7 +178,6 @@ export class LocalUploadController {
         return { error: 'range is not specified' };
       }
     } catch (error) {
-      console.log('🚀 ~ LocalUploadController ~ getAttachment ~ error:', error);
       return res.json({ success: false, error: 'error while fetching this file.' });
     }
   }
@@ -226,7 +220,6 @@ export class LocalUploadController {
       const fileStream = fs.createReadStream(filePath);
       return fileStream.pipe(res);
     } catch (error) {
-      console.log('🚀 ~ LocalUploadController ~ download ~ error:', error);
       res.status(404).send('File not found');
     }
   }
@@ -236,9 +229,7 @@ export class LocalUploadController {
     try {
       const mediaMessages = await this.localUploadService.getAllMediaOfChatService(param.chat_id);
       res.json(mediaMessages);
-    } catch (error) {
-      console.log('🚀 ~ LocalUploadController ~ getAllMediaOfChat ~ error:', error);
-    }
+    } catch (error) {}
   }
 
   @Post('upload-chunk')
@@ -276,9 +267,7 @@ export class LocalUploadController {
           if (savedFileCheckSum !== req.headers.file_checksum) {
             await fsExtra.remove(chunksPath);
 
-            fs.rm(savedFilePath, { force: true }, (err) => {
-              console.log('🚀 ~ LocalUploadController ~ fs.rm ~ err:', err);
-            });
+            fs.rm(savedFilePath, { force: true }, (err) => {});
           }
         }
 
@@ -299,7 +288,6 @@ export class LocalUploadController {
     const chunksDirectory = `${storage.main}${user.user_id}/attachments-chunks/${param.dir}/`;
     const fileDirectory = `${storage.main}${user.user_id}/attachments/${param.dir}${req.headers.ext}`;
 
-    console.log('🚀 ~ LocalUploadController ~ getChunksInfo ~ fileDirectory:', fileDirectory);
     try {
       const isChunksDirectoryExisted = dirExists(chunksDirectory);
 
@@ -350,7 +338,6 @@ export class LocalUploadController {
       await fsExtra.exists(uploadedFilePath);
       return true;
     } catch (error) {
-      console.log('🚀 ~ LocalUploadController ~ async ~ error:', error);
       return false;
     }
   }

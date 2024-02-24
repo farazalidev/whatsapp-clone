@@ -48,14 +48,12 @@ const GalleryOverlay: FC<IGalleryOverlay> = ({ onClose, show }) => {
             const url = URL.createObjectURL(thumbnailBlob)
             mediaThumbnails.push({ ...messages[i], url })
           }
-          console.log(mediaThumbnails);
 
           dispatch(addThumbnails({ messages: mediaThumbnails }))
         }
 
 
       } catch (error) {
-        console.log("🚀 ~ getAllMediaOfChat ~ error:", error)
         setState(prev => { return { ...prev, error: true } })
       } finally {
         setState(prev => { return { ...prev, loading: false } })
@@ -64,7 +62,7 @@ const GalleryOverlay: FC<IGalleryOverlay> = ({ onClose, show }) => {
     if (id) {
       getAllMediaOfChat()
     }
-  }, [Me?.user_id, id, dispatch, raw_chat?.messages])
+  }, [Me?.user_id, id, dispatch, raw_chat?.messages, receiver_id])
 
 
   return show ? (

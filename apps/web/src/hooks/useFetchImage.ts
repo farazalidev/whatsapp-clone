@@ -22,7 +22,6 @@ const useFetchImage: IUseFetchImage = ({ message, isFromMe, receiver_id, me_id }
     const user_id = isFromMe ? me_id : receiver_id;
     const responseBlob = await fetcher(`api/file/get-attachment/${user_id}/${message?.media?.id}`, undefined, 'blob', 'static');
     const blobUrl = URL.createObjectURL(responseBlob);
-    console.log('🚀 ~ fetch ~ blobUrl:', blobUrl);
     return blobUrl;
   };
 

@@ -12,7 +12,7 @@ interface ProgressBarProps extends React.DetailedHTMLProps<React.HTMLAttributes<
    * show the download button when the loading is false and progress is 100%
    */
   showActionButton: boolean;
-  isFromMe?: boolean
+  isFromMe?: boolean;
   messageType: expectedFileTypes | 'text' | undefined;
   onRetryClick?: () => void;
   onPauseClick?: () => void;
@@ -40,7 +40,7 @@ const ProgressBar: FC<ProgressBarProps> = ({
   }, [circleControl, progress]);
 
   return barStyle === 'circle' ? (
-    <div className={cn([`relative flex h-12 w-12 place-items-center justify-center rounded-full z-10`, [showActionButton && messageType === "video" ? `bg-opacity-70 bg-black` : showActionButton && messageType === "image" ? null : messageType === "others" ? 'bg-opacity-40 bg-black' : null], props.className])}>
+    <div className={cn([`relative z-10 flex h-12 w-12 place-items-center justify-center rounded-full`, props.className])}>
       {/* cancel button */}
       {progress && progress < 94 && !isResumable ? (
         <span onClick={onPauseClick} className="z-10 cursor-pointer">
@@ -55,19 +55,18 @@ const ProgressBar: FC<ProgressBarProps> = ({
         </span>
       ) : null}
 
-
       {/* action button */}
-      {showActionButton && progress === 100 && !isLoading ? (
+      {showActionButton && isFromMe && progress === 100 && !isLoading ? (
         <span onClick={onActionButtonClick} className="z-10 cursor-pointer">
           {messageType === 'others' ? (
+            <Image src={'/icons/gallery-icons/download.svg'} alt="download" height={25} width={25} />
+          ) : messageType === 'pdf' ? (
             <Image src={'/icons/gallery-icons/download.svg'} alt="download" height={25} width={25} />
           ) : messageType === 'video' ? (
             <Image src={'/icons/play.svg'} alt="play" height={25} width={25} />
           ) : null}
         </span>
       ) : null}
-
-
 
       {isLoading ? (
         <div role="status">

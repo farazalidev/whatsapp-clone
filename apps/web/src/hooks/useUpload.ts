@@ -45,7 +45,6 @@ const useUpload: IUseUpload = ({ isFromMe, message, lastAction }) => {
         const isFileExisted = await fetcher<isFileExistedType>(`api/file/chunks-size/${message?.media?.id}`, undefined, 'json', 'static', {
           ext: extname(localFile?.file.name as string),
         });
-        console.log('🚀 ~ getManager ~ isFileExisted:', isFileExisted);
 
         setState((prev) => {
           return { ...prev, isResumable: false, uploadedFileSize: isFileExisted.uploadedFileSize, progress: 100 };
@@ -194,7 +193,6 @@ const uploadThumbnail = async (thumbnailBlob: string | Blob | null | undefined, 
   if (thumbnailBlob) {
     try {
       const formData = new FormData();
-      console.log(thumbnailBlob);
       formData.append('attachment-thumbnail', thumbnailBlob);
       const ext = message.messageType === 'video' ? '.png' : message.media?.ext;
       const response = await Mutation<FormData, { success: boolean }>(`api/file/upload-attachment-thumbnail`, formData, 'static', {

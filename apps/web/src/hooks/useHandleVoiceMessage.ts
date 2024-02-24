@@ -20,7 +20,6 @@ interface IUseHandleVoiceMessageState {
 type IUseHandleVoiceMessage = (args: IUseHandleVoiceMessageArgs) => IUseHandleVoiceMessageState;
 
 const useHandleVoiceMessage: IUseHandleVoiceMessage = ({ message, Me, ChatSlice, receiver_id, socket, isFromMe }) => {
-  console.log('🚀 ~ message:', message);
   const [state, setState] = useState<IUseHandleVoiceMessageState>({ isError: false, isLoading: false, voiceMessageUrl: null });
 
   useEffect(() => {
@@ -47,7 +46,6 @@ const useHandleVoiceMessage: IUseHandleVoiceMessage = ({ message, Me, ChatSlice,
             setState({ isError: false, isLoading: false, voiceMessageUrl: URL.createObjectURL(offlineMedia?.file as Blob) });
             return;
           } catch (error) {
-            console.log('🚀 ~ init ~ error:', error);
             setState((prev) => {
               return { ...prev, isError: true };
             });

@@ -25,7 +25,6 @@ export const reduceImageQuality: reduceImageQualityFn = async ({ path, shouldRem
     }
     return true;
   } catch (error) {
-    console.log('🚀 ~ constreduceImageQuality:reduceImageQualityFn= ~ error:', error);
     if (shouldRemove) {
       fs.unlinkSync(path);
     }
@@ -58,7 +57,6 @@ export const reduceThumbnailQuality: reduceThumbnailQualityFn = async ({ path, s
 
     return true;
   } catch (error) {
-    console.log('🚀 ~ constreduceThumbnailQuality:reduceThumbnailQualityFn= ~ error:', error);
     return false;
   }
 };

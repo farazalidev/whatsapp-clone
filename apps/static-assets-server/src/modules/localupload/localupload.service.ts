@@ -60,7 +60,6 @@ export class LocalUploadService {
         successMessage: 'Successfully uploaded profile pic',
       };
     } catch (error) {
-      console.log('🚀 ~ LocalUploadService ~ uploadProfilePic ~ error:', error);
       fs.unlinkSync(`${storage.profile_pic_storage}${file.filename}`);
       return {
         success: false,

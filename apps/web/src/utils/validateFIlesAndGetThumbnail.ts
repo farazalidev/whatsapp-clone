@@ -196,7 +196,6 @@ export const validateFilesAndGetThumbnails: validateFilesAndGetThumbnailsType = 
       // if none of the recognized types, handle as 'others'
       else {
         const fileChecksum = await calculateChecksumAwait(file.file);
-        console.log('🚀 ~ constvalidateFilesAndGetThumbnails:validateFilesAndGetThumbnailsType= ~ fileChecksum:', fileChecksum);
 
         result.push({
           file: file.file,
@@ -215,7 +214,7 @@ export const validateFilesAndGetThumbnails: validateFilesAndGetThumbnailsType = 
       }
     }
   } catch (error) {
-    console.log(error);
+  console.log('🚀 ~ constvalidateFilesAndGetThumbnails:validateFilesAndGetThumbnailsType= ~ error:', error);
   }
 
   // removing unmatched files

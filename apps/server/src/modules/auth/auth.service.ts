@@ -223,7 +223,6 @@ export class AuthService {
         return { success: true, successMessage: 'user founded', data: tokens };
       }
     } catch (error) {
-      console.log('🚀 ~ AuthService ~ LoginService ~ error:', error);
       return {
         success: false,
         error: {

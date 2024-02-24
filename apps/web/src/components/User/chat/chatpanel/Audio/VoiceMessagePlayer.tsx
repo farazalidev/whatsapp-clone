@@ -80,7 +80,6 @@ const VoiceMessagePlayer: FC<IVoiceMessagePlayerProps> = (props) => {
         }
     }
 
-    console.log(waveFormObject?.isPlaying());
 
 
     return (

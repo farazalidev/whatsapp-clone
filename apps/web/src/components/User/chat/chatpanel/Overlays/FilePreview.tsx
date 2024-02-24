@@ -16,7 +16,7 @@ const FilePreview: FC<IFilePreview> = ({ type, url, name, size, id }) => {
           ) : type === 'video' ? (
             <VideoPreview videoUrl={url as string} size={size} />
           ) : type === 'pdf' ? (
-            <GenericFilePreview name={name as string} size={size} />
+                <PdfFileGenericPreview name={name as string} size={size} />
           ) : (
             <GenericFilePreview name={name as string} size={size} />
           )}
@@ -42,7 +42,7 @@ interface IGenericFilePreview {
 const GenericFilePreview: FC<IGenericFilePreview> = ({ name, size }) => {
   return (
     <div className="relative flex h-64 w-60 flex-col place-items-center justify-center  gap-2 border border-gray-300 dark:border-gray-600">
-      <Typography level={4} className="text-center text-gray-700">
+      <Typography level={4} className="text-center text-sm text-gray-700 whitespace-nowrap px-2" >
         File Preview is not available
       </Typography>
       <div>
@@ -76,6 +76,20 @@ const VideoPreview = ({ videoUrl, size }: { videoUrl: string; size: number }) =>
   return (
     <div className="relative w-full pb-[45%] text-whatsapp-light-text dark:text-whatsapp-dark-text ">
       <iframe src={videoUrl} allowFullScreen allow='autoplay' className='absolute top-0 left-0 w-full h-full'></iframe>
+    </div>
+  );
+};
+
+const PdfFileGenericPreview: FC<IGenericFilePreview> = ({ name, size }) => {
+  return (
+    <div className="relative flex h-64 w-60 flex-col place-items-center justify-center  gap-2 border border-gray-300 dark:border-gray-600">
+      <Typography level={4} className="text-center text-sm text-gray-700 whitespace-nowrap px-2" >
+        File Preview is not available
+      </Typography>
+      <div>
+        <Image src={'/icons/generic-pdf.svg'} height={120} width={80} alt="File" />
+      </div>
+      <span className="text-whatsapp-light-text dark:text-whatsapp-dark-text">{convertFileSizeFromBytes(size)}</span>
     </div>
   );
 };

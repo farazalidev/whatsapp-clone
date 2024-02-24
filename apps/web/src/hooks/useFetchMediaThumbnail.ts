@@ -32,7 +32,6 @@ export const useFetchMediaThumbnail: IUseFetchMediaThumbnail = ({ message, isFro
             return { ...prev, thumbnail };
           });
         } catch (error) {
-          console.log(error);
           setThumbnailState((prev) => {
             return { ...prev, isLoading: false, error: true };
           });

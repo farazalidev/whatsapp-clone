@@ -12,7 +12,6 @@ export class RefreshGuard implements CanActivate {
     const req = context.switchToHttp().getRequest<Request>();
 
     const refreshToken = await req.cookies?.[process.env.REFRESH_TOKEN_NAME];
-    console.log('🚀 ~ RefreshGuard ~ canActivate ~ refreshToken:', refreshToken);
 
     if (!refreshToken) {
       throw new UnauthorizedException();
@@ -20,7 +19,6 @@ export class RefreshGuard implements CanActivate {
 
     // getting user from refresh token
     const decryptedRefreshToken = decryptCookie(refreshToken);
-    console.log('🚀 ~ RefreshGuard ~ canActivate ~ decryptedRefreshToken:', decryptedRefreshToken);
     const payload: LoginPayload = await this.jwt.verifyAsync(decryptedRefreshToken, { secret: process.env.REFRESH_TOKEN_SECRET });
 
     req['refresh'] = refreshToken;

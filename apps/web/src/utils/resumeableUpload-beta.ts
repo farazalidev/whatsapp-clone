@@ -84,7 +84,6 @@ export class ResumableUpload {
             signal: this.controller?.signal,
           })
             .then(async (response) => {
-              console.log('🚀 ~ ResumableUpload ~ .then ~ response:', response);
               // if chunk upload successful then plus the bytes
               if (response.success) {
                 this.startByte += response.uploadedSize;
@@ -120,12 +119,10 @@ export class ResumableUpload {
               }
             })
             .catch((err) => {
-              console.log('🚀 ~ ResumableUpload ~ uploadFileIntoChunks ~ err:', err);
               return (this.error = true);
             });
         })
         .catch((er) => {
-          console.log('🚀 ~ ResumableUpload ~ uploadFileIntoChunks ~ er:', er);
           return this.error === true;
         });
     }

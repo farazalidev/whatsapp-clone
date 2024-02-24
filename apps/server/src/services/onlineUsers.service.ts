@@ -11,7 +11,6 @@ export class OnlineUsersService {
     // Check if the user list exists
     this.redis.exists(userListKey, (err, exists) => {
       if (err) {
-        console.error('Error checking existence of user list:', err);
         return;
       }
 
@@ -19,26 +18,21 @@ export class OnlineUsersService {
         // User list exists, check if the user is already in the list
         this.redis.hget(userListKey, user_id, (err, existingPid) => {
           if (err) {
-            console.error('Error checking existing user in the list:', err);
             return;
           }
 
           if (existingPid && existingPid !== pid) {
             // User is already in the list, and the pid has changed
-            console.log(`Updating pid for user ${user_id}`);
             this.redis.hset(userListKey, user_id, pid);
           } else if (!existingPid) {
             // User is not in the list, add the user
-            console.log(`Adding user ${user_id} to the list`);
             this.redis.hset(userListKey, user_id, pid);
           } else {
             // User is already in the list, and the pid has not changed
-            console.log(`User ${user_id} already in the list with the same pid`);
           }
         });
       } else {
         // User list does not exist, create the list and add the user
-        console.log(`Creating user list and adding user ${user_id}`);
         this.redis.hset(userListKey, user_id, pid);
       }
     });
@@ -50,7 +44,6 @@ export class OnlineUsersService {
     // Remove the user with the specified user_id
     await this.redis.hdel(userListKey, user_id, (err, result) => {
       if (err) {
-        console.error('Error removing user:', err);
         return callback(err, false);
       }
 
@@ -85,7 +78,6 @@ export class OnlineUsersService {
     // Get all users with the specified pid
     await this.redis.hscan(userListKey, 0, 'MATCH', `*:${pid}`, 'COUNT', 100, async (err, result) => {
       if (err) {
-        console.error('Error scanning users:', err);
         return callback(err);
       }
 
@@ -99,7 +91,6 @@ export class OnlineUsersService {
       // Remove users with the specified pid
       await this.redis.hdel(userListKey, ...usersToRemove, (err, removedCount) => {
         if (err) {
-          console.error('Error removing users:', err);
           return callback(err);
         }
 

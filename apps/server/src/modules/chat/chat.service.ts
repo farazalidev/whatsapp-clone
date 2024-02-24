@@ -360,14 +360,12 @@ export class ChatService {
         .andWhere('chat.id = :chatId', { chatId: chat_id })
         .andWhere('(fromUser.user_id = :userId OR clearForUser.user_id = :userId)', { userId: user_id })
         .getOne();
-      console.log('🚀 ~ ChatService ~ isMessageExistedService ~ message:', message);
 
       if (message) {
         return { success: true, successMessage: 'message founded', data: true };
       }
       return { success: false, error: { message: 'message not founded', statusCode: 400 } };
     } catch (error) {
-      console.log('🚀 ~ ChatService ~ isMessageExistedService ~ error:', error);
       return { success: false, error: { message: 'Error while getting message', statusCode: 400 } };
     }
   }

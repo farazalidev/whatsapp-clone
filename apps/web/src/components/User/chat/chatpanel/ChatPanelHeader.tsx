@@ -48,7 +48,6 @@ const ChatPanelHeader: FC<ChatPanelHeaderProps> = ({ header_name = 'Name', recei
   }, [socket, receiver_id, chat_id]);
 
   const handleProfilePreview = () => {
-    console.log(receiver_email, receiver_id, header_name);
 
     dispatch(setCurrentUserProfilePreview(receiver_id))
   }

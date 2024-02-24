@@ -46,7 +46,6 @@ export class KafkaConsumer implements IConsumer {
 
   private async addMessageToDlq(message: KafkaMessage) {
     // TODO: Adding message to DLQ
-    console.log(message);
   }
 
   async connect(): Promise<void> {
