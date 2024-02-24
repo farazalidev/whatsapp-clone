@@ -10,33 +10,25 @@ import OverlayContainer from './OverlayContainer';
 import { toggleDocumentOverlay } from '@/global/features/overlaySlice';
 
 const ChatPanel = () => {
-  const chatSlice = useSelector((state: RootState) => state.ChatSlice);
-
-  const user = useSelector((state: RootState) => state.UserSlice);
 
   const parentRef = useRef(null);
 
   const dispatch = useDispatch();
 
-  const { chats_raw: chats } = useSelector((state: RootState) => state.messagesSlice);
 
   const { DocumentOverlayIsOpen } = useSelector((state: RootState) => state.overlaySlice);
 
-  const { name, receiver_id, chat_id, receiver_email } = useUserChatDetails(chatSlice, {
-    chats: chats,
-    contacts: user.contacts as any,
-    Me: user.Me as any,
-  });
+  const { receiver, chat_id, } = useUserChatDetails();
 
   return (
     <div className="bg-pattern h-full w-full" >
       <div ref={parentRef} className="dark:bg-whatsapp-dark-primary_bg flex h-full w-full flex-col bg-[#F5DEB3] bg-opacity-25 dark:bg-opacity-95" >
-        <ChatPanelHeader header_name={name as string} user_id={receiver_id} for_other receiver_id={receiver_id} chat_id={chat_id} receiver_email={receiver_email} />
+        <ChatPanelHeader header_name={receiver.name as string} user_id={receiver.user_id} for_other receiver_id={receiver.user_id} chat_id={chat_id} receiver_email={receiver.user_id} />
         <Suspense fallback={<FallBackLoadingSpinner />}>
           {/* overlay container */}
           <OverlayContainer parentRef={parentRef} isOpen={DocumentOverlayIsOpen} onClose={() => dispatch(toggleDocumentOverlay())} />
           <ChatHandler />
-          <MessageSender receiver_id={receiver_id as string} chat_id={chat_id} />
+          <MessageSender receiver_id={receiver.user_id as string} chat_id={chat_id} />
         </Suspense>
       </div>
     </div >

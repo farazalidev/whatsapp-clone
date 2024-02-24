@@ -1,5 +1,4 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { UserChatEntity } from '@server/modules/chat/entities/userchat.entity';
 import { UserEntity } from '@server/modules/user/entities/user.entity';
 import { ContactEntity } from '@server/modules/user/entities/contact.entity';
 import { RootState } from '../store';

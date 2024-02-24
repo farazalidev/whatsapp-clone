@@ -1,9 +1,10 @@
 'use client';
-import { IChatSlice } from '@/global/features/ChatSlice';
 import { UserEntity } from '@server/modules/user/entities/user.entity';
 import { UserChatEntity } from '@server/modules/chat/entities/userchat.entity';
 import { ContactEntity } from '@server/modules/user/entities/contact.entity';
 import { isIamReceiver } from '../utils/isIamReceiver';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/global/store';
 
 export type UserDataType =
   | {
@@ -14,16 +15,20 @@ export type UserDataType =
   | undefined;
 
 type getDetailsForChatPanelResponse = {
-  name: string | undefined;
-  receiver_id: string | undefined;
   chat_id: string | undefined;
-  receiver_email: string | undefined;
+  receiver: UserEntity;
 };
 
-export function useUserChatDetails(chat_slice: IChatSlice, userData: UserDataType): getDetailsForChatPanelResponse {
-  const { id, started_from } = chat_slice;
+export function useUserChatDetails(): getDetailsForChatPanelResponse {
+  const chatSlice = useSelector((state: RootState) => state.ChatSlice);
 
-  const chat = userData?.chats.find((chat) => {
+  const { Me, contacts } = useSelector((state: RootState) => state.UserSlice);
+
+  const { chats_raw: chats } = useSelector((state: RootState) => state.messagesSlice);
+
+  const { id, started_from } = chatSlice;
+
+  const chat = chats.find((chat) => {
     return chat.id === id;
   });
 
@@ -34,13 +39,11 @@ export function useUserChatDetails(chat_slice: IChatSlice, userData: UserDataTyp
    */
 
   if (started_from === 'contact') {
-    const contact = userData?.contacts.find((contact) => contact.contact.user_id === id);
+    const contact = contacts?.find((contact) => contact.contact.user_id === id);
 
     return {
-      name: contact?.contact.name,
-      receiver_id: contact?.contact.user_id,
       chat_id: undefined,
-      receiver_email: contact?.contact.email,
+      receiver: contact?.contact as any,
     };
   }
 
@@ -49,12 +52,10 @@ export function useUserChatDetails(chat_slice: IChatSlice, userData: UserDataTyp
    * and have chat before
    */
 
-  const isReceiver = isIamReceiver(chat?.chat_with.user_id, userData?.Me.user_id as string);
+  const isReceiver = isIamReceiver(chat?.chat_with.user_id, Me?.user_id as string);
 
   return {
-    name: isReceiver ? chat?.chat_for.name : chat?.chat_with.name,
-    receiver_id: isReceiver ? chat?.chat_for.user_id : chat?.chat_with.user_id,
+    receiver: isReceiver ? chat?.chat_for : (chat?.chat_with as any),
     chat_id: chat?.id,
-    receiver_email: isReceiver ? chat?.chat_for.email : chat?.chat_with.email,
   };
 }

@@ -92,6 +92,7 @@ export class UserService {
       const newProfile = new UserProfileEntity();
       newProfile.about = profile.about;
       user.profile = newProfile;
+      user.is_profile_completed = true;
 
       await this.UserRepo.save(user);
       return {
