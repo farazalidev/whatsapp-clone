@@ -39,10 +39,6 @@ export const LoginSchema = z.object({
     .max(155)
     .trim()
     .refine((value) => /^[^';"]*$/.test(value), 'Invalid input'),
-  password: z
-    .string()
-    .min(1, 'Password is required')
-    .refine((value) => /^[^';"]*$/.test(value), 'Invalid input'),
 });
 
 export const CompeteProfileSchema = z.object({

@@ -19,6 +19,8 @@ import useContacts from '@/hooks/useContacts';
 import ProfilePreview from '@/components/User/profilePreview/ProfilePreview';
 import { AnimatePresence, motion } from 'framer-motion';
 import { profilePreviewAnimation } from '@/animation/profilePreviewAnimation';
+import CompleteProfile from '@/components/AuthPage/CompleteProfile';
+import AuthPageTop from '@/components/AuthPage/AuthPageTop';
 
 type Props = {
   searchParams: Record<string, string> | null | undefined;
@@ -45,7 +47,7 @@ const UserPage: FC<Props> = () => {
   }, [socket, dispatch]);
 
   const { AddContactModalIsOpen } = useSelector((state: RootState) => state.modalSlice);
-  const { isLoading, error } = useUser();
+  const { isLoading, error, data } = useUser();
   const { error: chatsError, isLoading: chatsIsLoading } = useChats();
   const { error: contactsError, isLoading: contactsIsLoading } = useContacts();
 
@@ -59,6 +61,13 @@ const UserPage: FC<Props> = () => {
 
   if (error || chatsError || contactsError) {
     return <MainErrorPage />;
+  }
+
+  if (!data?.Me.is_profile_completed) {
+    return <div className='flex flex-col'>
+      <AuthPageTop />
+      <CompleteProfile />
+    </div>
   }
 
   return (

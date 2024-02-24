@@ -2,13 +2,13 @@ import { HttpStatus, Injectable } from '@nestjs/common';
 import { LoginDto } from './DTO/login.dto';
 import { UserService } from '../user/user.service';
 import { UserEntity } from '../user/entities/user.entity';
-import { compare, hash } from 'bcryptjs';
+import { hash } from 'bcryptjs';
 import { JwtService } from '@nestjs/jwt';
 import { RegisterUserDto } from '../user/DTO/user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { MoreThan, Not, Repository } from 'typeorm';
 import * as bcrypt from 'bcryptjs';
-import { AuthTokens, OtpToken } from '../types';
+import { AuthTokens, OtpToken, OtpTokenPayload } from '../types';
 import { ResponseType } from '../../Misc/ResponseType.type';
 import { generateOtp } from '../../utils/generateOtp';
 import { isSuccess } from '../../utils/isSuccess.typeguard';
@@ -30,17 +30,9 @@ export class AuthService {
     @InjectRepository(UserEntity) private UserRepo: Repository<UserEntity>,
   ) {}
 
-  private async getOptToken(user_id: string): Promise<OtpToken> {
-    const otp_token = await this.jwtService.signAsync({ user_id }, { expiresIn: '5m', secret: process.env.OTP_TOKEN_SECRET });
+  private async getOptToken(user_id: string, method: 'login' | 'registration'): Promise<OtpToken> {
+    const otp_token = await this.jwtService.signAsync({ user_id, method }, { expiresIn: '5m', secret: process.env.OTP_TOKEN_SECRET });
     return { otp_token };
-  }
-
-  private async validateUserName(user_name: string): Promise<boolean> {
-    const username = await this.UserRepo.findOne({
-      where: { username: user_name },
-    });
-    if (username) return false;
-    return true;
   }
 
   // update refresh token hash in users db
@@ -49,6 +41,32 @@ export class AuthService {
     const hashedRefreshToken = await hash(refresh_token, 10);
     user.refresh_hash = hashedRefreshToken;
     await this.UserRepo.save(user);
+  }
+
+  public async otpToBeVerified(user_id: string) {
+    const user = await this.UserRepo.findOne({ where: { user_id, registration_otp_exp: MoreThan(Date.now()) } });
+    if (user?.user_id) {
+      return true;
+    }
+    return false;
+  }
+
+  public otp(email: string) {
+    const NowTime = parseInt((Date.now() + 300000).toFixed(0));
+    const registration_otp = generateOtp();
+    const updateOtp = async (): Promise<boolean> => {
+      try {
+        await this.UserRepo.update({ email }, { registration_otp, registration_otp_exp: NowTime });
+        return true;
+      } catch (error) {
+        false;
+      }
+    };
+    const getOtp = () => {
+      return { registration_otp, registration_otp_exp: NowTime };
+    };
+
+    return { updateOtp, getOtp };
   }
 
   /**
@@ -76,40 +94,21 @@ export class AuthService {
         };
       }
 
-      // validating username
-      const isValidUserName = await this.validateUserName(user.username);
-      if (!isValidUserName) {
-        return {
-          success: false,
-          error: {
-            message: 'Username already exists',
-            statusCode: HttpStatus.CONFLICT,
-          },
-        };
-      }
-
-      // hashing password
-      const hashed_password = await hash(user.password, 10);
-
-      const NowTime = parseInt((Date.now() / 1000 + 300).toFixed(0));
+      const otp = this.otp(user.email).getOtp();
 
       const newUser = this.UserRepo.create({
         ...user,
-        registration_otp: generateOtp(),
-        registration_otp_exp: NowTime,
-        password: hashed_password,
+        registration_otp: otp.registration_otp,
+        registration_otp_exp: otp.registration_otp_exp,
       });
 
       // saving the user
       const saved_user = await this.UserRepo.save(newUser);
 
       // getting otp token
-      const otp_token = await this.getOptToken(saved_user.user_id);
-      return {
-        success: true,
-        successMessage: 'Registration Successful',
-        data: otp_token,
-      };
+      const otp_token = await this.getOptToken(saved_user.user_id, 'registration');
+
+      return { success: true, successMessage: 'Registration Successful', data: otp_token };
     } catch (error) {
       return {
         success: false,
@@ -121,19 +120,20 @@ export class AuthService {
     }
   }
 
-  async verifyOtp(otp: string, user_id: string): Promise<ResponseType<AuthTokens>> {
-    const NowDate = parseInt((Date.now() / 1000).toFixed(0));
+  async verifyOtp(otp: string, otpPayload: OtpTokenPayload): Promise<ResponseType<AuthTokens>> {
+    const NowDate = parseInt(Date.now().toFixed(0));
+
     try {
       const user = await this.UserRepo.findOne({
         where: {
-          user_id,
+          user_id: otpPayload.user_id,
           registration_otp: otp,
           registration_otp_exp: MoreThan(NowDate),
-          isVerified: false,
+          isVerified: otpPayload.method === 'login' ? true : false,
         },
       });
 
-      if (!user) {
+      if (!user?.user_id) {
         return {
           success: false,
           error: {
@@ -143,23 +143,31 @@ export class AuthService {
         };
       }
 
-      // getting token
-      const tokens = await getTokens(user.user_id, this.jwtService);
+      if (user.user_id === otpPayload.user_id) {
+        // getting token
+        const tokens = await getTokens(user.user_id, this.jwtService);
 
-      // removing otp from user table
-      user.registration_otp = null;
-      user.registration_otp_exp = null;
-      user.isVerified = true;
+        // removing otp from user table
+        user.registration_otp = null;
+        user.registration_otp_exp = null;
+        if (otpPayload.method === 'registration') {
+          user.isVerified = true;
+        }
 
-      // saving user
-      await this.UserRepo.save(user);
+        // saving user
+        await this.UserRepo.save(user);
 
-      await this.updateRefreshTokenHash(user.user_id, tokens.refresh_token);
+        await this.updateRefreshTokenHash(user.user_id, tokens.refresh_token);
 
+        return {
+          success: true,
+          successMessage: 'Verification successful',
+          data: tokens,
+        };
+      }
       return {
-        success: true,
-        successMessage: 'Verification successful',
-        data: tokens,
+        success: false,
+        error: { message: 'internal server error', statusCode: 500 },
       };
     } catch (error) {
       return {
@@ -177,44 +185,42 @@ export class AuthService {
    * @param user Getting user like LoginDto
    * @returns ResponseType<LoginResponse>
    */
-  async LoginService(user: LoginDto): Promise<ResponseType<AuthTokens>> {
+  async LoginService(user: LoginDto): Promise<ResponseType<OtpToken>> {
     try {
+      // first we will check if the user already registered or not
+      // if the user was not registered then we will create his account
+      // and then login it
+      // else we will login it
+
       const response = await this.userService.findByEmail(user.email);
+
       if (!isSuccess(response)) {
-        return {
-          success: false,
-          error: {
-            message: 'username or password is wrong',
-            statusCode: HttpStatus.NOT_FOUND,
-          },
-        };
+        return { success: false, error: { message: 'Internal server error', statusCode: 500 } };
       }
 
       if (isSuccess(response)) {
-        // matching password
-        const isValidPassword = await compare(user.password, response.data.password);
+        // before generating otp tokens we will check if there is already an otp to be verified
 
-        if (!isValidPassword) {
+        const otpToBeVerified = await this.otpToBeVerified(response.data.user_id);
+
+        if (otpToBeVerified) {
           return {
             success: false,
-            error: {
-              message: 'username or password is wrong',
-              statusCode: HttpStatus.BAD_REQUEST,
-            },
+            error: { message: 'otp verification is pending', statusCode: 400 },
           };
         }
 
-        // generating access and refresh tokens
-        const tokens = await getTokens(response.data.user_id, this.jwtService);
+        // generating otp tokens
+        const tokens = await this.getOptToken(response.data?.user_id, 'login');
+        const isOtpUpdated = await this.otp(response.data.email).updateOtp();
+        if (!isOtpUpdated) {
+          return {
+            success: false,
+            error: { message: 'failed to update the otp', statusCode: 500 },
+          };
+        }
 
-        // updating refresh hash
-        await this.updateRefreshTokenHash(response.data.user_id, tokens.refresh_token);
-
-        return {
-          success: true,
-          successMessage: 'Login success',
-          data: tokens,
-        };
+        return { success: true, successMessage: 'user founded', data: tokens };
       }
     } catch (error) {
       console.log('🚀 ~ AuthService ~ LoginService ~ error:', error);
@@ -314,6 +320,15 @@ export class AuthService {
           statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
         },
       };
+    }
+  }
+
+  async getUserEmailByUserId(user_id: string): Promise<ResponseType<{ email: string }>> {
+    try {
+      const user = await this.UserRepo.findOne({ where: { user_id } });
+      return { success: true, data: { email: user.email }, successMessage: 'success' };
+    } catch (error) {
+      return { success: false, error: { message: 'internal server error', statusCode: 500 } };
     }
   }
 }

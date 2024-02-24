@@ -18,3 +18,8 @@ export interface single_unread_message {
   chat_id: string;
   message: MessageEntity;
 }
+
+export interface OtpTokenPayload {
+  user_id: string;
+  method: 'login' | 'registration';
+}

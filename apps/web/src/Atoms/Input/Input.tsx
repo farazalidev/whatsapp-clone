@@ -15,16 +15,17 @@ export interface InputProps
 
 const InputProps = cva(
     [
-        'bg-whatsapp-light-input_bg  placeholder:text-whatsapp-light-placeholder_text rounded-md text-whatsapp-dark-primary_bg ',
+        'bg-whatsapp-light-input_bg  placeholder:text-whatsapp-light-placeholder_text rounded-md text-whatsapp-dark-primary_bg placeholder:text-sm',
         'outline-none',
         'dark:bg-whatsapp-dark-input_bg placeholder:dark:text-whatsapp-dark-placeholder_text dark:text-whatsapp-light-primary_bg',
+        'rounded-full border-[1px] border-whatsapp-misc-whatsapp_primary_green_light'
     ],
     {
         variants: {
             inputsize: {
                 small: 'text-base px-2 py-1 ',
                 medium: 'text-lg px-2 py-1',
-                large: 'text-xl px-3 py-3 ',
+                large: 'text-lg px-3 py-3 ',
             },
         },
         defaultVariants: {
@@ -67,6 +68,7 @@ const Input: ForwardRefRenderFunction<HTMLInputElement, InputProps> = (
                 id={props.id}
                 autoComplete="true"
                 ref={ref}
+                {...props}
                 className={cn(
                     InputProps({
                         inputsize: props.inputsize,
@@ -75,7 +77,6 @@ const Input: ForwardRefRenderFunction<HTMLInputElement, InputProps> = (
                         } ${className}`,
                     })
                 )}
-                {...props}
             />
             {error ? <span className="text-red-500 text-xs whitespace-pre-line">{error_message}</span> : null}
         </div>

@@ -6,6 +6,6 @@ export class UserProfileEntity {
   @PrimaryColumn({ type: 'uuid' })
   id: string = v4();
 
-  @Column()
+  @Column({ default: 'Hey, i am using whatsapp.' })
   about: string;
 }

@@ -1,7 +1,7 @@
 import { CanActivate, ExecutionContext, ForbiddenException, HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { Request } from 'express';
-import { LoginPayload } from '../auth.service';
 import { JwtService } from '@nestjs/jwt';
+import { OtpTokenPayload } from '../../types';
 
 @Injectable()
 export class otpGuard implements CanActivate {
@@ -16,8 +16,8 @@ export class otpGuard implements CanActivate {
     }
 
     try {
-      const payload: LoginPayload = await this.jwt.verifyAsync(otp_token, { secret: process.env.OTP_TOKEN_SECRET });
-      req['user'] = payload;
+      const payload: OtpTokenPayload = await this.jwt.verifyAsync(otp_token, { secret: process.env.OTP_TOKEN_SECRET });
+      req['otp'] = payload;
       return true;
     } catch (error) {
       throw new HttpException('Otp expired or Invalid', HttpStatus.BAD_REQUEST);

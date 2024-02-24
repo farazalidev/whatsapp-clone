@@ -7,9 +7,6 @@ export class UserEntity {
   @PrimaryColumn({ type: 'uuid' })
   user_id: string = v4();
 
-  @Column({ unique: true })
-  username: string;
-
   @Column()
   name: string;
 
@@ -19,9 +16,6 @@ export class UserEntity {
   @OneToOne(() => UserProfileEntity, (profile) => profile.id, { eager: true, cascade: true, nullable: true })
   @JoinColumn({ name: 'profileId' })
   profile: UserProfileEntity;
-
-  @Column({})
-  password: string;
 
   @Column({ type: 'boolean', nullable: true, default: false })
   isVerified: boolean = false;

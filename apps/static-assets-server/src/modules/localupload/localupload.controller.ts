@@ -29,7 +29,6 @@ import { getContentType } from 'src/utils/getContentType';
 import { MessageMediaEntity } from '@server/modules/chat/entities/messageMedia.entity';
 import { VoiceMessageStorage } from '../storage/voiceMessageStorage';
 import { MessageEntity } from '@server/modules/chat/entities/message.entity';
-import { Public } from '../decorators/public.decorator';
 
 @Controller('file')
 export class LocalUploadController {
@@ -310,7 +309,7 @@ export class LocalUploadController {
         return res.json({ uploadedFileSize: 0, chunksDirectory: isChunksDirectoryExisted, isFileExisted });
       }
 
-      const files = await fsPromises.readdir(chunksDirectory, { recursive: true });
+      const files = await fsPromises.readdir(chunksDirectory);
 
       // Filtering files
       const fileNames = files.filter(async (file) => (await fsPromises.stat(join(chunksDirectory, file))).isFile());

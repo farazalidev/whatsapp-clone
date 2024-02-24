@@ -9,16 +9,16 @@ interface ButtonProps
   loading?: boolean;
 }
 const ButtonVariants = cva(
-  'px-2 py-[2px] rounded-md  transition-colors duration-200 bg-whatsapp-default-primary_green disabled:bg-opacity-60',
+  'px-2 py-[2px] rounded-full text-white transition-colors duration-200 bg-whatsapp-default-primary_green disabled:bg-opacity-60 whitespace-nowrap',
   {
     variants: {
       size: {
-        sm: 'text-xs font-extralight px-[4px] py-[6px]',
-        md: 'text-sm font-extralight px-[6px] py-[6px]',
-        lg: 'text-lg px-[8px] py-[10px]',
+        sm: 'text-xs font-extralight px-1 h-7',
+        md: 'text-sm font-extralight px-2 h-8',
+        lg: 'text-sm h-9',
       },
       color_variant: {
-        primary: 'bg-whatsapp-default-primary_green text-white dark:text-black',
+        primary: 'bg-whatsapp-default-primary_green text-white',
         secondary:
           'bg-whatsapp-light-secondary_bg text-whatsapp-light-text border-[1px] border-gray-800 dark:bg-whatsapp-dark-secondary_bg dark:text-whatsapp-dark-text',
       },
