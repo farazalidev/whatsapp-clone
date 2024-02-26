@@ -3,10 +3,12 @@ import { UpdateMessageStatusBulk } from '@shared/types';
 import { messageStatus } from '@shared/types';
 import { MessageEntity } from '@server/modules/chat/entities/message.entity';
 import { UserChatEntity } from '@server/modules/chat/entities/userchat.entity';
+import { ChatsDto, PaginatedMessages } from '@server/modules/chat/DTO/chats.dto';
 
 interface IMessagesSliceInitialState {
   chats: { chat_id: string; messages: MessageEntity[]; receiverFootPrints?: string }[];
   chats_raw: UserChatEntity[];
+  paginatedChats: ChatsDto;
 }
 interface addNewChatPayload {
   chat_id: string;
@@ -27,12 +29,30 @@ interface updateMessagePayload {
 const initialState: IMessagesSliceInitialState = {
   chats: [],
   chats_raw: [],
+  paginatedChats: { data: [], meta: { currentPage: 0, hasNext: false, hasPrevious: false, messagesTake: 0, take: 0, totalChats: 0, totalPages: 0 } },
 };
 
 export const messagesSlice = createSlice({
   name: 'messages-slice',
   initialState,
   reducers: {
+    initPaginatedChats: (state, { payload }: { payload: ChatsDto }) => {
+      state.paginatedChats = payload;
+    },
+
+    paginateChatMessages: (state, { payload }: { payload: { chat_id: string; paginatedMessages: PaginatedMessages } }) => {
+      const chat = state.paginatedChats.data.find((chat) => chat.id === payload?.chat_id);
+      if (chat && payload) {
+        const meta = payload.paginatedMessages.meta;
+        chat.messages.push(...new Set([...payload.paginatedMessages.messages]));
+        chat.count = meta.totalMessages;
+        chat.currentPage = meta.currentPage;
+        chat.hasNext = meta.hasNext;
+        chat.hasPrev = meta.hasPrevious;
+        chat.totalMessagesPages = meta.totalPages;
+      }
+    },
+
     // add new chat
     addNewChat: (state, { payload }: { payload: addNewChatPayload }) => {
       const existedChat = state.chats.find((chat) => chat.chat_id === payload.chat_id);
@@ -98,4 +118,5 @@ export const messagesSlice = createSlice({
   },
 });
 
-export const { addNewChat, addNewMessage, updateMessageStatus, updateMessageStatusBulk, removeChat, addRawChats } = messagesSlice.actions;
+export const { addNewChat, addNewMessage, updateMessageStatus, updateMessageStatusBulk, removeChat, addRawChats, initPaginatedChats, paginateChatMessages } =
+  messagesSlice.actions;

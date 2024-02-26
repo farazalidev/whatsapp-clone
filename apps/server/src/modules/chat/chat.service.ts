@@ -7,6 +7,15 @@ import { MessageEntity } from './entities/message.entity';
 import { ResponseType } from '../../Misc/ResponseType.type';
 import { MessageDto } from './DTO/message.dto';
 import { unreadMessage } from '../types';
+import {
+  ChatsDto,
+  ChatsDtoMeta,
+  ChatsExtendedWithCount,
+  ChatsParamsDto,
+  PaginatedMessages,
+  PaginatedMessagesMeta,
+  PaginatedMessagesParamsDto,
+} from './DTO/chats.dto';
 
 @Injectable()
 export class ChatService {
@@ -44,27 +53,98 @@ export class ChatService {
     }
   }
 
-  async getUserChats(user_id: string): Promise<ResponseType<UserChatEntity[]>> {
+  async getUserChats(user_id: string, query: ChatsParamsDto): Promise<ResponseType<ChatsDto>> {
     try {
-      const user = await this.UserChatRepo.find({
-        where: [{ chat_for: { user_id } }, { chat_with: { user_id } }],
-        relations: { messages: true },
-        order: { messages: { sended_at: 'DESC' } },
-      });
-      if (!user) {
+      const queryBuilder = this.UserChatRepo.createQueryBuilder('chat');
+
+      queryBuilder
+        .leftJoinAndSelect('chat.chat_for', 'chatFor')
+        .leftJoinAndSelect('chat.chat_with', 'chatWith')
+        .leftJoinAndSelect('chat.messages', 'messages')
+        .leftJoinAndSelect('messages.from', 'messageFrom')
+        .leftJoinAndSelect('messages.media', 'media')
+        .where('(chatFor.user_id = :user_id OR chatWith.user_id = :user_id)', { user_id })
+        .andWhere((subQuery) => {
+          const subAlias = subQuery
+            .subQuery()
+            .select('messages.id', 'messages')
+            .from(MessageEntity, 'messages')
+            .where('messages.chat = chat.id')
+            .groupBy('messages.id')
+            .orderBy('MAX(messages.sended_at)', 'DESC')
+            .skip((query.messagesPage - 1) * query.messagesTake)
+            .limit(query.messagesTake)
+            .getQuery();
+          return `messages.id IN ${subAlias}`;
+        })
+        .loadRelationCountAndMap('messages.count', 'chat.messages')
+        .skip((query.page - 1) * query.take)
+        .take(query.take);
+
+      const chats = (await queryBuilder.getMany()) as unknown as ChatsExtendedWithCount[];
+
+      if (!chats) {
         return {
           success: false,
           error: { message: 'User not found', statusCode: HttpStatus.NOT_FOUND },
         };
       }
+      const totalChats = await queryBuilder.getCount();
+      const PageMeta = new ChatsDtoMeta({ ...query, totalChats });
+
+      const chatsWithMessagesMeta = chats.map((chat) => {
+        const totalPages = Math.ceil(chat.count / query.messagesTake);
+        const currentPage = query.messagesPage;
+        return {
+          ...chat,
+          totalMessagesPages: totalPages,
+          currentPage,
+          hasPrev: currentPage > 1,
+          hasNext: currentPage < totalPages,
+          messagesTake: query.messagesTake,
+        };
+      });
 
       return {
-        data: user,
+        data: { data: chatsWithMessagesMeta as any, meta: PageMeta },
         success: true,
         successMessage: 'Chat Found',
       };
     } catch (error) {
+      console.log('🚀 ~ ChatService ~ getUserChats ~ error:', error);
       return { success: false, error: { message: 'Internal Server Error', statusCode: HttpStatus.INTERNAL_SERVER_ERROR } };
+    }
+  }
+
+  async getPaginatedMessages(chat_id: string, query: PaginatedMessagesParamsDto): Promise<ResponseType<PaginatedMessages>> {
+    try {
+      const queryBuilder = this.UserMessageRepo.createQueryBuilder('message');
+
+      queryBuilder
+        .leftJoinAndSelect('message.from', 'messageFrom')
+        .leftJoinAndSelect('message.media', 'messageMedia')
+        .leftJoinAndSelect('message.chat', 'chat')
+        .orderBy('message.sended_at', query.order)
+        .skip((query.messagesPage - 1) * query.messagesTake)
+        .take(query.messagesTake)
+        .where('chat.id = :chat_id', { chat_id });
+
+      const pageMeta = new PaginatedMessagesMeta({ ...query, totalMessages: await queryBuilder.getCount() });
+
+      return {
+        success: true,
+        successMessage: 'success',
+        data: {
+          messages: await queryBuilder.getMany(),
+          meta: pageMeta,
+        },
+      };
+    } catch (error) {
+      console.log('🚀 ~ ChatService ~ getPaginatedMessages ~ error:', error);
+      return {
+        success: false,
+        error: { message: 'internal server error', statusCode: 500 },
+      };
     }
   }
 

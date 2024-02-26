@@ -24,6 +24,8 @@ export const MessageBubbleImagePreview: FC<IMessageBubblePreview> = ({ message, 
   );
 
   const { raw_chat } = useCurrentChat();
+  console.log("🚀 ~ raw_chat:", raw_chat)
+
 
 
   const lastAction = useCallback(() => {

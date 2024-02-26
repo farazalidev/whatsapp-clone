@@ -1,14 +1,18 @@
-import React, { FC, useEffect, useRef } from 'react';
+import React, { FC, useCallback, useEffect, useRef, useState } from 'react';
 import MessagePreview from '@/Atoms/chat/MessagePreview';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '@/global/store';
 import useSocket from '@/hooks/useSocket';
 import { addNewMessage, updateMessageStatus, updateMessageStatusBulk } from '@/global/features/messagesSlice';
 import useCurrentChat from '@/hooks/useCurrentChat';
+import usePaginatedMessages from '@/hooks/usePaginatedMessages';
+import Image from 'next/image';
 
 interface ChatHandlerProps { }
 
 const ChatHandler: FC<ChatHandlerProps> = () => {
+  const [mounted, setMounted] = useState(false)
+
   const { socket } = useSocket();
 
   const dispatch = useDispatch();
@@ -16,6 +20,8 @@ const ChatHandler: FC<ChatHandlerProps> = () => {
   const Me = useSelector((state: RootState) => state.UserSlice.Me);
 
   const divRef = useRef<HTMLDivElement>(null);
+
+  const containerRef = useRef<HTMLDivElement>(null)
 
   const { chat, id, } = useCurrentChat()
 
@@ -48,14 +54,14 @@ const ChatHandler: FC<ChatHandlerProps> = () => {
 
   // scroll to bottom
   useEffect(() => {
-    if (divRef.current && chat && chat?.messages?.length > 0) {
+    if (divRef.current) {
       divRef.current.scrollIntoView({ behavior: 'instant', block: 'nearest' });
     }
-  }, [chat]);
+  }, []);
 
   useEffect(() => {
     if (divRef) {
-      divRef.current?.scrollIntoView({ behavior: 'instant', block: 'nearest' });
+      // divRef.current?.scrollIntoView({ behavior: 'instant', block: 'nearest' });
     }
   }, [chat?.messages]);
 
@@ -64,19 +70,51 @@ const ChatHandler: FC<ChatHandlerProps> = () => {
 
   const chatSlice = useSelector((state: RootState) => state.ChatSlice);
 
+  const { paginate, state, meta } = usePaginatedMessages({ chat_id: id })
+
+  const observer = useRef<IntersectionObserver>()
+  const lastMessageElement = useCallback((node: any) => {
+    if (state.isLoading) return
+    if (observer.current) observer.current.disconnect()
+
+    observer.current = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting && meta.hasNext && mounted) {
+        paginate()
+      }
+    })
+    if (node) observer.current.observe(node)
+  }, [meta.hasNext, mounted, paginate, state.isLoading])
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   return (
     <>
-      <div className="flex h-full w-full flex-col gap-1 overflow-y-scroll px-7 py-2 scrollbar">
+      <div ref={containerRef} className="flex h-full w-full flex-col gap-1 overflow-y-scroll px-7 py-2 scrollbar">
+        {state.isLoading ?
+          <div className='w-full text-xl flex justify-center place-items-center'>
+            <Image src={'/icons/spinner.svg'} height={40} width={40} alt='loading spinner' />
+          </div> : null}
         {chat?.messages
           ? [...chat.messages]
-
             ?.sort((a, b) => {
               const dateA = new Date(a?.sended_at)?.getTime();
               const dateB = new Date(b?.sended_at)?.getTime();
               return dateA - dateB;
             })
-            .map((message) => <MessagePreview isFromMe={Me?.user_id === message?.from?.user_id} message={message} key={message?.id} ChatSlice={chatSlice} receiver_id={receiver_id} socket={socket} Me={Me} />)
+            .map((message, index) => {
+              if (index === Math.ceil(chat.messages.length * .10)) {
+                return (
+                  <MessagePreview ref={lastMessageElement} isFromMe={Me?.user_id === message?.from?.user_id} message={message} key={message?.id} ChatSlice={chatSlice} receiver_id={receiver_id} socket={socket} Me={Me} />
+
+                )
+              } else {
+                return (
+                  <MessagePreview isFromMe={Me?.user_id === message?.from?.user_id} message={message} key={message?.id} ChatSlice={chatSlice} receiver_id={receiver_id} socket={socket} Me={Me} />
+                )
+              }
+            })
           : null}
         <div ref={divRef} />
       </div>

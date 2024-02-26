@@ -15,7 +15,7 @@ const ProfilePreviewUserDetails: FC<IProfilePreviewUserDetails> = () => {
             <Avatar height={200} width={200} user_id={receiver.user_id || undefined} />
             <div className='flex justify-center place-items-center flex-col'>
                 <Typography level={5}>{receiver.name || ""}</Typography>
-                <Typography className='opacity-50 text-white text-sm'>{receiver.profile.about}</Typography>
+                <Typography className='opacity-50 text-white text-sm'>{receiver.profile?.about}</Typography>
             </div>
         </div>
     )
