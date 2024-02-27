@@ -24,9 +24,6 @@ export const MessageBubbleImagePreview: FC<IMessageBubblePreview> = ({ message, 
   );
 
   const { raw_chat } = useCurrentChat();
-  console.log("🚀 ~ raw_chat:", raw_chat)
-
-
 
   const lastAction = useCallback(() => {
     const lastAction = async () => {
@@ -38,7 +35,7 @@ export const MessageBubbleImagePreview: FC<IMessageBubblePreview> = ({ message, 
           content: message?.content,
           from: Me as any,
           is_seen: false,
-          media: message?.media,
+          media: { ...message?.media as any, path: `${Me?.user_id}/${message?.media?.id}` },
           messageType: message.messageType,
           received_at: null,
           seen_at: null,
@@ -60,13 +57,13 @@ export const MessageBubbleImagePreview: FC<IMessageBubblePreview> = ({ message, 
 
   const { thumbnailState } = useFetchMediaThumbnail({ isFromMe, message });
 
-  const { imageUrl } = useFetchImage({ isFromMe, me_id: Me?.user_id, message, receiver_id })
+  const { imageUrl } = useFetchImage({ message: message?.media as any })
 
   const { cancel, download, retry, state } = useUpload({ isFromMe, message, lastAction });
 
   const handleGalleryOverlay = (id: string | undefined) => {
-    if (id) {
-      dispatch(setActiveGalleryMedia(message as MessageEntity));
+    if (id && message?.media) {
+      dispatch(setActiveGalleryMedia({ ...message?.media, message: message }));
     }
     dispatch(toggleGalleryOverlay());
   };

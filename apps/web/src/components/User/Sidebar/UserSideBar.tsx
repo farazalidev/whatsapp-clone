@@ -44,6 +44,8 @@ const UserSideBar = () => {
       dispatch(setCurrentUserProfilePreview(undefined))
     }
   };
+  console.log(paginatedChats);
+
 
 
   return (
@@ -58,15 +60,14 @@ const UserSideBar = () => {
         {paginatedChats.data && data?.Me && paginatedChats.data.length !== 0 ? (
           paginatedChats.data?.map((chat) => {
               return (
-                    <SideBarUserCard
-                      key={chat.id}
-                      name={isIamReceiver(chat.chat_with.user_id, data?.Me!.user_id) ? chat.chat_for.name : chat?.chat_with.name}
-                      // last_message={getLatestMessage(chat?.messages)?.content}
+                <SideBarUserCard
+                  key={chat.id}
+                  name={isIamReceiver(chat.chat_with?.user_id, data?.Me!.user_id) ? chat.chat_for.name : chat?.chat_with.name}
                   last_message={""}
                   last_message_date={""}
-                      active={chat.id === id}
-                      for_other
-                      user_id={isIamReceiver(chat.chat_with.user_id, Me?.user_id) ? chat.chat_for.user_id : chat.chat_with.user_id}
+                  active={chat.id === id}
+                  for_other
+                  user_id={isIamReceiver(chat.chat_with.user_id, Me?.user_id) ? chat.chat_for.user_id : chat.chat_with.user_id}
                   onClick={() => handleChat(chat.id)}
                   unread_message_count={0}
                 />

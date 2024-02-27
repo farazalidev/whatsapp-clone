@@ -16,6 +16,7 @@ import {
   PaginatedMessagesMeta,
   PaginatedMessagesParamsDto,
 } from './DTO/chats.dto';
+import { MessageMediaEntity } from './entities/messageMedia.entity';
 
 @Injectable()
 export class ChatService {
@@ -23,6 +24,7 @@ export class ChatService {
     @InjectRepository(UserEntity) private userRepo: Repository<UserEntity>,
     @InjectRepository(UserChatEntity) private UserChatRepo: Repository<UserChatEntity>,
     @InjectRepository(MessageEntity) private UserMessageRepo: Repository<MessageEntity>,
+    @InjectRepository(MessageMediaEntity) private mediaMessageRepo: Repository<MessageMediaEntity>,
   ) {
     // get user chats service
   }
@@ -63,8 +65,7 @@ export class ChatService {
         .leftJoinAndSelect('chat.messages', 'messages')
         .leftJoinAndSelect('messages.from', 'messageFrom')
         .leftJoinAndSelect('messages.media', 'media')
-        .where('(chatFor.user_id = :user_id OR chatWith.user_id = :user_id)', { user_id })
-        .andWhere((subQuery) => {
+        .orWhere((subQuery) => {
           const subAlias = subQuery
             .subQuery()
             .select('messages.id', 'messages')
@@ -77,6 +78,7 @@ export class ChatService {
             .getQuery();
           return `messages.id IN ${subAlias}`;
         })
+        .where('(chatFor.user_id = :user_id OR chatWith.user_id = :user_id)', { user_id })
         .loadRelationCountAndMap('messages.count', 'chat.messages')
         .skip((query.page - 1) * query.take)
         .take(query.take);
@@ -448,5 +450,24 @@ export class ChatService {
     } catch (error) {
       return { success: false, error: { message: 'Error while getting message', statusCode: 400 } };
     }
+  }
+
+  async getAllMediaMessages(user_id: string, chat_id: string) {
+    console.log('🚀 ~ ChatService ~ getAllMediaMessages ~ chat_id:', chat_id);
+    const queryBuilder = this.mediaMessageRepo.createQueryBuilder('media');
+    queryBuilder
+      .leftJoinAndSelect('media.message', 'message')
+      .leftJoinAndSelect('message.from', 'messageFrom')
+      .leftJoinAndSelect('message.chat', 'chat')
+      .leftJoinAndSelect('chat.chat_for', 'chatFor')
+      .leftJoinAndSelect('chat.chat_with', 'chatWith')
+      .where('chat.id = :chat_id', { chat_id })
+      .andWhere('media.type IN (:...types)', { types: ['video', 'image', 'svg'] })
+      .andWhere('(chatFor.user_id = :user_id OR chatWith.user_id = :user_id)', { user_id });
+
+    const mediaMessages = await queryBuilder.getMany();
+    console.log('🚀 ~ ChatService ~ getAllMediaMessages ~ mediaMessages:', mediaMessages.length);
+
+    return mediaMessages;
   }
 }

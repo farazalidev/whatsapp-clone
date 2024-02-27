@@ -4,7 +4,7 @@ import Avatar from '../Avatar'
 import { useSelector } from 'react-redux'
 import { RootState } from '@/global/store'
 import dayjs from 'dayjs'
-import { MessageEntity } from '@server/modules/chat/entities/message.entity'
+import { MessageMediaEntity } from '@server/modules/chat/entities/messageMedia.entity'
 
 interface IGalleryHeader {
   onClose: () => void
@@ -13,14 +13,10 @@ interface IGalleryHeader {
 const GalleryHeader: FC<IGalleryHeader> = ({ onClose }) => {
 
   const { activeMediaMessage } = useSelector((state: RootState) => state.GallerySlice)
+  console.log("🚀 ~ activeMediaMessage:", activeMediaMessage)
 
-  const { receiver_id } = useSelector((state: RootState) => state.ChatSlice)
-
-  const { Me } = useSelector((state: RootState) => state.UserSlice)
-
-  const onDownload = (message: MessageEntity | null | undefined) => {
-    const user_id = message?.from.user_id === Me?.user_id ? Me?.user_id : receiver_id
-    const downloadLink = `api/file/attachment-download/${user_id}/${message?.media?.id}`;
+  const onDownload = (message: MessageMediaEntity | null | undefined) => {
+    const downloadLink = `api/file/attachment-download/${message?.path}`;
     const link = document.createElement('a');
     link.href = downloadLink;
     link.click();
@@ -31,12 +27,12 @@ const GalleryHeader: FC<IGalleryHeader> = ({ onClose }) => {
       {/* message info */}
       <div className='h-[60px] flex place-items-center'>
         <div className='flex gap-[13px] place-items-center'>
-          <Avatar height={40} width={40} className='' user_id={activeMediaMessage?.from.user_id} />
+          <Avatar height={40} width={40} className='' user_id={activeMediaMessage?.message?.from.user_id} />
           <div className='flex flex-col gap-1'>
             <span className='text-sm  text-gray-300'>
-              {activeMediaMessage?.from.name}
+              {activeMediaMessage?.message?.from.name}
             </span>
-            <span className='text-xs  dark:text-gray-400'>{activeMediaMessage?.sended_at ? dayjs(activeMediaMessage.sended_at).format('MM/DD/YYYY  hh:mm A') : ''}</span>
+            <span className='text-xs  dark:text-gray-400'>{activeMediaMessage?.message?.sended_at ? dayjs(activeMediaMessage.message?.sended_at).format('MM/DD/YYYY  hh:mm A') : ''}</span>
           </div>
 
         </div>

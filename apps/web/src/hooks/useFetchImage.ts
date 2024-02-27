@@ -1,6 +1,6 @@
 import { fetcher } from '@/utils/fetcher';
-import { MessageEntity } from '@server/modules/chat/entities/message.entity';
 import useSwr from 'swr';
+import { MessageMediaEntity } from '@server/modules/chat/entities/messageMedia.entity';
 
 interface IUseFetchMediaState {
   isLoading: boolean;
@@ -9,24 +9,20 @@ interface IUseFetchMediaState {
 }
 
 interface IUseFetchMediaArgs {
-  message: MessageEntity | undefined;
-  isFromMe: boolean | undefined;
-  receiver_id: string | undefined;
-  me_id: string | undefined;
+  message: MessageMediaEntity | undefined;
 }
 
 type IUseFetchImage = (args: IUseFetchMediaArgs) => IUseFetchMediaState;
 
-const useFetchImage: IUseFetchImage = ({ message, isFromMe, receiver_id, me_id }) => {
+const useFetchImage: IUseFetchImage = ({ message }) => {
   const fetch = async () => {
-    const user_id = isFromMe ? me_id : receiver_id;
-    const responseBlob = await fetcher(`api/file/get-attachment/${user_id}/${message?.media?.id}`, undefined, 'blob', 'static');
+    const responseBlob = await fetcher(`api/file/get-attachment/${message?.path}`, undefined, 'blob', 'static');
     const blobUrl = URL.createObjectURL(responseBlob);
     return blobUrl;
   };
 
   fetch();
-  const { data, error, isLoading } = useSwr(`${message?.media?.id}`, fetch);
+  const { data, error, isLoading } = useSwr(`${message?.id}`, fetch);
   return { imageUrl: data, isError: error, isLoading };
 };
 

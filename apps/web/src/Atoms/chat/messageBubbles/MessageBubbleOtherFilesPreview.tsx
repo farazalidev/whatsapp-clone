@@ -30,7 +30,7 @@ export const MessageBubbleOtherFilesPreview: FC<IMessageBubblePreview> = ({ mess
                     content: message?.content,
                     from: Me as any,
                     is_seen: false,
-                    media: message?.media,
+                    media: { ...message?.media as any, path: `${Me?.user_id}/${message?.media?.id}` },
                     messageType: message.messageType,
                     received_at: null,
                     seen_at: null,

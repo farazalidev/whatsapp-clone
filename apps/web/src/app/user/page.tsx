@@ -14,7 +14,7 @@ import MainErrorPage from '@/components/Misc/MainErrorPage';
 import SessionExpiredErrorPage from '@/components/Misc/SessionExpiredErrorPage';
 import useSocket from '@/hooks/useSocket';
 import { setUser } from '@/global/features/UserSlice';
-import useChats, { useChats2 } from '@/hooks/useChats';
+import { useChats2 } from '@/hooks/useChats';
 import useContacts from '@/hooks/useContacts';
 import ProfilePreview from '@/components/User/profilePreview/ProfilePreview';
 import { AnimatePresence, motion } from 'framer-motion';

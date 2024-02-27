@@ -35,6 +35,11 @@ export class ChatController {
     return response.data;
   }
 
+  @Get('get-all-media-messages/:chat_id')
+  async getAllMediaMessages(@GetUser() user: UserEntity, @Param() param: { chat_id: string }) {
+    return await this.chatSer.getAllMediaMessages(user.user_id, param.chat_id);
+  }
+
   // create a new Chat
   @Post('new-chat')
   async createChat(@GetUser() user: UserEntity, @Body() body: { chat_with: string; chat_id: string }) {

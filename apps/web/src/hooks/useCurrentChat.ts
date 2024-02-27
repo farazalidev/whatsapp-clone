@@ -11,8 +11,7 @@ const useCurrentChat = () => {
     if (chat) {
       return omitObject(chat, ['totalMessagesPages', 'messagesTake', 'hasPrev', 'hasNext', 'currentPage', 'count']);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [chat]);
   const raw_chat = getWawChat();
 
   const memoData = useMemo(() => {

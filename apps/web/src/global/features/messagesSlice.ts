@@ -76,13 +76,13 @@ export const messagesSlice = createSlice({
     },
 
     removeChat: (state, { payload }: { payload: { chat_id: string } }) => {
-      state.chats.filter((chat) => chat.chat_id !== payload.chat_id);
+      state.paginatedChats.data.filter((chat) => chat.id !== payload.chat_id);
     },
 
     // add a new message
 
     addNewMessage: (state, { payload }: { payload: addNewMessagePayload }) => {
-      const existedChat = state.chats.find((chat) => chat?.chat_id === payload.chat_id);
+      const existedChat = state.paginatedChats.data.find((chat) => chat?.id === payload.chat_id);
       if (existedChat) existedChat?.messages.push(payload.message);
       return;
     },
@@ -91,14 +91,14 @@ export const messagesSlice = createSlice({
 
     updateMessageStatus: (state, { payload }: { payload: updateMessagePayload }) => {
       const { chat_id, message_id, new_status } = payload;
-      const chatIndex = state.chats.findIndex((chat) => chat.chat_id === chat_id);
+      const chatIndex = state.paginatedChats.data.findIndex((chat) => chat.id === chat_id);
 
       if (chatIndex !== -1) {
-        const messageIndex = state.chats[chatIndex].messages.findIndex((message) => message.id === message_id);
+        const messageIndex = state.paginatedChats.data[chatIndex].messages.findIndex((message) => message.id === message_id);
 
         if (messageIndex !== -1) {
-          state.chats[chatIndex].messages[messageIndex] = {
-            ...state.chats[chatIndex].messages[messageIndex],
+          state.paginatedChats.data[chatIndex].messages[messageIndex] = {
+            ...state.paginatedChats.data[chatIndex].messages[messageIndex],
             ...new_status,
           };
         }
@@ -106,10 +106,10 @@ export const messagesSlice = createSlice({
     },
 
     updateMessageStatusBulk: (state, { payload }: { payload: UpdateMessageStatusBulk }) => {
-      const chatIndex = state.chats.findIndex((chat) => chat.chat_id === payload.chat_id);
+      const chatIndex = state.paginatedChats.data.findIndex((chat) => chat.id === payload.chat_id);
 
       if (chatIndex !== -1) {
-        state.chats[chatIndex].messages = state.chats[chatIndex].messages.map((message) => {
+        state.paginatedChats.data[chatIndex].messages = state.paginatedChats.data[chatIndex].messages.map((message) => {
           const updatedMessage = payload.messages.find((updated) => updated.id === message.id);
           return updatedMessage ? { ...message, ...updatedMessage } : message;
         });

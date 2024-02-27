@@ -24,7 +24,7 @@ export function useUserChatDetails(): getDetailsForChatPanelResponse {
 
   const { Me, contacts } = useSelector((state: RootState) => state.UserSlice);
 
-  const { chats_raw: chats } = useSelector((state: RootState) => state.messagesSlice);
+  const chats = useSelector((state: RootState) => state.messagesSlice.paginatedChats.data);
 
   const { id, started_from } = chatSlice;
 
