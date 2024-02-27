@@ -29,8 +29,13 @@ export const UserSlice = createSlice({
         ...payload,
       };
     },
+    addContacts: (state, { payload }: { payload: ContactEntity[] | undefined }) => {
+      if (payload) {
+        state.contacts = payload;
+      }
+    },
   },
 });
 
-export const { setUser } = UserSlice.actions;
+export const { setUser, addContacts } = UserSlice.actions;
 export const selectUser = (state: RootState) => state.UserSlice;

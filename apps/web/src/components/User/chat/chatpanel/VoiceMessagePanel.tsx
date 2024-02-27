@@ -12,7 +12,7 @@ import { RootState } from '@/global/store';
 import useCurrentChat from '@/hooks/useCurrentChat';
 import { addNewMessage } from '@/global/features/messagesSlice';
 import { toggleVoiceMessagePanelOverlay } from '@/global/features/overlaySlice';
-import { mainDb } from '@/utils/mainIndexedDB';
+import { mainDb } from '@/utils/indexedDb/mainIndexedDB';
 import { calculateChecksumPromise } from '../../../../utils/file/calculateFileChecksum';
 
 const VoiceMessagePanel = () => {

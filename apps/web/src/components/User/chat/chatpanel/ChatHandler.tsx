@@ -41,6 +41,7 @@ const ChatHandler: FC<ChatHandlerProps> = () => {
       dispatch(addNewMessage({ chat_id: id as string, message }));
     });
     socket.on('message_status', (messageStatus) => {
+      console.log("🚀 ~ socket.on ~ messageStatus:", messageStatus)
       dispatch(updateMessageStatus({ chat_id: messageStatus.chat_id, message_id: messageStatus.message_id, new_status: messageStatus.status }));
     });
     socket.on('update_message_status_bulk', (messages) => {

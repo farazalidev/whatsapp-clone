@@ -18,7 +18,7 @@ export class UserChatEntity {
   messages: MessageEntity[];
 
   @BeforeInsert()
-  async initMessages() {
+  async initMessages?() {
     this.messages = [];
   }
 }

@@ -1,6 +1,6 @@
 import { RootState } from '@/global/store';
 import { fetcher } from '@/utils/fetcher';
-import { mainDb } from '@/utils/mainIndexedDB';
+import { mainDb } from '@/utils/indexedDb/mainIndexedDB';
 import { MessageEntity } from '@server/modules/chat/entities/message.entity';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';

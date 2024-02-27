@@ -1,7 +1,7 @@
 import { fetcher } from '@/utils/fetcher';
 import useSwr from 'swr';
 import { MessageMediaEntity } from '@server/modules/chat/entities/messageMedia.entity';
-import { mainDb } from '@/utils/mainIndexedDB';
+import { mainDb } from '@/utils/indexedDb/mainIndexedDB';
 
 interface IUseFetchMediaState {
   isLoading: boolean;

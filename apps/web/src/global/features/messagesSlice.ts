@@ -4,6 +4,7 @@ import { messageStatus } from '@shared/types';
 import { MessageEntity } from '@server/modules/chat/entities/message.entity';
 import { UserChatEntity } from '@server/modules/chat/entities/userchat.entity';
 import { ChatsDto, PaginatedMessages } from '@server/modules/chat/DTO/chats.dto';
+import { chatPaginationConfig } from '@/config/chatPagination.cnfig';
 
 interface IMessagesSliceInitialState {
   chats: { chat_id: string; messages: MessageEntity[]; receiverFootPrints?: string }[];
@@ -51,6 +52,29 @@ export const messagesSlice = createSlice({
         chat.hasPrev = meta.hasPrevious;
         chat.totalMessagesPages = meta.totalPages;
       }
+    },
+
+    addPaginatedChat: (state, { payload }: { payload: UserChatEntity }) => {
+      const isChatExisted = state.paginatedChats.data.find((chat) => chat.id === payload.id);
+      console.log('🚀 ~ isChatExisted:', isChatExisted);
+
+      if (isChatExisted) {
+        return;
+      }
+
+      state.paginatedChats.data.push({
+        ...payload,
+        count: 1,
+        currentPage: 1,
+        hasNext: false,
+        hasPrev: false,
+        messagesTake: chatPaginationConfig.messagesTake,
+        totalMessagesPages: 1,
+      });
+    },
+
+    removePaginatedChat: (state, { payload }: { payload: { chat_id: string } }) => {
+      state.paginatedChats.data.filter((chat) => chat.id !== payload.chat_id);
     },
 
     // add new chat
@@ -118,5 +142,15 @@ export const messagesSlice = createSlice({
   },
 });
 
-export const { addNewChat, addNewMessage, updateMessageStatus, updateMessageStatusBulk, removeChat, addRawChats, initPaginatedChats, paginateChatMessages } =
-  messagesSlice.actions;
+export const {
+  addNewChat,
+  addNewMessage,
+  updateMessageStatus,
+  updateMessageStatusBulk,
+  removeChat,
+  addRawChats,
+  initPaginatedChats,
+  paginateChatMessages,
+  addPaginatedChat,
+  removePaginatedChat,
+} = messagesSlice.actions;

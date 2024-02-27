@@ -7,7 +7,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { expectedFileTypes } from '@shared/types';
 import AddNewFileButton from '@/Atoms/Button/AddNewFileButton';
 import { toast } from 'sonner';
-import { mainDb } from '@/utils/mainIndexedDB';
+import { mainDb } from '@/utils/indexedDb/mainIndexedDB';
 import { closeOverlay } from '@/global/features/overlaySlice';
 import { combineMediaWithMessages } from '@/utils/combineMediaWithMessages';
 import useCurrentChat from '@/hooks/useCurrentChat';

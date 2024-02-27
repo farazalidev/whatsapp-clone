@@ -4,7 +4,7 @@ import useSwr from 'swr';
 import { useDispatch } from 'react-redux';
 import { addNewChat, addRawChats, initPaginatedChats } from '@/global/features/messagesSlice';
 import { AxiosError } from 'axios';
-import { mainDb } from '@/utils/mainIndexedDB';
+import { mainDb } from '@/utils/indexedDb/mainIndexedDB';
 import { MessageEntity } from '@server/modules/chat/entities/message.entity';
 import { useEffect, useMemo, useState } from 'react';
 import { ChatsDto } from '@server/modules/chat/DTO/chats.dto';

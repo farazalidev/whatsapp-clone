@@ -15,6 +15,7 @@ import { SuccessResponseType } from '@server/Misc/ResponseType.type';
 import { UserChatEntity } from '@server/modules/chat/entities/userchat.entity';
 import { RootState, store } from '../../../../global/store';
 import { isIamReceiver } from '@/utils/isIamReceiver';
+import { ContactEntity } from '@server/modules/user/entities/contact.entity';
 
 const AddNewContactOverlay = () => {
   const dispatch = useDispatch();
@@ -25,16 +26,18 @@ const AddNewContactOverlay = () => {
     dispatch(toggleAddContactModal());
   };
 
-  const chatStartHandler = async (user_id: string) => {
-    // checking if the chat is started
-    const isChatStarted = await fetcher<SuccessResponseType<UserChatEntity>>(`chat/is-chat/${user_id}`);
+  const chatStartHandler = async (contact: ContactEntity) => {
+
+    // getting chat info from the server
+    const isChatStarted = await fetcher<SuccessResponseType<UserChatEntity>>(`chat/is-chat/${contact.contact.user_id}`);
 
     if (!isChatStarted.success) {
       /**
        * If the chat is not started with user
        * then loads user info from the contact
        */
-      dispatch(setUserChatEntity({ id: user_id, started_from: 'contact', receiver_id: user_id, chat_receiver: undefined }));
+
+      dispatch(setUserChatEntity({ id: contact.contact.user_id, started_from: 'contact', receiver_id: contact.contact.user_id, chat_receiver: contact.contact }));
       // closing overlay
       dispatch(setShow(false));
       // resetting overlay
@@ -87,7 +90,7 @@ const AddNewContactOverlay = () => {
                 for_other
                 user_id={contact.contact.user_id}
                 show_options={false}
-                onClick={() => chatStartHandler(contact.contact?.user_id)}
+                onClick={() => chatStartHandler(contact)}
               />
             ))
           ) : (

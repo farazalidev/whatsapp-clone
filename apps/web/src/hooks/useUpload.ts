@@ -1,5 +1,5 @@
 import { Mutation, fetcher } from '@/utils/fetcher';
-import { mainDb } from '@/utils/mainIndexedDB';
+import { mainDb } from '@/utils/indexedDb/mainIndexedDB';
 import { IPerformAction, IResumableUploadProgress, ResumableUpload } from '@/utils/resumeableUpload-beta';
 import { Dispatch, SetStateAction, useEffect, useState } from 'react';
 import { MessageEntity } from '@server/modules/chat/entities/message.entity';

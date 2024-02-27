@@ -7,16 +7,13 @@ import { clampString } from '@/utils/clamp';
 import ProgressBar from '@/Atoms/misc/ProgressBar';
 import useUpload from '@/hooks/useUpload';
 import { sendMessageFn } from '@/utils/sendMessageFn';
-import { useSelector } from 'react-redux';
-import { RootState } from '@/global/store';
 import { MessageEntity } from '@server/modules/chat/entities/message.entity';
 import useCurrentChat from '@/hooks/useCurrentChat';
-import { mainDb } from '@/utils/mainIndexedDB';
+import { mainDb } from '@/utils/indexedDb/mainIndexedDB';
 
 
 export const MessageBubbleOtherFilesPreview: FC<IMessageBubblePreview> = ({ message, messageLines, isFromMe, Me, socket }) => {
 
-    const chatSlice = useSelector((state: RootState) => state.ChatSlice);
 
     const { raw_chat } = useCurrentChat();
 
@@ -37,7 +34,7 @@ export const MessageBubbleOtherFilesPreview: FC<IMessageBubblePreview> = ({ mess
                     sended: false,
                     sended_at: new Date(),
                 };
-                const sended = await sendMessageFn({ chatSlice, message: messageToSend, receiver_id: chatSlice.receiver_id as string, socket });
+                const sended = await sendMessageFn({ message: messageToSend, socket });
                 if (sended) {
                     await mainDb.media.delete(message.media?.id as string);
                     await mainDb.mediaMessages.delete(message.id);
@@ -45,7 +42,7 @@ export const MessageBubbleOtherFilesPreview: FC<IMessageBubblePreview> = ({ mess
             }
         };
         return lastAction();
-    }, [Me, chatSlice, message, raw_chat, socket]);
+    }, [Me, message, raw_chat, socket]);
 
     const { state, cancel, download, retry } = useUpload({ isFromMe, message, lastAction });
 

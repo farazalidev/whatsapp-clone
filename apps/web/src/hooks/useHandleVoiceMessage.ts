@@ -1,5 +1,5 @@
 import { Mutation, fetcher } from '@/utils/fetcher';
-import { mainDb } from '@/utils/mainIndexedDB';
+import { mainDb } from '@/utils/indexedDb/mainIndexedDB';
 import { MessageEntity } from '@server/modules/chat/entities/message.entity';
 import { useEffect, useState } from 'react';
 import { UserEntity } from '@server/modules/user/entities/user.entity';
@@ -38,7 +38,7 @@ const useHandleVoiceMessage: IUseHandleVoiceMessage = ({ message, Me, ChatSlice,
             const formData = new FormData();
             formData.append('voice-message', media.file);
             await Mutation(`api/file/upload-voice-message`, formData, 'static', { headers: { file_name: media.id } });
-            await sendMessageFn({ chatSlice: ChatSlice, message, receiver_id, socket });
+            await sendMessageFn({ message, socket });
             await mainDb.offlineMedia.add({ file: media.file, id: media.id, mime: media.mime, type: media.type });
             await mainDb.media.delete(media.id);
             await mainDb.mediaMessages.delete(message?.id as string);

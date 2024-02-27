@@ -30,17 +30,25 @@ export class ChatService {
   }
 
   // create a new chat
-  async createAnewChat(user_id: string, chat_id: string, chat_with_id: string): Promise<ResponseType<{ chat_id: string }>> {
+  async createAnewChat(user_id: string, chat: UserChatEntity): Promise<ResponseType<{ chat_id: string }>> {
     try {
-      const chat_for = await this.userRepo.findOne({ where: { user_id } });
-      const chat_with = await this.userRepo.findOne({ where: { user_id: chat_with_id } });
+      // before creating a new chats make all checks, if chat is already existed
 
-      const newChat = this.UserChatRepo.create({
-        id: chat_id,
-        chat_for,
-        chat_with,
-        messages: [],
+      const isChatExistedAlready = await this.UserChatRepo.findOne({
+        where: { chat_for: { user_id: chat.chat_for.user_id }, chat_with: { user_id: chat.chat_with.user_id } },
       });
+
+      if (isChatExistedAlready) {
+        return {
+          success: false,
+          error: {
+            message: 'chat already existed',
+            statusCode: 400,
+          },
+        };
+      }
+
+      const newChat = this.UserChatRepo.create(chat);
       await this.UserChatRepo.save(newChat);
       return {
         success: true,
@@ -62,6 +70,8 @@ export class ChatService {
       queryBuilder
         .leftJoinAndSelect('chat.chat_for', 'chatFor')
         .leftJoinAndSelect('chat.chat_with', 'chatWith')
+        .leftJoinAndSelect('chatFor.profile', 'chatForProfile')
+        .leftJoinAndSelect('chatWith.profile', 'chatWithProfile')
         .leftJoinAndSelect('chat.messages', 'messages')
         .leftJoinAndSelect('messages.from', 'messageFrom')
         .leftJoinAndSelect('messages.media', 'media')

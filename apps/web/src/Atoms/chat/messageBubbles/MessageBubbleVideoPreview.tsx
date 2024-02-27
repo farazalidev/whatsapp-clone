@@ -12,13 +12,11 @@ import { useFetchMediaThumbnail } from "@/hooks/useFetchMediaThumbnail"
 import { RootState } from "@/global/store"
 import useCurrentChat from "@/hooks/useCurrentChat"
 import useSocket from "@/hooks/useSocket"
-import { mainDb } from "@/utils/mainIndexedDB"
+import { mainDb } from "@/utils/indexedDb/mainIndexedDB"
 import { sendMessageFn } from "@/utils/sendMessageFn"
 import { MessageEntity } from "@server/modules/chat/entities/message.entity"
 
 export const MessageBubbleVideoPreview: FC<IMessageBubblePreview> = ({ message, isFromMe }) => {
-
-  const chatSlice = useSelector((state: RootState) => state.ChatSlice);
 
   const { socket } = useSocket();
 
@@ -44,7 +42,7 @@ export const MessageBubbleVideoPreview: FC<IMessageBubblePreview> = ({ message, 
           sended: false,
           sended_at: new Date(),
         };
-        const sended = await sendMessageFn({ chatSlice, message: messageToSend, receiver_id: chatSlice.receiver_id as string, socket })
+        const sended = await sendMessageFn({ message: messageToSend, socket })
         if (sended) {
           await mainDb.media.delete(message.media?.id as string)
           await mainDb.mediaMessages.delete(message.id)
@@ -52,7 +50,7 @@ export const MessageBubbleVideoPreview: FC<IMessageBubblePreview> = ({ message, 
       }
     };
     return lastAction()
-  }, [Me, chatSlice, message, raw_chat, socket])
+  }, [Me, message, raw_chat, socket])
 
   const dimensions = useMemo(() => calculateScaledDimensions(message?.media?.width, message?.media?.height, 300, 400, 200, 300), [message?.media?.height, message?.media?.width])
 

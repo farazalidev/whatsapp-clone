@@ -13,7 +13,7 @@ import ProgressBar from '@/Atoms/misc/ProgressBar';
 import useCurrentChat from '@/hooks/useCurrentChat';
 import { MessageEntity } from '@server/modules/chat/entities/message.entity';
 import { sendMessageFn } from '@/utils/sendMessageFn';
-import { mainDb } from '@/utils/mainIndexedDB';
+import { mainDb } from '@/utils/indexedDb/mainIndexedDB';
 import useFetchImage from '@/hooks/useFetchImage';
 
 export const MessageBubbleImagePreview: FC<IMessageBubblePreview> = ({ message, isFromMe, ChatSlice, receiver_id, socket, Me, messageLines }) => {
@@ -42,7 +42,7 @@ export const MessageBubbleImagePreview: FC<IMessageBubblePreview> = ({ message, 
           sended: false,
           sended_at: new Date(),
         };
-        const sended = await sendMessageFn({ chatSlice: ChatSlice, message: messageToSend, receiver_id: ChatSlice?.receiver_id as string, socket });
+        const sended = await sendMessageFn({ message: messageToSend, socket });
         if (sended) {
           await mainDb.media.delete(message.media?.id as string);
           await mainDb.mediaMessages.delete(message.id);
@@ -50,7 +50,7 @@ export const MessageBubbleImagePreview: FC<IMessageBubblePreview> = ({ message, 
       }
     };
     return lastAction();
-  }, [Me, ChatSlice, message, raw_chat, socket]);
+  }, [Me, message, raw_chat, socket]);
 
 
   const dispatch = useDispatch();

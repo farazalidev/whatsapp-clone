@@ -42,8 +42,8 @@ export class ChatController {
 
   // create a new Chat
   @Post('new-chat')
-  async createChat(@GetUser() user: UserEntity, @Body() body: { chat_with: string; chat_id: string }) {
-    const response = await this.chatSer.createAnewChat(user.user_id, body.chat_id, body.chat_with);
+  async createChat(@GetUser() user: UserEntity, @Body() body: { chat: UserChatEntity }) {
+    const response = await this.chatSer.createAnewChat(user.user_id, body.chat);
     if (!isSuccess(response)) {
       throw new HttpException(response.error.message, response.error.statusCode);
     }

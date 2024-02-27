@@ -30,7 +30,7 @@ const UserSideBar = () => {
 
   const handleChat = async (chat_id: string) => {
 
-    const raw_chat = store.getState().messagesSlice.chats_raw.find(chat => chat.id === chat_id)
+    const raw_chat = store.getState().messagesSlice.paginatedChats.data.find(chat => chat.id === chat_id)
 
     const isMeReceiver = isIamReceiver(raw_chat?.chat_with.user_id, Me?.user_id)
 
