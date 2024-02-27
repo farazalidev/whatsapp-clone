@@ -1,6 +1,7 @@
 import { fetcher } from '@/utils/fetcher';
 import useSwr from 'swr';
 import { MessageMediaEntity } from '@server/modules/chat/entities/messageMedia.entity';
+import { mainDb } from '@/utils/mainIndexedDB';
 
 interface IUseFetchMediaState {
   isLoading: boolean;
@@ -16,13 +17,32 @@ type IUseFetchImage = (args: IUseFetchMediaArgs) => IUseFetchMediaState;
 
 const useFetchImage: IUseFetchImage = ({ message }) => {
   const fetch = async () => {
-    const responseBlob = await fetcher(`api/file/get-attachment/${message?.path}`, undefined, 'blob', 'static');
-    const blobUrl = URL.createObjectURL(responseBlob);
-    return blobUrl;
+    try {
+      if (message) {
+        const localMedia = await mainDb.offlineMedia.get(message?.id);
+        if (localMedia?.file) {
+          const localMediaURL = URL.createObjectURL(localMedia.file);
+          return localMediaURL;
+        } else {
+          const responseBlob = await fetcher(`api/file/get-attachment/${message?.path}`, undefined, 'blob', 'static');
+          const newLocalMediaFile = new File([responseBlob], message?.id, { type: responseBlob?.type });
+          await mainDb.offlineMedia.add({
+            file: newLocalMediaFile,
+            id: message?.id,
+            mime: message?.mime,
+            type: message?.type,
+          });
+          const blobUrl = URL.createObjectURL(responseBlob);
+          return blobUrl;
+        }
+      }
+      return;
+    } catch (error) {
+      console.log('🚀 ~ fetch ~ error:', error);
+    }
   };
 
-  fetch();
-  const { data, error, isLoading } = useSwr(`${message?.id}`, fetch);
+  const { data, error, isLoading } = useSwr(`${message?.id}`, fetch, { revalidateOnFocus: false, revalidateOnReconnect: false });
   return { imageUrl: data, isError: error, isLoading };
 };
 

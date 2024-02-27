@@ -4,8 +4,6 @@ import { IPerformAction, IResumableUploadProgress, ResumableUpload } from '@/uti
 import { Dispatch, SetStateAction, useEffect, useState } from 'react';
 import { MessageEntity } from '@server/modules/chat/entities/message.entity';
 import { extname } from 'path';
-import { useSelector } from 'react-redux';
-import { RootState } from '@/global/store';
 
 export type IUploadState = { progress?: number; isLoading?: boolean; uploadedFileSize?: number; isResumable: boolean | undefined; error?: boolean };
 
@@ -26,10 +24,6 @@ const useUpload: IUseUpload = ({ isFromMe, message, lastAction }) => {
   const [uploadManager, setUploadManager] = useState<ResumableUpload | undefined>();
 
   const [state, setState] = useState<IUploadState>();
-
-  const { receiver_id } = useSelector((state: RootState) => state.ChatSlice);
-
-  const { Me } = useSelector((state: RootState) => state.UserSlice);
 
   useEffect(() => {
     const getManager = async () => {
@@ -177,8 +171,7 @@ const useUpload: IUseUpload = ({ isFromMe, message, lastAction }) => {
     uploadManager?.cancel();
   };
   const download = () => {
-    const user_id = isFromMe ? Me?.user_id : receiver_id;
-    const downloadLink = `api/file/attachment-download/${user_id}/${message?.media?.id}`;
+    const downloadLink = `api/file/attachment-download/${message?.media?.path}`;
     const link = document.createElement('a');
     link.href = downloadLink;
     link.click();

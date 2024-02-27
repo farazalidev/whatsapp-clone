@@ -39,7 +39,6 @@ const GalleryOverlay: FC<IGalleryOverlay> = ({ onClose, show }) => {
 
         const mediaMessagesPathUrl = `chat/get-all-media-messages/${id}`;
         const messages = await fetcher<MessageMediaEntity[]>(mediaMessagesPathUrl, undefined, 'json', 'primary');
-        console.log("🚀 ~ getAllMediaOfChat ~ messages:", messages)
 
         for (let i = 0; i < messages.length; i++) {
 

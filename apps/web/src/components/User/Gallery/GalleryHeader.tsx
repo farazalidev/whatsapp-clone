@@ -13,11 +13,11 @@ interface IGalleryHeader {
 const GalleryHeader: FC<IGalleryHeader> = ({ onClose }) => {
 
   const { activeMediaMessage } = useSelector((state: RootState) => state.GallerySlice)
-  console.log("🚀 ~ activeMediaMessage:", activeMediaMessage)
 
   const onDownload = (message: MessageMediaEntity | null | undefined) => {
     const downloadLink = `api/file/attachment-download/${message?.path}`;
     const link = document.createElement('a');
+    console.log("🚀 ~ onDownload ~ downloadLink:", downloadLink)
     link.href = downloadLink;
     link.click();
   }

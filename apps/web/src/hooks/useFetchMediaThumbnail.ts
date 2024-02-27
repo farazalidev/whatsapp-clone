@@ -1,5 +1,6 @@
 import { RootState } from '@/global/store';
 import { fetcher } from '@/utils/fetcher';
+import { mainDb } from '@/utils/mainIndexedDB';
 import { MessageEntity } from '@server/modules/chat/entities/message.entity';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
@@ -20,17 +21,35 @@ export const useFetchMediaThumbnail: IUseFetchMediaThumbnail = ({ message, isFro
     const fetchThumbnail = async () => {
       // if message is video then
 
-      const user_id = isFromMe ? Me?.user_id : receiver_id;
+      if ((message?.messageType === 'video' || message?.messageType === 'image') && message.media) {
+        console.log(message);
 
-      if (message?.messageType === 'video' || message?.messageType === 'image') {
         try {
-          const ext = message.messageType === 'video' ? '.png' : message.media?.ext;
-          const path = `${message.media?.id}`;
-          const responseBlob = await fetcher(`api/file/get-attachment-thumbnail/${user_id}/${path}/sm`, undefined, 'blob', 'static', { ext });
-          const thumbnail = URL.createObjectURL(responseBlob);
-          setThumbnailState((prev) => {
-            return { ...prev, thumbnail };
-          });
+          const localThumbnail = await mainDb.offlineMedia.get(message?.media?.id);
+
+          if (localThumbnail?.file) {
+            const url = URL.createObjectURL(localThumbnail.file);
+            console.log('🚀 ~ fetchThumbnail ~ url:', url);
+            setThumbnailState((prev) => {
+              return { ...prev, thumbnail: url };
+            });
+          } else {
+            const ext = message.messageType === 'video' ? '.png' : message.media?.ext;
+            const path = `${message.media.path}`;
+            const responseBlob = await fetcher(`api/file/get-attachment-thumbnail/${path}/sm`, undefined, 'blob', 'static', { ext });
+            const mimeType = message.messageType === 'video' ? 'image/png' : message.media.mime;
+            console.log('🚀 ~ fetchThumbnail ~ responseBlob:', responseBlob);
+            await mainDb.offlineMedia.add({
+              file: new File([responseBlob], message.media.id, { type: responseBlob.type }),
+              id: message.media.id,
+              mime: mimeType,
+              type: 'image',
+            });
+            const thumbnail = URL.createObjectURL(responseBlob);
+            setThumbnailState((prev) => {
+              return { ...prev, thumbnail };
+            });
+          }
         } catch (error) {
           setThumbnailState((prev) => {
             return { ...prev, isLoading: false, error: true };

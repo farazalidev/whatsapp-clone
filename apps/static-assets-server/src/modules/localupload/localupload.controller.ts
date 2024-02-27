@@ -94,7 +94,9 @@ export class LocalUploadController {
         dotfiles: 'deny',
         maxAge: 300 * 1000,
       });
-    } catch (error) {}
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   @Post('upload-attachment-file')
@@ -229,7 +231,9 @@ export class LocalUploadController {
     try {
       const mediaMessages = await this.localUploadService.getAllMediaOfChatService(param.chat_id);
       res.json(mediaMessages);
-    } catch (error) {}
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   @Post('upload-chunk')
@@ -267,7 +271,9 @@ export class LocalUploadController {
           if (savedFileCheckSum !== req.headers.file_checksum) {
             await fsExtra.remove(chunksPath);
 
-            fs.rm(savedFilePath, { force: true }, (err) => {});
+            fs.rm(savedFilePath, { force: true }, (err) => {
+              console.log(err);
+            });
           }
         }
 

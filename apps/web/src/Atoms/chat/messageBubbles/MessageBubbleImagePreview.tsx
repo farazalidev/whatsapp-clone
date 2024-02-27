@@ -57,9 +57,9 @@ export const MessageBubbleImagePreview: FC<IMessageBubblePreview> = ({ message, 
 
   const { thumbnailState } = useFetchMediaThumbnail({ isFromMe, message });
 
-  const { imageUrl } = useFetchImage({ message: message?.media as any })
-
   const { cancel, download, retry, state } = useUpload({ isFromMe, message, lastAction });
+
+  const { imageUrl } = useFetchImage({ message: message?.media as any })
 
   const handleGalleryOverlay = (id: string | undefined) => {
     if (id && message?.media) {
@@ -87,11 +87,18 @@ export const MessageBubbleImagePreview: FC<IMessageBubblePreview> = ({ message, 
       width={dimensions.width}
       onClick={() => handleGalleryOverlay(message?.media?.id)}
     >
-      <span style={{ width: "100%", height: "100%", backgroundImage: `url(${thumbnailState.thumbnail})`, backgroundSize: "cover" }} >
-        {imageUrl ?
-          <Image key={message?.media?.id} src={imageUrl as string} loading="lazy" alt={''} fill />
-          : null}
-      </span>
+      {message?.messageType === "svg" ? <>
+        {console.log(imageUrl)}
+        <span style={{ width: "100%", height: "100%" }} >
+          {imageUrl ?
+            <Image key={message?.media?.id} src={imageUrl as string} loading="lazy" alt={''} fill />
+            : null}
+        </span></> :
+        <span style={{ width: "100%", height: "100%", backgroundImage: `url(${thumbnailState.thumbnail})`, backgroundSize: "cover" }} >
+          {imageUrl ?
+            <Image key={message?.media?.id} src={imageUrl as string} loading="lazy" alt={''} fill />
+            : null}
+        </span>}
 
       <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-b from-transparent to-gray-900"></div>
       {/* progress bar */}

@@ -63,8 +63,8 @@ export const MessageBubbleVideoPreview: FC<IMessageBubblePreview> = ({ message, 
   const { cancel, retry, state } = useUpload({ isFromMe, message, lastAction })
 
   const handleGalleryOverlay = (id: string | undefined) => {
-    if (id) {
-      dispatch(setActiveGalleryMedia(message as MessageEntity))
+    if (id && message?.media) {
+      dispatch(setActiveGalleryMedia({ ...message?.media, message: message }));
     }
     dispatch(toggleGalleryOverlay())
   }
@@ -95,11 +95,12 @@ export const MessageBubbleVideoPreview: FC<IMessageBubblePreview> = ({ message, 
           onRetryClick={handleRetry}
           onPauseClick={handlePause}
           onActionButtonClick={() => handleGalleryOverlay(message?.media?.id)}
+          isFromMe={isFromMe}
           className="absolute"
         />
 
         {/* thumbnail */}
-        {thumbnailState.thumbnail ? <span style={{ width: "100%", height: "100%", backgroundImage: `url(${thumbnailState.thumbnail})`, backgroundSize: "cover", backgroundPosition: "center" }} className="blur-sm" /> : null}
+        {thumbnailState.thumbnail ? <span style={{ width: "100%", height: "100%", backgroundImage: `url(${thumbnailState.thumbnail})`, backgroundSize: "cover", backgroundPosition: "center" }} className="" /> : null}
 
         <MediaMessageStatus isFromMe={isFromMe} message={message} key={message?.id} />
       </MediaMessageBubbleWrapper>}
