@@ -1,4 +1,5 @@
 import { MessageEntity } from '../../modules/chat/entities/message.entity';
+import { UserChatEntity } from '../../modules/chat/entities/userchat.entity';
 
 export interface PubSubMessage {
   message: MessageEntity;
@@ -10,7 +11,7 @@ export interface MessageJSON {
   sender: string;
   receiver: string;
   message: MessageEntity;
-  chat_id: string;
+  chat: UserChatEntity;
 }
 
 export interface unreadMessageJSON {

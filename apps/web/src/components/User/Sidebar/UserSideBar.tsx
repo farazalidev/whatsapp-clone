@@ -3,8 +3,6 @@ import React, { Suspense } from 'react';
 import SideBarHeader from './SideBarHeader';
 import SideBarSearch from './SideBarSearch';
 import EncryptionMessage from '@/Atoms/misc/EncryptionMessage';
-import SideBarOverlay from './SideBarOverlay';
-import { overlayContent } from './overlaycontent/overlaycontet';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState, store } from '@/global/store';
 import SideBarUserCard from './SideBarUseCard';
@@ -12,11 +10,10 @@ import Typography from '@/Atoms/Typography/Typography';
 import { setUserChatEntity } from '@/global/features/ChatSlice';
 import { isIamReceiver } from '../../../utils/isIamReceiver';
 import { setCurrentUserProfilePreview } from '@/global/features/ProfilePreviewSlice';
+import { getMaxDate } from '@/utils/getMaxDate';
 
 const UserSideBar = () => {
   const dispatch = useDispatch();
-
-  const { selectedOverlay, show } = useSelector((state: RootState) => state.sideBarOverlaySlice);
 
   const { id } = useSelector((state: RootState) => state.ChatSlice);
 
@@ -46,25 +43,27 @@ const UserSideBar = () => {
   };
   console.log(paginatedChats);
 
+  console.log(getMaxDate(paginatedChats.data[0]?.messages));
+
 
 
   return (
-    <div className="dark:bg-whatsapp-dark-primary_bg relative flex h-full flex-col overflow-x-hidden border-r-[2px] border-r-gray-300 bg-white dark:border-r-gray-600">
-      <SideBarOverlay show={show} heading={overlayContent[selectedOverlay].heading} Content={overlayContent[selectedOverlay].content} />
+    <>
+      <div className="dark:bg-whatsapp-dark-primary_bg relative flex h-full flex-col overflow-hidden border-r-[2px] border-r-gray-300 bg-white dark:border-r-gray-600">
 
       <div>
         <SideBarHeader />
         <SideBarSearch />
       </div>
       <Suspense fallback={<>loading...</>}>
+          <div className='overflow-y-auto scrollbar h-full'>
         {paginatedChats.data && data?.Me && paginatedChats.data.length !== 0 ? (
           paginatedChats.data?.map((chat) => {
               return (
                 <SideBarUserCard
                   key={chat.id}
                   name={isIamReceiver(chat.chat_with?.user_id, data?.Me!.user_id) ? chat.chat_for.name : chat?.chat_with.name}
-                  last_message={""}
-                  last_message_date={""}
+                  last_message={chat?.messages[0]}
                   active={chat.id === id}
                   for_other
                   user_id={isIamReceiver(chat.chat_with.user_id, Me?.user_id) ? chat.chat_for.user_id : chat.chat_with.user_id}
@@ -76,10 +75,11 @@ const UserSideBar = () => {
           ) : (
             <Typography className="flex h-full w-full place-items-center justify-center">No messages yet</Typography>
         )}
-
+          </div>
+        </Suspense>
         <EncryptionMessage />
-      </Suspense>
     </div>
+    </>
   );
 };
 

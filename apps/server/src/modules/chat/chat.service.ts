@@ -30,7 +30,7 @@ export class ChatService {
   }
 
   // create a new chat
-  async createAnewChat(user_id: string, chat: UserChatEntity): Promise<ResponseType<{ chat_id: string }>> {
+  async createAnewChat(user_id: string, chat: UserChatEntity): Promise<ResponseType<{ chat: UserChatEntity }>> {
     try {
       // before creating a new chats make all checks, if chat is already existed
 
@@ -49,11 +49,11 @@ export class ChatService {
       }
 
       const newChat = this.UserChatRepo.create(chat);
-      await this.UserChatRepo.save(newChat);
+      const savedChat = await this.UserChatRepo.save(newChat);
       return {
         success: true,
         successMessage: 'new chat created',
-        data: { chat_id: newChat.id },
+        data: { chat: savedChat },
       };
     } catch (error) {
       return {
@@ -82,7 +82,7 @@ export class ChatService {
             .from(MessageEntity, 'messages')
             .where('messages.chat = chat.id')
             .groupBy('messages.id')
-            .orderBy('MAX(messages.sended_at)', 'DESC')
+            .orderBy('messages.sended_at', 'DESC')
             .skip((query.messagesPage - 1) * query.messagesTake)
             .limit(query.messagesTake)
             .getQuery();

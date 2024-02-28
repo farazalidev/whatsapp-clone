@@ -33,9 +33,11 @@ export class UserGateway implements OnGatewayDisconnect, OnGatewayConnection, On
   async handleDisconnect(client: ISocket) {
     await this.onlineUsersService.removeUser(client.user.user_id, (err, removed) => {
       if (err) {
+        console.log('🚀 ~ UserGateway ~ awaitthis.onlineUsersService.removeUser ~ err:', err);
         throw new WsIoException('Error', 500);
       }
       if (removed) {
+        console.log('🚀 ~ UserGateway ~ awaitthis.onlineUsersService.removeUser ~ removed:', removed);
         console.log('user removed from online users list');
       }
     });

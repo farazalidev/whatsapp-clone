@@ -49,7 +49,7 @@ const AddNewContactOverlay = () => {
        * then loads the chat and go to the chat panel
        * **/
 
-      const raw_chat = store.getState().messagesSlice.chats_raw.find((chat) => chat.id === isChatStarted.data?.id);
+      const raw_chat = store.getState().messagesSlice.paginatedChats.data.find((chat) => chat.id === isChatStarted.data?.id);
       const { Me } = store.getState().UserSlice;
 
       const isMeReceiver = isIamReceiver(raw_chat?.chat_with.user_id, Me?.user_id);

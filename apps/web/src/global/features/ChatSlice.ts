@@ -15,6 +15,8 @@ export interface IChatSlice {
   receiver_id: string | undefined;
 
   chat_receiver: UserEntity | undefined;
+
+  status?: 'pending' | 'created';
 }
 
 const initialState: IChatSlice = {

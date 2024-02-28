@@ -17,19 +17,22 @@ export class MessageConsumer implements OnModuleInit {
   ) {}
   async onModuleInit() {
     // saving messages to DB
-    await this.consumerService?.consume({
-      config: { groupId: 'messages-consumer' },
-      topic: { topic: 'MESSAGE', fromBeginning: true },
-      onMessage: async (data) => {
-        const message = JSON.parse(data.value as unknown as string) as unknown as MessageJSON;
-        // TODO: add caching from redis
-        const chat = await this.UserChatRepo.findOne({ where: { id: message.chat_id } });
-        if (!chat.messages || chat.messages.length === 0) {
-          chat.messages = [];
-        }
-        chat.messages.push({ ...message.message, sended: true });
-        await this.UserChatRepo.save(chat);
-      },
-    });
+   try {
+     await this.consumerService?.consume({
+       config: { groupId: 'messages-consumer' },
+       topic: { topic: 'MESSAGE', fromBeginning: false },
+       onMessage: async (data) => {
+         const message = JSON.parse(data.value as unknown as string) as unknown as MessageJSON;
+         const newMessages = this.UserMessageRepo.create({
+           ...message.message,
+           chat: message.chat,
+           sended: true,
+         });
+         await this.UserMessageRepo.save(newMessages);
+       },
+     });
+   } catch (error) {
+     console.log('🚀 ~ MessageConsumer ~ onModuleInit ~ error:', error);
+   }
   }
 }

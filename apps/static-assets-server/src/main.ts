@@ -19,5 +19,5 @@ async function bootstrap() {
   Logger.log(`🚀 Application is running on: http://localhost:${port}/${globalPrefix}`);
 }
 
-bootstrap();
-// ClusterService.clusterize(bootstrap);
+// bootstrap();
+ClusterService.clusterize(bootstrap);

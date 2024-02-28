@@ -18,6 +18,7 @@ import { Repository } from 'typeorm';
 import { UserEntity } from '../modules/user/entities/user.entity';
 import { ChatService } from '../modules/chat/chat.service';
 import { isSuccess } from '../utils/isSuccess.typeguard';
+import { UserChatEntity } from '../modules/chat/entities/userchat.entity';
 
 // Define a helper function to extract event names
 
@@ -96,12 +97,12 @@ export class MessageGateway implements OnGatewayInit {
     });
 
     // processing message
-    const processedMessage = await this.messageProcessor(newMessage, payload.chat_id, payload.receiverId);
+    const processedMessage = await this.messageProcessor(newMessage, payload.chat, payload.receiverId);
 
     const messageJSON: MessageJSON = {
       sender: client?.user.user_id,
       receiver: payload.receiverId,
-      chat_id: payload.chat_id,
+      chat: payload.chat,
       message: { ...processedMessage.message, ...processedMessage.messageStatus.status },
     };
 
@@ -124,7 +125,7 @@ export class MessageGateway implements OnGatewayInit {
     }
 
     // emitting message to the room side
-    client.to(payload.chat_id).emit('newMessage', newMessage);
+    client.to(payload.chat.id).emit('newMessage', newMessage);
   }
 
   @onEvent('typing')
@@ -156,7 +157,7 @@ export class MessageGateway implements OnGatewayInit {
    */
   private async messageProcessor(
     message: MessageEntity,
-    chat_id: string,
+    chat: UserChatEntity,
     receiver_id: string,
   ): Promise<{
     message: MessageEntity;
@@ -164,7 +165,7 @@ export class MessageGateway implements OnGatewayInit {
     isUserInTheRoom: boolean;
     messageStatus: IMessageStatus;
   }> {
-    const isReceiverInTheRoom = await this.roomService.isUserInTheRoom(chat_id, receiver_id);
+    const isReceiverInTheRoom = await this.roomService.isUserInTheRoom(chat.id, receiver_id);
 
     // checking user online availability
     let receiver_pid;
@@ -182,12 +183,16 @@ export class MessageGateway implements OnGatewayInit {
       const received_at = new Date();
       // message received by the receiver
       message.received_at = received_at;
-      this.server.emit(`unread_message_${receiver_id}`, { chat_id, message });
+      this.server.emit(`unread_message_${receiver_id}`, { chat_id: chat.id, message });
       return {
         isUserInTheRoom: isReceiverInTheRoom,
         isUserOnline: Boolean(await receiver_pid),
         message,
-        messageStatus: { chat_id, message_id: message.id, status: { is_seen: false, received_at, seen_at: null, sended_at: message.sended_at, sended: false } },
+        messageStatus: {
+          chat_id: chat.id,
+          message_id: message.id,
+          status: { is_seen: false, received_at, seen_at: null, sended_at: message.sended_at, sended: false },
+        },
       };
     }
 
@@ -203,7 +208,11 @@ export class MessageGateway implements OnGatewayInit {
         message,
         isUserInTheRoom: isReceiverInTheRoom,
         isUserOnline: Boolean(receiver_pid),
-        messageStatus: { chat_id, message_id: message.id, status: { is_seen: true, received_at, seen_at, sended_at: message.sended_at, sended: false } },
+        messageStatus: {
+          chat_id: chat.id,
+          message_id: message.id,
+          status: { is_seen: true, received_at, seen_at, sended_at: message.sended_at, sended: false },
+        },
       };
     }
 
@@ -214,7 +223,7 @@ export class MessageGateway implements OnGatewayInit {
         isUserInTheRoom: false,
         isUserOnline: false,
         messageStatus: {
-          chat_id,
+          chat_id: chat.id,
           message_id: message.id,
           status: { is_seen: false, received_at: null, seen_at: null, sended_at: message.sended_at, sended: false },
         },

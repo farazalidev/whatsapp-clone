@@ -33,7 +33,10 @@ export const start_newChat: IStartNewChat = async (args) => {
 
       store.dispatch(addPaginatedChat(newChat));
 
-      const response = await Mutation<{ chat: UserChatEntity }, SuccessResponseType<{ chat_id: string }>>('chat/new-chat', {
+      store.dispatch(
+        setUserChatEntity({ id: chat_id, started_from: 'chat', receiver_id: chat_receiver.user_id, chat_receiver: chat_receiver, status: 'pending' }),
+      );
+      const response = await Mutation<{ chat: UserChatEntity }, SuccessResponseType<{ chat: UserChatEntity }>>('chat/new-chat', {
         chat: newChat,
       });
 
@@ -42,14 +45,18 @@ export const start_newChat: IStartNewChat = async (args) => {
         if (pendingMessages?.messages) {
           await Promise.all(
             pendingMessages?.messages.map(async (message) => {
-              const newsSocket = createSocket();
-              await sendMessage({ chat_id, message, receiver_id: chat_receiver.user_id, socket: newsSocket.socket });
+              if (response.data?.chat) {
+                const newsSocket = createSocket();
+                return await sendMessage({ chat: response.data?.chat, message, receiver_id: chat_receiver.user_id, socket: newsSocket.socket });
+              }
+              toast.error('Failed to Send messages', { position: 'bottom-left' });
+              store.dispatch(removePaginatedChat({ chat_id }));
             }),
           );
-          store.dispatch(
-            setUserChatEntity({ id: response.data?.chat_id, started_from: 'chat', receiver_id: chat_receiver.user_id, chat_receiver: chat_receiver }),
-          );
         }
+        store.dispatch(
+          setUserChatEntity({ id: chat_id, started_from: 'chat', receiver_id: chat_receiver.user_id, chat_receiver: chat_receiver, status: 'created' }),
+        );
         toast.success('started new chat', { position: 'top-left' });
       }
 

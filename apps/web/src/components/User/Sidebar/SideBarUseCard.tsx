@@ -4,11 +4,12 @@ import { cn } from '@/utils/cn';
 import SideBarUserCardOptions from './SideBarUserCardOptions';
 import UnreadCount from './UnreadCount';
 import { clampString } from '@/utils/clamp';
+import { MessageEntity } from '@server/modules/chat/entities/message.entity';
+import { getDayOrFormattedDate } from '@/utils/getDateOrFormat';
 
 interface SideBarUserCardProps extends AvatarProps {
   name: string;
-  last_message?: string;
-  last_message_date?: string;
+  last_message?: MessageEntity;
   show_options?: boolean;
   active?: boolean;
   onClick?: () => void;
@@ -18,7 +19,6 @@ interface SideBarUserCardProps extends AvatarProps {
 const SideBarUserCard: FC<SideBarUserCardProps> = ({
   name,
   last_message,
-  last_message_date,
   show_options = true,
   active = false,
   onClick,
@@ -26,6 +26,7 @@ const SideBarUserCard: FC<SideBarUserCardProps> = ({
   user_id,
   for_other,
 }) => {
+  console.log("🚀 ~ last_message:", last_message)
   return (
     <div
       onClick={onClick}
@@ -43,12 +44,12 @@ const SideBarUserCard: FC<SideBarUserCardProps> = ({
         <div className="flex flex-col justify-evenly">
           <span className="w-[50%] overflow-ellipsis whitespace-nowrap text-sm md:text-base">{clampString(name, 25)}</span>
           <span className=" w-full text-ellipsis text-xs font-extralight text-gray-600 dark:text-gray-400 md:text-sm">
-            {last_message ? clampString(last_message, 25) : null}
+            {last_message ? clampString(last_message?.content, 25) : null}
           </span>
         </div>
         {show_options ? (
           <span className="relative flex h-[60%] flex-col gap-3">
-            <div className="text-xs font-extralight text-gray-600 dark:text-gray-400">{last_message_date}</div>
+            <div className="text-xs font-extralight text-gray-600 dark:text-gray-400">{last_message?.sended_at ? getDayOrFormattedDate(last_message?.sended_at) : null}</div>
             <div className="relative flex h-full place-items-center justify-evenly overflow-hidden">
               <span className="absolute left-[50%] transition-all duration-300 group-hover:left-0">
                 {unread_message_count ? <UnreadCount count={unread_message_count} /> : null}
