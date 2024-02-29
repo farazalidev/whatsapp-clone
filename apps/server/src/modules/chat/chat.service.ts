@@ -64,6 +64,7 @@ export class ChatService {
   }
 
   async getUserChats(user_id: string, query: ChatsParamsDto): Promise<ResponseType<ChatsDto>> {
+    console.log('🚀 ~ ChatService ~ getUserChats ~ query:', query);
     try {
       const queryBuilder = this.UserChatRepo.createQueryBuilder('chat');
 
@@ -72,28 +73,24 @@ export class ChatService {
         .leftJoinAndSelect('chat.chat_with', 'chatWith')
         .leftJoinAndSelect('chatFor.profile', 'chatForProfile')
         .leftJoinAndSelect('chatWith.profile', 'chatWithProfile')
-        .leftJoinAndSelect('chat.messages', 'messages')
-        .leftJoinAndSelect('messages.from', 'messageFrom')
-        .leftJoinAndSelect('messages.media', 'media')
-        .orWhere((subQuery) => {
-          const subAlias = subQuery
-            .subQuery()
-            .select('messages.id', 'messages')
-            .from(MessageEntity, 'messages')
-            .where('messages.chat = chat.id')
-            .groupBy('messages.id')
-            .orderBy('messages.sended_at', 'DESC')
-            .skip((query.messagesPage - 1) * query.messagesTake)
-            .limit(query.messagesTake)
-            .getQuery();
-          return `messages.id IN ${subAlias}`;
-        })
         .where('(chatFor.user_id = :user_id OR chatWith.user_id = :user_id)', { user_id })
         .loadRelationCountAndMap('messages.count', 'chat.messages')
         .skip((query.page - 1) * query.take)
         .take(query.take);
 
       const chats = (await queryBuilder.getMany()) as unknown as ChatsExtendedWithCount[];
+
+      for (const chat of chats) {
+        chat.messages = await this.UserMessageRepo.createQueryBuilder('messages')
+          .leftJoinAndSelect('messages.chat', 'chat')
+          .leftJoinAndSelect('messages.from', 'messageFrom')
+          .leftJoinAndSelect('messages.media', 'media')
+          .where('chat.id = :chat_id', { chat_id: chat.id })
+          .orderBy('messages.sended_at', query.order)
+          .skip((query.messagesPage - 1) * query.messagesTake)
+          .take(query.messagesTake)
+          .getMany();
+      }
 
       if (!chats) {
         return {

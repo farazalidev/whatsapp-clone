@@ -1,4 +1,4 @@
-import React, { FC, useLayoutEffect, useRef, useState } from 'react';
+import React, { FC } from 'react';
 import { MessageEntity } from '@server/modules/chat/entities/message.entity';
 import { MessageBubbleImagePreview } from './MessageBubbleImagePreview';
 import { MessageBubbleVideoPreview } from './MessageBubbleVideoPreview';
@@ -20,31 +20,20 @@ export interface IMessageBubble {
 }
 
 const MessageBubble: FC<IMessageBubble> = ({ isFromMe, message, ...props }) => {
-  const [messageLines, setMessageLines] = useState<number>(1);
-
-  const messageRef = useRef<HTMLSpanElement | null>(null);
-
-  useLayoutEffect(() => {
-    if (messageRef.current) {
-      const lines = Math.ceil(messageRef.current.clientHeight / parseFloat(getComputedStyle(messageRef.current).lineHeight || '1.2em'));
-      setMessageLines(lines);
-    }
-  }, [message]);
-
   return (
     <>
       {message?.messageType === 'image' || message?.messageType === 'svg' ? (
-        <MessageBubbleImagePreview isFromMe={isFromMe} message={message} key={message?.id} messageLines={messageLines} {...props} />
+        <MessageBubbleImagePreview isFromMe={isFromMe} message={message} key={message?.id} {...props} />
       ) : message?.messageType === 'video' ? (
-        <MessageBubbleVideoPreview isFromMe={isFromMe} message={message} key={message?.id} messageLines={messageLines} {...props} />
+          <MessageBubbleVideoPreview isFromMe={isFromMe} message={message} key={message?.id} {...props} />
       ) : message?.messageType === 'text' ? (
-        <TextMessagePreview isFromMe={isFromMe} message={message} messageLines={messageLines} {...props} />
+            <TextMessagePreview isFromMe={isFromMe} message={message} {...props} />
       ) : message?.messageType === 'audio' ? (
-        <MessageBubbleVoicePreview isFromMe={isFromMe} message={message} key={message?.id} messageLines={messageLines} {...props} />
+              <MessageBubbleVoicePreview isFromMe={isFromMe} message={message} key={message?.id} {...props} />
             ) : message?.messageType === 'pdf' ? (
-              <MessageBubblePdfPreview isFromMe={isFromMe} message={message} key={message.id} messageLines={messageLines} {...props} />
+                <MessageBubblePdfPreview isFromMe={isFromMe} message={message} key={message.id} {...props} />
       ) : message?.messageType === 'others' ? (
-        <MessageBubbleOtherFilesPreview isFromMe={isFromMe} message={message} key={message.id} messageLines={messageLines} {...props} />
+                  <MessageBubbleOtherFilesPreview isFromMe={isFromMe} message={message} key={message.id} {...props} />
       ) : null}
     </>
   );

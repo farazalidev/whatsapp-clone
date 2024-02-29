@@ -7,23 +7,24 @@ import { addNewMessage, updateMessageStatus, updateMessageStatusBulk } from '@/g
 import useCurrentChat from '@/hooks/useCurrentChat';
 import usePaginatedMessages from '@/hooks/usePaginatedMessages';
 import Image from 'next/image';
+import { sizeChanged } from '@/utils/sizeChanged';
 
 interface ChatHandlerProps { }
 
 const ChatHandler: FC<ChatHandlerProps> = () => {
-  const [mounted, setMounted] = useState(false)
-
   const { socket } = useSocket();
 
   const dispatch = useDispatch();
 
   const Me = useSelector((state: RootState) => state.UserSlice.Me);
 
-  const divRef = useRef<HTMLDivElement>(null);
-
-  const containerRef = useRef<HTMLDivElement>(null)
+  const bottomRef = useRef<HTMLDivElement>(null);
 
   const { chat, id, } = useCurrentChat()
+
+  const [scrolled, setScrolled] = useState(false)
+
+  const [currentMessagesSize, setCurrentMessagesSize] = useState<number | undefined>(chat?.messages.length)
 
   useEffect(() => {
 
@@ -41,7 +42,6 @@ const ChatHandler: FC<ChatHandlerProps> = () => {
       dispatch(addNewMessage({ chat_id: id as string, message }));
     });
     socket.on('message_status', (messageStatus) => {
-      console.log("🚀 ~ socket.on ~ messageStatus:", messageStatus)
       dispatch(updateMessageStatus({ chat_id: messageStatus.chat_id, message_id: messageStatus.message_id, new_status: messageStatus.status }));
     });
     socket.on('update_message_status_bulk', (messages) => {
@@ -53,21 +53,23 @@ const ChatHandler: FC<ChatHandlerProps> = () => {
     };
   }, [socket, dispatch, id]);
 
-  // scroll to bottom
   useEffect(() => {
-    if (divRef.current) {
-      divRef.current.scrollIntoView({ behavior: 'instant', block: 'nearest' });
+    if (bottomRef) {
+      bottomRef.current?.scrollIntoView()
+      setScrolled(true)
     }
-  }, []);
+  }, [bottomRef, id]);
 
   useEffect(() => {
-    if (divRef) {
-      // divRef.current?.scrollIntoView({ behavior: 'instant', block: 'nearest' });
-    }
-  }, [chat?.messages]);
+    sizeChanged(currentMessagesSize, chat?.messages.length, (newSize, changedSize) => {
+      setCurrentMessagesSize(newSize)
+      if (bottomRef && changedSize && changedSize < 2) {
+        bottomRef.current?.scrollIntoView()
+      }
+    })
+  }, [chat?.messages, currentMessagesSize])
 
   const { receiver_id } = useSelector((state: RootState) => state.ChatSlice);
-
 
   const chatSlice = useSelector((state: RootState) => state.ChatSlice);
 
@@ -79,33 +81,26 @@ const ChatHandler: FC<ChatHandlerProps> = () => {
     if (observer.current) observer.current.disconnect()
 
     observer.current = new IntersectionObserver(entries => {
-      if (entries[0].isIntersecting && meta.hasNext && mounted) {
+      if (entries[0].isIntersecting && meta.hasNext && scrolled) {
+
         paginate()
       }
     })
     if (node) observer.current.observe(node)
-  }, [meta.hasNext, mounted, paginate, state.isLoading])
+  }, [meta.hasNext, paginate, scrolled, state.isLoading])
 
-  useEffect(() => {
-    setMounted(true)
-  }, [])
 
   return (
     <>
-      <div ref={containerRef} className="flex h-full w-full flex-col gap-1 overflow-y-scroll px-7 py-2 scrollbar">
+      <div className="flex h-full w-full flex-col gap-1 overflow-y-scroll overflow-x-hidden px-7 py-2 scrollbar bottom-[3.7%]">
         {state.isLoading ?
           <div className='w-full text-xl flex justify-center place-items-center'>
             <Image src={'/icons/spinner.svg'} height={40} width={40} alt='loading spinner' />
           </div> : null}
         {chat?.messages
-          ? [...chat.messages]
-            ?.sort((a, b) => {
-              const dateA = new Date(a?.sended_at)?.getTime();
-              const dateB = new Date(b?.sended_at)?.getTime();
-              return dateA - dateB;
-            })
+          ? [...chat.messages].reverse()
             .map((message, index) => {
-              if (index === Math.ceil(chat.messages.length * .10)) {
+              if (index === Math.ceil(chat.messages.length * .1)) {
                 return (
                   <MessagePreview ref={lastMessageElement} isFromMe={Me?.user_id === message?.from?.user_id} message={message} key={message?.id} ChatSlice={chatSlice} receiver_id={receiver_id} socket={socket} Me={Me} />
 
@@ -117,7 +112,7 @@ const ChatHandler: FC<ChatHandlerProps> = () => {
               }
             })
           : null}
-        <div ref={divRef} />
+        <div ref={bottomRef} ></div>
       </div>
     </>
   );

@@ -11,7 +11,7 @@ import { MessageEntity } from '@server/modules/chat/entities/message.entity';
 import useCurrentChat from '@/hooks/useCurrentChat';
 import { mainDb } from '@/utils/indexedDb/mainIndexedDB';
 
-export const MessageBubblePdfPreview: FC<IMessageBubblePreview> = ({ message, messageLines, isFromMe, Me, socket }) => {
+export const MessageBubblePdfPreview: FC<IMessageBubblePreview> = ({ message, isFromMe, Me, socket }) => {
 
     const { raw_chat } = useCurrentChat();
 
@@ -96,7 +96,7 @@ export const MessageBubblePdfPreview: FC<IMessageBubblePreview> = ({ message, me
             </div>
             {isFromMe ? (
                 <div className="flex-1/3 relative h-[30%]">
-                    <MediaMessageStatus isFromMe={isFromMe} message={message} messageLines={messageLines} />
+                    <MediaMessageStatus isFromMe={isFromMe} message={message} />
                 </div>
             ) : null}
         </div>

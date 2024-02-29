@@ -5,12 +5,11 @@ import SideBarSearch from './SideBarSearch';
 import EncryptionMessage from '@/Atoms/misc/EncryptionMessage';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState, store } from '@/global/store';
-import SideBarUserCard from './SideBarUseCard';
+import SideBarUserCard from './SideBarUserCard';
 import Typography from '@/Atoms/Typography/Typography';
 import { setUserChatEntity } from '@/global/features/ChatSlice';
 import { isIamReceiver } from '../../../utils/isIamReceiver';
 import { setCurrentUserProfilePreview } from '@/global/features/ProfilePreviewSlice';
-import { getMaxDate } from '@/utils/getMaxDate';
 
 const UserSideBar = () => {
   const dispatch = useDispatch();
@@ -41,9 +40,6 @@ const UserSideBar = () => {
       dispatch(setCurrentUserProfilePreview(undefined))
     }
   };
-  console.log(paginatedChats);
-
-  console.log(getMaxDate(paginatedChats.data[0]?.messages));
 
 
 
@@ -59,18 +55,18 @@ const UserSideBar = () => {
           <div className='overflow-y-auto scrollbar h-full'>
         {paginatedChats.data && data?.Me && paginatedChats.data.length !== 0 ? (
           paginatedChats.data?.map((chat) => {
-              return (
+            return chat.messages.length > 0 ? (
                 <SideBarUserCard
                   key={chat.id}
                   name={isIamReceiver(chat.chat_with?.user_id, data?.Me!.user_id) ? chat.chat_for.name : chat?.chat_with.name}
-                  last_message={chat?.messages[0]}
+                  messages={chat.messages}
                   active={chat.id === id}
                   for_other
                   user_id={isIamReceiver(chat.chat_with.user_id, Me?.user_id) ? chat.chat_for.user_id : chat.chat_with.user_id}
                   onClick={() => handleChat(chat.id)}
                   unread_message_count={0}
                 />
-              );
+              ) : null;
             })
           ) : (
             <Typography className="flex h-full w-full place-items-center justify-center">No messages yet</Typography>

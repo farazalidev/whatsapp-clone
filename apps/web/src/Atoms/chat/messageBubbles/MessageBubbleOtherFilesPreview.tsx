@@ -12,7 +12,7 @@ import useCurrentChat from '@/hooks/useCurrentChat';
 import { mainDb } from '@/utils/indexedDb/mainIndexedDB';
 
 
-export const MessageBubbleOtherFilesPreview: FC<IMessageBubblePreview> = ({ message, messageLines, isFromMe, Me, socket }) => {
+export const MessageBubbleOtherFilesPreview: FC<IMessageBubblePreview> = ({ message, isFromMe, Me, socket }) => {
 
 
     const { raw_chat } = useCurrentChat();
@@ -94,7 +94,7 @@ export const MessageBubbleOtherFilesPreview: FC<IMessageBubblePreview> = ({ mess
             </div>
             {isFromMe ? (
                 <div className="flex-1/3 relative h-[30%]">
-                    <MediaMessageStatus isFromMe={isFromMe} message={message} messageLines={messageLines} />
+                    <MediaMessageStatus isFromMe={isFromMe} message={message} />
                 </div>
             ) : null}
         </div>

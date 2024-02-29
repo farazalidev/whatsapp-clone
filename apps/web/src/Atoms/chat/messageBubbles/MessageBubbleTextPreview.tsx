@@ -1,9 +1,23 @@
-import { IMessageBubblePreview } from "@/Atoms/types/messageBubble.types"
-import OptionIcon from "@/components/User/Sidebar/OptionIcon"
-import dayjs from "dayjs"
-import { FC } from "react"
+import { IMessageBubblePreview } from '@/Atoms/types/messageBubble.types';
+import dayjs from 'dayjs';
+import { FC, useState } from 'react';
+import MessageStatus from './MessageStatus';
+import { clampString } from '@/utils/clamp';
 
-export const TextMessagePreview: FC<IMessageBubblePreview> = ({ message, messageLines, isFromMe }) => {
+export const TextMessagePreview: FC<IMessageBubblePreview> = ({ message, isFromMe }) => {
+
+  const words = 320
+  const [readMoreState, setReadMoreState] = useState<{ shouldShow: boolean; readMore: boolean }>({
+    readMore: false,
+    shouldShow: (message?.content?.length as number) > words ? true : false,
+  });
+
+  const handleReadMore = () => {
+    setReadMoreState((prev) => {
+      return { readMore: !prev.readMore, shouldShow: prev.shouldShow };
+    });
+  };
+
   return (
     <span
       className={`relative flex h-fit w-fit max-w-[80%] justify-between rounded-md px-2 py-1 lg:max-w-[40%] ${isFromMe
@@ -11,30 +25,36 @@ export const TextMessagePreview: FC<IMessageBubblePreview> = ({ message, message
         : 'bg-whatsapp-misc-other_message_bg_light dark:bg-whatsapp-misc-other_message_bg_dark dark:text-whatsapp-dark-text text-whatsapp-light-text'
         }`}
     >
-      <span style={{ whiteSpace: 'pre-wrap' }} className={`w-fit max-w-full break-words text-balance ${messageLines && messageLines > 2 ? 'pb-2' : ''}`}>
-        {message?.content}
-      </span>
-      {isFromMe ? (
-        <span className={`flex place-items-center justify-evenly gap-1 pl-1  ${messageLines && messageLines > 2 ? 'absolute bottom-0 right-0 mt-4' : 'place-self-end'}`}>
-          <span className="mt-1 flex whitespace-nowrap text-[10px] text-white text-opacity-70">{message?.sended_at ? dayjs(message.sended_at).format('hh:mm A') : ''}</span>
-          <span className="flex place-items-center ">
-            {message?.seen_at ? (
-              // Render the icon for seen messages
-              <OptionIcon src="/icons/seen.svg" height={18} width={18} />
-            ) : message?.received_at ? (
-              // Render the icon for received messages
-              <OptionIcon src="/icons/sended.svg" height={18} width={18} />
-            ) : message?.sended ? (
-              // Render the icon for sent messages
-              <OptionIcon src="/icons/msg-check.svg" height={18} width={18} />
+      <div style={{ whiteSpace: 'pre-wrap' }} className={`w-fit max-w-full text-balance break-words pr-1`}>
+        {message?.content ? (
+          readMoreState.shouldShow ? (
+            readMoreState.readMore ? (
+              <span>
+                <span>{message.content}</span>
+                <span className="text-sky-500 cursor-pointer" onClick={handleReadMore}>show less</span>
+              </span>
             ) : (
-              // Render the loading icon for other cases
-              <OptionIcon src="/icons/status-time.svg" height={15} width={15} />
-            )}
+              <span>
+                {clampString(message?.content, words)}{' '}
+                <span className="text-sky-500 cursor-pointer pl-1" onClick={handleReadMore}>
+                  read more
+                </span>
+              </span>
+            )
+          ) : (
+            message?.content
+          )
+        ) : null}
+        {isFromMe ? <span className="invisible">{' ' + '_______'}</span> : null}
+      </div>
+      {isFromMe ? (
+        <span className={`absolute bottom-[5px] right-1 flex w-[65px] flex-row place-items-center justify-center gap-1`}>
+          <span className="mt-1 flex whitespace-nowrap text-[10px] text-whatsapp-light-text dark:text-white dark:text-opacity-70 text-opacity-70">
+            {message?.sended_at ? dayjs(message.sended_at).format('hh:mm A') : ''}
           </span>
+          <MessageStatus message={message} />
         </span>
       ) : null}
     </span>
-  )
-}
-
+  );
+};

@@ -27,10 +27,9 @@ interface IGalleryMediaPreview {
 const GalleryImagePreview: FC<IGalleryMediaPreview> = ({ message }) => {
 
   const { imageUrl } = useFetchImage({ message });
-  console.log("🚀 ~ imageUrl:", imageUrl)
 
   return (
-    <div className={`relative mx-auto flex h-[90%] w-[90%] place-items-center justify-center ${message?.type === "svg" ? "bg-gray-300" : ''}`}>
+    <div className={`relative mx-auto flex h-[90%] w-[90%] place-items-center justify-center ${message?.type === "svg" ? `bg-transparent_bg` : ''}`}>
       <Image src={imageUrl as string} fill objectFit="contain" alt="image" />
     </div>
   );

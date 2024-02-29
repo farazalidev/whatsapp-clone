@@ -16,7 +16,7 @@ import { sendMessageFn } from '@/utils/sendMessageFn';
 import { mainDb } from '@/utils/indexedDb/mainIndexedDB';
 import useFetchImage from '@/hooks/useFetchImage';
 
-export const MessageBubbleImagePreview: FC<IMessageBubblePreview> = ({ message, isFromMe, ChatSlice, receiver_id, socket, Me, messageLines }) => {
+export const MessageBubbleImagePreview: FC<IMessageBubblePreview> = ({ message, isFromMe, socket, Me }) => {
 
   const dimensions = useMemo(
     () => calculateScaledDimensions(message?.media?.width, message?.media?.height, 300, 300, 200, 200),
@@ -88,8 +88,7 @@ export const MessageBubbleImagePreview: FC<IMessageBubblePreview> = ({ message, 
       onClick={() => handleGalleryOverlay(message?.media?.id)}
     >
       {message?.messageType === "svg" ? <>
-        {console.log(imageUrl)}
-        <span style={{ width: "100%", height: "100%" }} >
+        <span style={{ width: "100%", height: "100%" }} className='bg-transparent_bg bg-cover'>
           {imageUrl ?
             <Image key={message?.media?.id} src={imageUrl as string} loading="lazy" alt={''} fill />
             : null}
@@ -119,7 +118,7 @@ export const MessageBubbleImagePreview: FC<IMessageBubblePreview> = ({ message, 
         ) : null
       }
 
-      <MediaMessageStatus isFromMe={isFromMe} message={message} key={message?.id} messageLines={messageLines} />
+      <MediaMessageStatus isFromMe={isFromMe} message={message} key={message?.id} />
     </MediaMessageBubbleWrapper >
   );
 };

@@ -107,7 +107,7 @@ export const messagesSlice = createSlice({
 
     addNewMessage: (state, { payload }: { payload: addNewMessagePayload }) => {
       const existedChat = state.paginatedChats.data.find((chat) => chat?.id === payload.chat_id);
-      if (existedChat) existedChat?.messages.push(payload.message);
+      if (existedChat) existedChat?.messages.unshift(payload.message);
       return;
     },
 

@@ -14,6 +14,7 @@ const config: Config = {
       backgroundImage: {
         pattern: "url('/pattern.png')",
         pattern_light: "url('/pattern-light.png')",
+        transparent_bg: "url('/placeholders/transparent bg.png')",
       },
       colors: {
         whatsapp: {

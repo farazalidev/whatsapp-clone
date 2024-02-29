@@ -1,7 +1,6 @@
 'use client';
 import SearchInput from '@/Atoms/Input/SearchInput';
 import React, { Suspense } from 'react';
-import SideBarUserCard from '../SideBarUseCard';
 import AddNewContactHeading from './AddNewContactHeading';
 import { useDispatch, useSelector } from 'react-redux';
 import { toggleAddContactModal } from '@/global/features/ModalSlice';
@@ -16,6 +15,7 @@ import { UserChatEntity } from '@server/modules/chat/entities/userchat.entity';
 import { RootState, store } from '../../../../global/store';
 import { isIamReceiver } from '@/utils/isIamReceiver';
 import { ContactEntity } from '@server/modules/user/entities/contact.entity';
+import ContactCard from './ContactCard';
 
 const AddNewContactOverlay = () => {
   const dispatch = useDispatch();
@@ -84,12 +84,11 @@ const AddNewContactOverlay = () => {
         <Suspense fallback={<FallBackLoadingSpinner />}>
           {data?.contacts || data.contacts.length === 0 ? (
             data.contacts?.map((contact) => (
-              <SideBarUserCard
+              <ContactCard
                 key={contact.id}
                 name={contact.contact?.name}
                 for_other
                 user_id={contact.contact.user_id}
-                show_options={false}
                 onClick={() => chatStartHandler(contact)}
               />
             ))
