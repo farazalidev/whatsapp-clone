@@ -3,7 +3,7 @@ import UserSideBar from '@/components/User/Sidebar/UserSideBar';
 import UserChat from '@/components/User/chat/UserChat';
 import React, { FC, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { RootState } from '../../global/store';
+import { RootState, store } from '../../global/store';
 import { toggleAddContactModal } from '@/global/features/ModalSlice';
 import AddNewContactModalContent from '@/components/Misc/ModalContent/AddNewContactModal/AddNewContactModalContent';
 import Modal from '@/components/Misc/Modal';
@@ -14,13 +14,16 @@ import MainErrorPage from '@/components/Misc/MainErrorPage';
 import SessionExpiredErrorPage from '@/components/Misc/SessionExpiredErrorPage';
 import useSocket from '@/hooks/useSocket';
 import { setUser } from '@/global/features/UserSlice';
-import useChats from '@/hooks/useChats';
+import { useChats2 } from '@/hooks/useChats';
 import useContacts from '@/hooks/useContacts';
 import ProfilePreview from '@/components/User/profilePreview/ProfilePreview';
 import { AnimatePresence, motion } from 'framer-motion';
 import { profilePreviewAnimation } from '@/animation/profilePreviewAnimation';
 import CompleteProfile from '@/components/AuthPage/CompleteProfile';
 import AuthPageTop from '@/components/AuthPage/AuthPageTop';
+import SideBarOverlay from '@/components/User/Sidebar/SideBarOverlay';
+import { overlayContent } from '@/components/User/Sidebar/overlaycontent/overlaycontet';
+
 
 type Props = {
   searchParams: Record<string, string> | null | undefined;
@@ -37,19 +40,20 @@ const UserPage: FC<Props> = () => {
   // getting pid from the socket
   useEffect(() => {
     socket.on('get_pid', (pid) => {
-      dispatch(setUser({ pid }));
+      store.dispatch(setUser({ pid }))
     });
     socket.emit('make_user_online');
     return () => {
       socket.off('get_pid');
       socket.disconnect();
     };
-  }, [socket, dispatch]);
+  }, [socket]);
 
   const { AddContactModalIsOpen } = useSelector((state: RootState) => state.modalSlice);
   const { isLoading, error, data } = useUser();
-  const { error: chatsError, isLoading: chatsIsLoading } = useChats();
+  const { state: { error: chatsError, isLoading: chatsIsLoading } } = useChats2();
   const { error: contactsError, isLoading: contactsIsLoading } = useContacts();
+  const { selectedOverlay, show } = useSelector((state: RootState) => state.sideBarOverlaySlice);
 
   if (isLoading || chatsIsLoading || contactsIsLoading) {
     return <MainLoadingPage />;
@@ -70,10 +74,13 @@ const UserPage: FC<Props> = () => {
     </div>
   }
 
+
+
   return (
     <UserPageLayout>
       <div className="flex h-full">
-        <aside className="h-full w-[40%] flex-none flex-shrink-0 lg:w-[30%]">
+        <aside className="relative h-full w-[40%] flex-none flex-shrink-0 lg:w-[30%] overflow-hidden">
+          <SideBarOverlay show={show} heading={overlayContent[selectedOverlay].heading} Content={overlayContent[selectedOverlay].content} />
           <UserSideBar />
         </aside>
         <div className="w-fit flex-1 flex-grow overflow-x-hidden">

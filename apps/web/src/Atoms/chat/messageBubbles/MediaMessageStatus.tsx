@@ -8,7 +8,6 @@ import { MessageEntity } from '@server/modules/chat/entities/message.entity';
 interface IMediaMessageStatus {
   message: MessageEntity | undefined;
   isFromMe: boolean | undefined;
-  messageLines?: number
 }
 
 const MediaMessageStatus: FC<IMediaMessageStatus> = ({ isFromMe, message }) => {

@@ -19,7 +19,7 @@ export const combineMediaWithMessages = (files: SelectedFileType[], from: UserEn
       media: {
         id: file.id,
         ext: extname(file.file.name),
-        path: file.id,
+        path: `${from?.user_id}/${file.id}`,
         size: Math.trunc(file.file.size),
         thumbnail_path: file.type === 'video' ? `${file.id}` : null,
         type: file.type,

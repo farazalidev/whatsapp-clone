@@ -7,7 +7,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { expectedFileTypes } from '@shared/types';
 import AddNewFileButton from '@/Atoms/Button/AddNewFileButton';
 import { toast } from 'sonner';
-import { mainDb } from '@/utils/mainIndexedDB';
+import { mainDb } from '@/utils/indexedDb/mainIndexedDB';
 import { closeOverlay } from '@/global/features/overlaySlice';
 import { combineMediaWithMessages } from '@/utils/combineMediaWithMessages';
 import useCurrentChat from '@/hooks/useCurrentChat';
@@ -57,6 +57,16 @@ const SelectedFiles: FC<ISelectedFiles> = () => {
       // adding media in local storage
       await mainDb.media.bulkAdd(loadedFiles)
 
+      await Promise.all(loadedFiles.map(async (file) => {
+        if (file.type === "image" || file.type === "svg" || file.type === "video") {
+          if (file.type === "video") {
+            await mainDb.offlineMedia.add({ file: file.thumbnail as Blob, id: file.id, mime: "image/png", type: "image" })
+          } else {
+            await mainDb.offlineMedia.add({ file: file.file, id: file.id, mime: file.mime, type: file.type })
+          }
+        }
+      }))
+
       // combining media with message
       const mediaMessages = combineMediaWithMessages(loadedFiles, Me, raw_chat)
 
@@ -64,7 +74,7 @@ const SelectedFiles: FC<ISelectedFiles> = () => {
       await mainDb.mediaMessages.bulkAdd(mediaMessages)
 
       mediaMessages.forEach(message => {
-        dispatch(addNewMessage({ chat_id: raw_chat?.id, message: { ...message } }))
+        dispatch(addNewMessage({ chat_id: raw_chat?.id, message: { ...message, } }))
       })
 
       dispatch(closeOverlay())

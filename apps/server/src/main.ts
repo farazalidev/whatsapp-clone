@@ -16,7 +16,13 @@ async function bootstrap() {
 
   app.useWebSocketAdapter(redisAdapter);
   app.use(cookieParser());
-  app.useGlobalPipes(new ValidationPipe());
+  app.useGlobalPipes(
+    new ValidationPipe({
+      transform: true,
+      transformOptions: { enableImplicitConversion: true },
+    }),
+  );
   await app.listen(8000);
 }
 bootstrap();
+// ClusterService.clusterize(bootstrap);

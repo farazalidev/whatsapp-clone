@@ -1,7 +1,6 @@
 'use client';
 import SearchInput from '@/Atoms/Input/SearchInput';
 import React, { Suspense } from 'react';
-import SideBarUserCard from '../SideBarUseCard';
 import AddNewContactHeading from './AddNewContactHeading';
 import { useDispatch, useSelector } from 'react-redux';
 import { toggleAddContactModal } from '@/global/features/ModalSlice';
@@ -15,6 +14,8 @@ import { SuccessResponseType } from '@server/Misc/ResponseType.type';
 import { UserChatEntity } from '@server/modules/chat/entities/userchat.entity';
 import { RootState, store } from '../../../../global/store';
 import { isIamReceiver } from '@/utils/isIamReceiver';
+import { ContactEntity } from '@server/modules/user/entities/contact.entity';
+import ContactCard from './ContactCard';
 
 const AddNewContactOverlay = () => {
   const dispatch = useDispatch();
@@ -25,16 +26,18 @@ const AddNewContactOverlay = () => {
     dispatch(toggleAddContactModal());
   };
 
-  const chatStartHandler = async (user_id: string) => {
-    // checking if the chat is started
-    const isChatStarted = await fetcher<SuccessResponseType<UserChatEntity>>(`chat/is-chat/${user_id}`);
+  const chatStartHandler = async (contact: ContactEntity) => {
+
+    // getting chat info from the server
+    const isChatStarted = await fetcher<SuccessResponseType<UserChatEntity>>(`chat/is-chat/${contact.contact.user_id}`);
 
     if (!isChatStarted.success) {
       /**
        * If the chat is not started with user
        * then loads user info from the contact
        */
-      dispatch(setUserChatEntity({ id: user_id, started_from: 'contact', receiver_id: user_id, chat_receiver: undefined }));
+
+      dispatch(setUserChatEntity({ id: contact.contact.user_id, started_from: 'contact', receiver_id: contact.contact.user_id, chat_receiver: contact.contact }));
       // closing overlay
       dispatch(setShow(false));
       // resetting overlay
@@ -46,7 +49,7 @@ const AddNewContactOverlay = () => {
        * then loads the chat and go to the chat panel
        * **/
 
-      const raw_chat = store.getState().messagesSlice.chats_raw.find((chat) => chat.id === isChatStarted.data?.id);
+      const raw_chat = store.getState().messagesSlice.paginatedChats.data.find((chat) => chat.id === isChatStarted.data?.id);
       const { Me } = store.getState().UserSlice;
 
       const isMeReceiver = isIamReceiver(raw_chat?.chat_with.user_id, Me?.user_id);
@@ -81,13 +84,12 @@ const AddNewContactOverlay = () => {
         <Suspense fallback={<FallBackLoadingSpinner />}>
           {data?.contacts || data.contacts.length === 0 ? (
             data.contacts?.map((contact) => (
-              <SideBarUserCard
+              <ContactCard
                 key={contact.id}
                 name={contact.contact?.name}
                 for_other
                 user_id={contact.contact.user_id}
-                show_options={false}
-                onClick={() => chatStartHandler(contact.contact?.user_id)}
+                onClick={() => chatStartHandler(contact)}
               />
             ))
           ) : (

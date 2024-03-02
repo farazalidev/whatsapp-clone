@@ -3,12 +3,10 @@
 import { SelectedFileType } from '@/components/User/chat/chatpanel/SelectedFiles';
 import Dexie, { Table } from 'dexie';
 import { MessageEntity } from '@server/modules/chat/entities/message.entity';
-import { expectedFileTypes } from '../../../../shared/types/mediaTypes';
+import { expectedFileTypes } from '../../../../../shared/types/mediaTypes';
 
 export class MainDB extends Dexie {
-  // 'friends' is added by dexie when declaring the stores()
-  // We just tell the typing system this is the case
-  media!: Table<SelectedFileType>;
+  media: Table<SelectedFileType>;
   mediaMessages: Table<MessageEntity>;
   offlineMedia: Table<{ id: string; mime: string; type: expectedFileTypes; file: Blob }>;
 

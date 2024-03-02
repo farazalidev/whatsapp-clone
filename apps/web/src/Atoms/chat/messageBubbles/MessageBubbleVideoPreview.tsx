@@ -12,13 +12,11 @@ import { useFetchMediaThumbnail } from "@/hooks/useFetchMediaThumbnail"
 import { RootState } from "@/global/store"
 import useCurrentChat from "@/hooks/useCurrentChat"
 import useSocket from "@/hooks/useSocket"
-import { mainDb } from "@/utils/mainIndexedDB"
+import { mainDb } from "@/utils/indexedDb/mainIndexedDB"
 import { sendMessageFn } from "@/utils/sendMessageFn"
 import { MessageEntity } from "@server/modules/chat/entities/message.entity"
 
 export const MessageBubbleVideoPreview: FC<IMessageBubblePreview> = ({ message, isFromMe }) => {
-
-  const chatSlice = useSelector((state: RootState) => state.ChatSlice);
 
   const { socket } = useSocket();
 
@@ -37,14 +35,14 @@ export const MessageBubbleVideoPreview: FC<IMessageBubblePreview> = ({ message, 
           content: message?.content,
           from: Me as any,
           is_seen: false,
-          media: message?.media,
+          media: { ...message?.media as any, path: `${Me?.user_id}/${message?.media?.id}` },
           messageType: message.messageType,
           received_at: null,
           seen_at: null,
           sended: false,
           sended_at: new Date(),
         };
-        const sended = await sendMessageFn({ chatSlice, message: messageToSend, receiver_id: chatSlice.receiver_id as string, socket })
+        const sended = await sendMessageFn({ message: messageToSend, socket })
         if (sended) {
           await mainDb.media.delete(message.media?.id as string)
           await mainDb.mediaMessages.delete(message.id)
@@ -52,7 +50,7 @@ export const MessageBubbleVideoPreview: FC<IMessageBubblePreview> = ({ message, 
       }
     };
     return lastAction()
-  }, [Me, chatSlice, message, raw_chat, socket])
+  }, [Me, message, raw_chat, socket])
 
   const dimensions = useMemo(() => calculateScaledDimensions(message?.media?.width, message?.media?.height, 300, 400, 200, 300), [message?.media?.height, message?.media?.width])
 
@@ -63,8 +61,8 @@ export const MessageBubbleVideoPreview: FC<IMessageBubblePreview> = ({ message, 
   const { cancel, retry, state } = useUpload({ isFromMe, message, lastAction })
 
   const handleGalleryOverlay = (id: string | undefined) => {
-    if (id) {
-      dispatch(setActiveGalleryMedia(message as MessageEntity))
+    if (id && message?.media) {
+      dispatch(setActiveGalleryMedia({ ...message?.media, message: message }));
     }
     dispatch(toggleGalleryOverlay())
   }
@@ -95,11 +93,12 @@ export const MessageBubbleVideoPreview: FC<IMessageBubblePreview> = ({ message, 
           onRetryClick={handleRetry}
           onPauseClick={handlePause}
           onActionButtonClick={() => handleGalleryOverlay(message?.media?.id)}
+          isFromMe={isFromMe}
           className="absolute"
         />
 
         {/* thumbnail */}
-        {thumbnailState.thumbnail ? <span style={{ width: "100%", height: "100%", backgroundImage: `url(${thumbnailState.thumbnail})`, backgroundSize: "cover", backgroundPosition: "center" }} className="blur-sm" /> : null}
+        {thumbnailState.thumbnail ? <span style={{ width: "100%", height: "100%", backgroundImage: `url(${thumbnailState.thumbnail})`, backgroundSize: "cover", backgroundPosition: "center" }} className="" /> : null}
 
         <MediaMessageStatus isFromMe={isFromMe} message={message} key={message?.id} />
       </MediaMessageBubbleWrapper>}

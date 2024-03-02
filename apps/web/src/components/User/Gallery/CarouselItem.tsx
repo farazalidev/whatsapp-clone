@@ -6,7 +6,6 @@ import { MessageEntityGalleryExtended, setActiveGalleryMedia } from '@/global/fe
 
 interface ICarousalItemProps {
   data: MessageEntityGalleryExtended | null;
-  user_id: string | undefined;
   url: string;
   active: boolean;
 }
@@ -16,6 +15,7 @@ const CarouselItem: FC<ICarousalItemProps> = ({ active = false, url, data }) => 
 
   const handleActiveMedia = (message: MessageEntityGalleryExtended | undefined | null) => {
     if (message) {
+      console.log("🚀 ~ handleActiveMedia ~ message:", message)
       dispatch(setActiveGalleryMedia(message));
     }
   };
@@ -26,7 +26,7 @@ const CarouselItem: FC<ICarousalItemProps> = ({ active = false, url, data }) => 
         'border-whatsapp-light-secondary_bg box-content relative max-h-[60px] max-w-[60px] h-[60px] w-[60px] dark:border-whatsapp-dark-secondary_bg flex-shrink-0 flex-grow-0 cursor-pointer rounded-md border-[5px] bg-gray-50 text-white transition-all',
         active ? 'border-gray-700 dark:border-gray-300' : '',
         'hover:border-gray-300',
-        data?.messageType === "svg" ? 'bg-gray-300' : ''
+        data?.type === "svg" ? 'bg-transparent_bg bg-cover' : ''
       ])}
       onClick={() => handleActiveMedia(data)}
     >

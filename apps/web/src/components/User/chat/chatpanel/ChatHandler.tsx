@@ -1,10 +1,13 @@
-import React, { FC, useEffect, useRef } from 'react';
+import React, { FC, useCallback, useEffect, useRef, useState } from 'react';
 import MessagePreview from '@/Atoms/chat/MessagePreview';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '@/global/store';
 import useSocket from '@/hooks/useSocket';
 import { addNewMessage, updateMessageStatus, updateMessageStatusBulk } from '@/global/features/messagesSlice';
 import useCurrentChat from '@/hooks/useCurrentChat';
+import usePaginatedMessages from '@/hooks/usePaginatedMessages';
+import Image from 'next/image';
+import { sizeChanged } from '@/utils/sizeChanged';
 
 interface ChatHandlerProps { }
 
@@ -15,9 +18,13 @@ const ChatHandler: FC<ChatHandlerProps> = () => {
 
   const Me = useSelector((state: RootState) => state.UserSlice.Me);
 
-  const divRef = useRef<HTMLDivElement>(null);
+  const bottomRef = useRef<HTMLDivElement>(null);
 
   const { chat, id, } = useCurrentChat()
+
+  const [scrolled, setScrolled] = useState(false)
+
+  const [currentMessagesSize, setCurrentMessagesSize] = useState<number | undefined>(chat?.messages.length)
 
   useEffect(() => {
 
@@ -46,39 +53,66 @@ const ChatHandler: FC<ChatHandlerProps> = () => {
     };
   }, [socket, dispatch, id]);
 
-  // scroll to bottom
   useEffect(() => {
-    if (divRef.current && chat && chat?.messages?.length > 0) {
-      divRef.current.scrollIntoView({ behavior: 'instant', block: 'nearest' });
+    if (bottomRef) {
+      bottomRef.current?.scrollIntoView()
+      setScrolled(true)
     }
-  }, [chat]);
+  }, [bottomRef, id]);
 
   useEffect(() => {
-    if (divRef) {
-      divRef.current?.scrollIntoView({ behavior: 'instant', block: 'nearest' });
-    }
-  }, [chat?.messages]);
+    sizeChanged(currentMessagesSize, chat?.messages.length, (newSize, changedSize) => {
+      setCurrentMessagesSize(newSize)
+      if (bottomRef && changedSize && changedSize < 2) {
+        bottomRef.current?.scrollIntoView()
+      }
+    })
+  }, [chat?.messages, currentMessagesSize])
 
   const { receiver_id } = useSelector((state: RootState) => state.ChatSlice);
 
-
   const chatSlice = useSelector((state: RootState) => state.ChatSlice);
+
+  const { paginate, state, meta } = usePaginatedMessages({ chat_id: id })
+
+  const observer = useRef<IntersectionObserver>()
+  const lastMessageElement = useCallback((node: any) => {
+    if (state.isLoading) return
+    if (observer.current) observer.current.disconnect()
+
+    observer.current = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting && meta.hasNext && scrolled) {
+
+        paginate()
+      }
+    })
+    if (node) observer.current.observe(node)
+  }, [meta.hasNext, paginate, scrolled, state.isLoading])
 
 
   return (
     <>
-      <div className="flex h-full w-full flex-col gap-1 overflow-y-scroll px-7 py-2 scrollbar">
+      <div className="flex h-full w-full flex-col gap-1 overflow-y-scroll overflow-x-hidden px-7 py-2 scrollbar bottom-[3.7%]">
+        {state.isLoading ?
+          <div className='w-full text-xl flex justify-center place-items-center'>
+            <Image src={'/icons/spinner.svg'} height={40} width={40} alt='loading spinner' />
+          </div> : null}
         {chat?.messages
-          ? [...chat.messages]
+          ? [...chat.messages].reverse()
+            .map((message, index) => {
+              if (index === Math.ceil(chat.messages.length * .1)) {
+                return (
+                  <MessagePreview ref={lastMessageElement} isFromMe={Me?.user_id === message?.from?.user_id} message={message} key={message?.id} ChatSlice={chatSlice} receiver_id={receiver_id} socket={socket} Me={Me} />
 
-            ?.sort((a, b) => {
-              const dateA = new Date(a?.sended_at)?.getTime();
-              const dateB = new Date(b?.sended_at)?.getTime();
-              return dateA - dateB;
+                )
+              } else {
+                return (
+                  <MessagePreview isFromMe={Me?.user_id === message?.from?.user_id} message={message} key={message?.id} ChatSlice={chatSlice} receiver_id={receiver_id} socket={socket} Me={Me} />
+                )
+              }
             })
-            .map((message) => <MessagePreview isFromMe={Me?.user_id === message?.from?.user_id} message={message} key={message?.id} ChatSlice={chatSlice} receiver_id={receiver_id} socket={socket} Me={Me} />)
           : null}
-        <div ref={divRef} />
+        <div ref={bottomRef} ></div>
       </div>
     </>
   );

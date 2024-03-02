@@ -4,5 +4,4 @@ import { IMessageBubble } from '../chat/messageBubbles/MessageBubble';
 export interface IMessageBubblePreview extends IMessageBubble {
   message: MessageEntity | undefined;
   isFromMe: boolean | undefined;
-  messageLines?: number;
 }

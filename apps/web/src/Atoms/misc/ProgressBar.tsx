@@ -56,7 +56,7 @@ const ProgressBar: FC<ProgressBarProps> = ({
       ) : null}
 
       {/* action button */}
-      {showActionButton && isFromMe && progress === 100 && !isLoading ? (
+      {showActionButton && progress === 100 && !isLoading ? (
         <span onClick={onActionButtonClick} className="z-10 cursor-pointer">
           {messageType === 'others' ? (
             <Image src={'/icons/gallery-icons/download.svg'} alt="download" height={25} width={25} />

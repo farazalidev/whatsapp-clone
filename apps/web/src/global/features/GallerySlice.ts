@@ -1,33 +1,46 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { MessageEntity } from '@server/modules/chat/entities/message.entity';
+import { MessageMediaEntity } from '@server/modules/chat/entities/messageMedia.entity';
 
-export interface MessageEntityGalleryExtended extends MessageEntity {
+export interface MessageEntityGalleryExtended extends MessageMediaEntity {
   url: string | undefined;
 }
 
 interface IGallerySlice {
-  activeMediaMessage: MessageEntity | null;
-  MediaMessages: MessageEntityGalleryExtended[];
+  activeMediaMessage: MessageMediaEntity | null;
+  messages: { chat_id: string; mediaMessages: Set<MessageEntityGalleryExtended> }[];
 }
 
 const initialState: IGallerySlice = {
   activeMediaMessage: null,
-  MediaMessages: [],
+  messages: [],
 };
 
 export const GallerySlice = createSlice({
   name: 'gallery-slice',
   initialState,
   reducers: {
-    addThumbnails: (state, { payload }: { payload: { messages: MessageEntityGalleryExtended[] | undefined } }) => {
-      if (payload.messages) {
-        state.MediaMessages = payload.messages;
+    addThumbnails: (state, { payload }: { payload: addMediaThumbnailPayload | undefined }) => {
+      console.log('🚀 ~ payload:', payload);
+      if (payload?.chat_id && payload.messages) {
+        const existedChat = state.messages.find((messages) => messages.chat_id === payload.chat_id);
+
+        // if the chat existed and there are more media messages then we will add them
+        if (existedChat) {
+          return payload.messages.forEach((message) => existedChat.mediaMessages.add(message));
+        }
+
+        state.messages.push({ chat_id: payload?.chat_id, mediaMessages: new Set([...payload.messages]) });
       }
     },
-    setActiveGalleryMedia: (state, { payload }: { payload: MessageEntity }) => {
+    setActiveGalleryMedia: (state, { payload }: { payload: MessageMediaEntity }) => {
       state.activeMediaMessage = payload;
     },
   },
 });
 
 export const { addThumbnails, setActiveGalleryMedia } = GallerySlice.actions;
+
+interface addMediaThumbnailPayload {
+  chat_id: string | undefined;
+  messages: MessageEntityGalleryExtended[];
+}

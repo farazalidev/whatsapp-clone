@@ -7,6 +7,16 @@ import { MessageEntity } from './entities/message.entity';
 import { ResponseType } from '../../Misc/ResponseType.type';
 import { MessageDto } from './DTO/message.dto';
 import { unreadMessage } from '../types';
+import {
+  ChatsDto,
+  ChatsDtoMeta,
+  ChatsExtendedWithCount,
+  ChatsParamsDto,
+  PaginatedMessages,
+  PaginatedMessagesMeta,
+  PaginatedMessagesParamsDto,
+} from './DTO/chats.dto';
+import { MessageMediaEntity } from './entities/messageMedia.entity';
 
 @Injectable()
 export class ChatService {
@@ -14,27 +24,36 @@ export class ChatService {
     @InjectRepository(UserEntity) private userRepo: Repository<UserEntity>,
     @InjectRepository(UserChatEntity) private UserChatRepo: Repository<UserChatEntity>,
     @InjectRepository(MessageEntity) private UserMessageRepo: Repository<MessageEntity>,
+    @InjectRepository(MessageMediaEntity) private mediaMessageRepo: Repository<MessageMediaEntity>,
   ) {
     // get user chats service
   }
 
   // create a new chat
-  async createAnewChat(user_id: string, chat_id: string, chat_with_id: string): Promise<ResponseType<{ chat_id: string }>> {
+  async createAnewChat(user_id: string, chat: UserChatEntity): Promise<ResponseType<{ chat: UserChatEntity }>> {
     try {
-      const chat_for = await this.userRepo.findOne({ where: { user_id } });
-      const chat_with = await this.userRepo.findOne({ where: { user_id: chat_with_id } });
+      // before creating a new chats make all checks, if chat is already existed
 
-      const newChat = this.UserChatRepo.create({
-        id: chat_id,
-        chat_for,
-        chat_with,
-        messages: [],
+      const isChatExistedAlready = await this.UserChatRepo.findOne({
+        where: { chat_for: { user_id: chat.chat_for.user_id }, chat_with: { user_id: chat.chat_with.user_id } },
       });
-      await this.UserChatRepo.save(newChat);
+
+      if (isChatExistedAlready) {
+        return {
+          success: false,
+          error: {
+            message: 'chat already existed',
+            statusCode: 400,
+          },
+        };
+      }
+
+      const newChat = this.UserChatRepo.create(chat);
+      const savedChat = await this.UserChatRepo.save(newChat);
       return {
         success: true,
         successMessage: 'new chat created',
-        data: { chat_id: newChat.id },
+        data: { chat: savedChat },
       };
     } catch (error) {
       return {
@@ -44,27 +63,97 @@ export class ChatService {
     }
   }
 
-  async getUserChats(user_id: string): Promise<ResponseType<UserChatEntity[]>> {
+  async getUserChats(user_id: string, query: ChatsParamsDto): Promise<ResponseType<ChatsDto>> {
+    console.log('🚀 ~ ChatService ~ getUserChats ~ query:', query);
     try {
-      const user = await this.UserChatRepo.find({
-        where: [{ chat_for: { user_id } }, { chat_with: { user_id } }],
-        relations: { messages: true },
-        order: { messages: { sended_at: 'DESC' } },
-      });
-      if (!user) {
+      const queryBuilder = this.UserChatRepo.createQueryBuilder('chat');
+
+      queryBuilder
+        .leftJoinAndSelect('chat.chat_for', 'chatFor')
+        .leftJoinAndSelect('chat.chat_with', 'chatWith')
+        .leftJoinAndSelect('chatFor.profile', 'chatForProfile')
+        .leftJoinAndSelect('chatWith.profile', 'chatWithProfile')
+        .where('(chatFor.user_id = :user_id OR chatWith.user_id = :user_id)', { user_id })
+        .loadRelationCountAndMap('messages.count', 'chat.messages')
+        .skip((query.page - 1) * query.take)
+        .take(query.take);
+
+      const chats = (await queryBuilder.getMany()) as unknown as ChatsExtendedWithCount[];
+
+      for (const chat of chats) {
+        chat.messages = await this.UserMessageRepo.createQueryBuilder('messages')
+          .leftJoinAndSelect('messages.chat', 'chat')
+          .leftJoinAndSelect('messages.from', 'messageFrom')
+          .leftJoinAndSelect('messages.media', 'media')
+          .where('chat.id = :chat_id', { chat_id: chat.id })
+          .orderBy('messages.sended_at', query.order)
+          .skip((query.messagesPage - 1) * query.messagesTake)
+          .take(query.messagesTake)
+          .getMany();
+      }
+
+      if (!chats) {
         return {
           success: false,
           error: { message: 'User not found', statusCode: HttpStatus.NOT_FOUND },
         };
       }
+      const totalChats = await queryBuilder.getCount();
+      const PageMeta = new ChatsDtoMeta({ ...query, totalChats });
+
+      const chatsWithMessagesMeta = chats.map((chat) => {
+        const totalPages = Math.ceil(chat.count / query.messagesTake);
+        const currentPage = query.messagesPage;
+        return {
+          ...chat,
+          totalMessagesPages: totalPages,
+          currentPage,
+          hasPrev: currentPage > 1,
+          hasNext: currentPage < totalPages,
+          messagesTake: query.messagesTake,
+        };
+      });
 
       return {
-        data: user,
+        data: { data: chatsWithMessagesMeta as any, meta: PageMeta },
         success: true,
         successMessage: 'Chat Found',
       };
     } catch (error) {
+      console.log('🚀 ~ ChatService ~ getUserChats ~ error:', error);
       return { success: false, error: { message: 'Internal Server Error', statusCode: HttpStatus.INTERNAL_SERVER_ERROR } };
+    }
+  }
+
+  async getPaginatedMessages(chat_id: string, query: PaginatedMessagesParamsDto): Promise<ResponseType<PaginatedMessages>> {
+    try {
+      const queryBuilder = this.UserMessageRepo.createQueryBuilder('message');
+
+      queryBuilder
+        .leftJoinAndSelect('message.from', 'messageFrom')
+        .leftJoinAndSelect('message.media', 'messageMedia')
+        .leftJoinAndSelect('message.chat', 'chat')
+        .orderBy('message.sended_at', query.order)
+        .skip((query.messagesPage - 1) * query.messagesTake)
+        .take(query.messagesTake)
+        .where('chat.id = :chat_id', { chat_id });
+
+      const pageMeta = new PaginatedMessagesMeta({ ...query, totalMessages: await queryBuilder.getCount() });
+
+      return {
+        success: true,
+        successMessage: 'success',
+        data: {
+          messages: await queryBuilder.getMany(),
+          meta: pageMeta,
+        },
+      };
+    } catch (error) {
+      console.log('🚀 ~ ChatService ~ getPaginatedMessages ~ error:', error);
+      return {
+        success: false,
+        error: { message: 'internal server error', statusCode: 500 },
+      };
     }
   }
 
@@ -368,5 +457,24 @@ export class ChatService {
     } catch (error) {
       return { success: false, error: { message: 'Error while getting message', statusCode: 400 } };
     }
+  }
+
+  async getAllMediaMessages(user_id: string, chat_id: string) {
+    console.log('🚀 ~ ChatService ~ getAllMediaMessages ~ chat_id:', chat_id);
+    const queryBuilder = this.mediaMessageRepo.createQueryBuilder('media');
+    queryBuilder
+      .leftJoinAndSelect('media.message', 'message')
+      .leftJoinAndSelect('message.from', 'messageFrom')
+      .leftJoinAndSelect('message.chat', 'chat')
+      .leftJoinAndSelect('chat.chat_for', 'chatFor')
+      .leftJoinAndSelect('chat.chat_with', 'chatWith')
+      .where('chat.id = :chat_id', { chat_id })
+      .andWhere('media.type IN (:...types)', { types: ['video', 'image', 'svg'] })
+      .andWhere('(chatFor.user_id = :user_id OR chatWith.user_id = :user_id)', { user_id });
+
+    const mediaMessages = await queryBuilder.getMany();
+    console.log('🚀 ~ ChatService ~ getAllMediaMessages ~ mediaMessages:', mediaMessages.length);
+
+    return mediaMessages;
   }
 }

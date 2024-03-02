@@ -3,6 +3,7 @@ import { MessageEntity } from '../../apps/server/src/modules/chat/entities/messa
 import { UserEntity } from '../../apps/server/src/modules/user/entities/user.entity';
 import { single_unread_message, unreadMessage } from '../../apps/server/src/modules/types';
 import { UpdateMessageStatusBulk, messageStatus } from '.';
+import { UserChatEntity } from '../../apps/server/src/modules/chat/entities/userchat.entity';
 
 export interface ISocket extends Socket<ClientToServerEvents, ServerToClientEvents> {
   user: UserEntity;
@@ -55,7 +56,7 @@ export interface ClientToServerEvents {
 
 export interface sendMessagePayload {
   message: MessageEntity;
-  chat_id: string | undefined;
+  chat: UserChatEntity;
   receiverId: string;
 }
 

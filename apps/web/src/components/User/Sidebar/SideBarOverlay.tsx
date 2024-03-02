@@ -23,7 +23,7 @@ const SideBarOverlay: FC<SideBarOverlayProps> = ({ show, Content, heading }) => 
       {show ? (
         <motion.div
           {...easeInOutAnimation}
-          className="absolute w-full h-full bg-whatsapp-light-primary_bg dark:bg-whatsapp-dark-primary_bg z-10 "
+          className="absolute w-full h-full bg-whatsapp-light-primary_bg dark:bg-whatsapp-dark-primary_bg z-10 overflow-y-auto scrollbar"
         >
           <SideBarOverlayHeader heading={heading} onBackClick={handleBack} />
           <Content />

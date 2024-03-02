@@ -3,10 +3,13 @@ import { UpdateMessageStatusBulk } from '@shared/types';
 import { messageStatus } from '@shared/types';
 import { MessageEntity } from '@server/modules/chat/entities/message.entity';
 import { UserChatEntity } from '@server/modules/chat/entities/userchat.entity';
+import { ChatsDto, PaginatedMessages } from '@server/modules/chat/DTO/chats.dto';
+import { chatPaginationConfig } from '@/config/chatPagination.cnfig';
 
 interface IMessagesSliceInitialState {
   chats: { chat_id: string; messages: MessageEntity[]; receiverFootPrints?: string }[];
   chats_raw: UserChatEntity[];
+  paginatedChats: ChatsDto;
 }
 interface addNewChatPayload {
   chat_id: string;
@@ -27,12 +30,53 @@ interface updateMessagePayload {
 const initialState: IMessagesSliceInitialState = {
   chats: [],
   chats_raw: [],
+  paginatedChats: { data: [], meta: { currentPage: 0, hasNext: false, hasPrevious: false, messagesTake: 0, take: 0, totalChats: 0, totalPages: 0 } },
 };
 
 export const messagesSlice = createSlice({
   name: 'messages-slice',
   initialState,
   reducers: {
+    initPaginatedChats: (state, { payload }: { payload: ChatsDto }) => {
+      state.paginatedChats = payload;
+    },
+
+    paginateChatMessages: (state, { payload }: { payload: { chat_id: string; paginatedMessages: PaginatedMessages } }) => {
+      const chat = state.paginatedChats.data.find((chat) => chat.id === payload?.chat_id);
+      if (chat && payload) {
+        const meta = payload.paginatedMessages.meta;
+        chat.messages.push(...new Set([...payload.paginatedMessages.messages]));
+        chat.count = meta.totalMessages;
+        chat.currentPage = meta.currentPage;
+        chat.hasNext = meta.hasNext;
+        chat.hasPrev = meta.hasPrevious;
+        chat.totalMessagesPages = meta.totalPages;
+      }
+    },
+
+    addPaginatedChat: (state, { payload }: { payload: UserChatEntity }) => {
+      const isChatExisted = state.paginatedChats.data.find((chat) => chat.id === payload.id);
+      console.log('🚀 ~ isChatExisted:', isChatExisted);
+
+      if (isChatExisted) {
+        return;
+      }
+
+      state.paginatedChats.data.push({
+        ...payload,
+        count: 1,
+        currentPage: 1,
+        hasNext: false,
+        hasPrev: false,
+        messagesTake: chatPaginationConfig.messagesTake,
+        totalMessagesPages: 1,
+      });
+    },
+
+    removePaginatedChat: (state, { payload }: { payload: { chat_id: string } }) => {
+      state.paginatedChats.data.filter((chat) => chat.id !== payload.chat_id);
+    },
+
     // add new chat
     addNewChat: (state, { payload }: { payload: addNewChatPayload }) => {
       const existedChat = state.chats.find((chat) => chat.chat_id === payload.chat_id);
@@ -56,14 +100,14 @@ export const messagesSlice = createSlice({
     },
 
     removeChat: (state, { payload }: { payload: { chat_id: string } }) => {
-      state.chats.filter((chat) => chat.chat_id !== payload.chat_id);
+      state.paginatedChats.data.filter((chat) => chat.id !== payload.chat_id);
     },
 
     // add a new message
 
     addNewMessage: (state, { payload }: { payload: addNewMessagePayload }) => {
-      const existedChat = state.chats.find((chat) => chat?.chat_id === payload.chat_id);
-      if (existedChat) existedChat?.messages.push(payload.message);
+      const existedChat = state.paginatedChats.data.find((chat) => chat?.id === payload.chat_id);
+      if (existedChat) existedChat?.messages.unshift(payload.message);
       return;
     },
 
@@ -71,14 +115,14 @@ export const messagesSlice = createSlice({
 
     updateMessageStatus: (state, { payload }: { payload: updateMessagePayload }) => {
       const { chat_id, message_id, new_status } = payload;
-      const chatIndex = state.chats.findIndex((chat) => chat.chat_id === chat_id);
+      const chatIndex = state.paginatedChats.data.findIndex((chat) => chat.id === chat_id);
 
       if (chatIndex !== -1) {
-        const messageIndex = state.chats[chatIndex].messages.findIndex((message) => message.id === message_id);
+        const messageIndex = state.paginatedChats.data[chatIndex].messages.findIndex((message) => message.id === message_id);
 
         if (messageIndex !== -1) {
-          state.chats[chatIndex].messages[messageIndex] = {
-            ...state.chats[chatIndex].messages[messageIndex],
+          state.paginatedChats.data[chatIndex].messages[messageIndex] = {
+            ...state.paginatedChats.data[chatIndex].messages[messageIndex],
             ...new_status,
           };
         }
@@ -86,10 +130,10 @@ export const messagesSlice = createSlice({
     },
 
     updateMessageStatusBulk: (state, { payload }: { payload: UpdateMessageStatusBulk }) => {
-      const chatIndex = state.chats.findIndex((chat) => chat.chat_id === payload.chat_id);
+      const chatIndex = state.paginatedChats.data.findIndex((chat) => chat.id === payload.chat_id);
 
       if (chatIndex !== -1) {
-        state.chats[chatIndex].messages = state.chats[chatIndex].messages.map((message) => {
+        state.paginatedChats.data[chatIndex].messages = state.paginatedChats.data[chatIndex].messages.map((message) => {
           const updatedMessage = payload.messages.find((updated) => updated.id === message.id);
           return updatedMessage ? { ...message, ...updatedMessage } : message;
         });
@@ -98,4 +142,15 @@ export const messagesSlice = createSlice({
   },
 });
 
-export const { addNewChat, addNewMessage, updateMessageStatus, updateMessageStatusBulk, removeChat, addRawChats } = messagesSlice.actions;
+export const {
+  addNewChat,
+  addNewMessage,
+  updateMessageStatus,
+  updateMessageStatusBulk,
+  removeChat,
+  addRawChats,
+  initPaginatedChats,
+  paginateChatMessages,
+  addPaginatedChat,
+  removePaginatedChat,
+} = messagesSlice.actions;

@@ -71,6 +71,7 @@
     "typeorm": "^0.3.17",
     "uuid": "^9.0.1",
     "wavesurfer.js": "^7.7.3",
+    "web-push": "^3.6.7",
     "zod": "^3.22.4"
   },
   "devDependencies": {

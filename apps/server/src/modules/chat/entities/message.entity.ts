@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, ManyToOne, OneToOne, PrimaryColumn } from 'typeorm';
+import { Column, Entity, Index, JoinColumn, ManyToOne, OneToOne, PrimaryColumn } from 'typeorm';
 import { UserEntity } from '../../user/entities/user.entity';
 import { UserChatEntity } from './userchat.entity';
 import { expectedFileTypes } from '@shared/types';
@@ -36,6 +36,7 @@ export class MessageEntity {
   sended: boolean;
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  @Index()
   sended_at: Date;
 
   @Column({ nullable: true })

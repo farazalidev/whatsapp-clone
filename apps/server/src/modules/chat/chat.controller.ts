@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpException, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, HttpException, Param, Post, Query } from '@nestjs/common';
 import { GetUser } from '../auth/decorators/getuser.decorator';
 import { LoginPayload } from '../auth/auth.service';
 import { ChatService } from './chat.service';
@@ -6,6 +6,7 @@ import { UserChatEntity } from './entities/userchat.entity';
 import { isSuccess } from '../../utils/isSuccess.typeguard';
 import { MessageDto } from './DTO/message.dto';
 import { UserEntity } from '../user/entities/user.entity';
+import { ChatsDto, ChatsParamsDto, PaginatedMessagesParamsDto } from './DTO/chats.dto';
 
 @Controller('chat')
 export class ChatController {
@@ -13,9 +14,9 @@ export class ChatController {
 
   // get user chats
   @Get('user-chats')
-  async getUserChats(@GetUser() user: LoginPayload): Promise<UserChatEntity[]> {
+  async getUserChats(@GetUser() user: LoginPayload, @Query() query: ChatsParamsDto): Promise<ChatsDto> {
     try {
-      const response = await this.chatSer.getUserChats(user.user_id);
+      const response = await this.chatSer.getUserChats(user.user_id, query);
       if (!isSuccess(response)) {
         throw new HttpException(response.error.message, response.error.statusCode);
       }
@@ -25,10 +26,24 @@ export class ChatController {
     }
   }
 
+  @Get('get-paginated-messages/:chat_id')
+  async getPaginatedMessages(@GetUser() user: UserEntity, @Query() query: PaginatedMessagesParamsDto, @Param() param: { chat_id: string }) {
+    const response = await this.chatSer.getPaginatedMessages(param.chat_id, query);
+    if (!isSuccess(response)) {
+      throw new HttpException(response.error.message, response.error.statusCode);
+    }
+    return response.data;
+  }
+
+  @Get('get-all-media-messages/:chat_id')
+  async getAllMediaMessages(@GetUser() user: UserEntity, @Param() param: { chat_id: string }) {
+    return await this.chatSer.getAllMediaMessages(user.user_id, param.chat_id);
+  }
+
   // create a new Chat
   @Post('new-chat')
-  async createChat(@GetUser() user: UserEntity, @Body() body: { chat_with: string; chat_id: string }) {
-    const response = await this.chatSer.createAnewChat(user.user_id, body.chat_id, body.chat_with);
+  async createChat(@GetUser() user: UserEntity, @Body() body: { chat: UserChatEntity }) {
+    const response = await this.chatSer.createAnewChat(user.user_id, body.chat);
     if (!isSuccess(response)) {
       throw new HttpException(response.error.message, response.error.statusCode);
     }

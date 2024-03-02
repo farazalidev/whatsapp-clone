@@ -10,8 +10,6 @@ const MessageBubbleVoicePreview: FC<IMessageBubblePreview> = ({ ChatSlice, Me, i
 
     const sender_id = message?.from.user_id === Me?.user_id ? Me?.user_id : receiver_id
 
-
-
     return (
         <div className={`relative flex h-fit w-fit max-w-[80%] justify-between rounded-md px-2 py-1 lg:max-w-[40%] ${isFromMe
             ? 'bg-whatsapp-misc-my_message_bg_light dark:bg-whatsapp-misc-my_message_bg_dark dark:text-whatsapp-dark-text text-whatsapp-light-text '

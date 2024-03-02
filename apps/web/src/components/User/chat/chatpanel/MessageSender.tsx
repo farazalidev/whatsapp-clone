@@ -21,8 +21,6 @@ const MessageSender = ({ receiver_id, chat_id }: { receiver_id: string; chat_id:
 
   const { message_input_loading } = useSelector((state: RootState) => state.LoadingSlice);
 
-  const chatSlice = useSelector((state: RootState) => state.ChatSlice);
-
   const { Me } = useSelector((state: RootState) => state.UserSlice);
 
   const { socket } = useSocket();
@@ -56,7 +54,7 @@ const MessageSender = ({ receiver_id, chat_id }: { receiver_id: string; chat_id:
     e.preventDefault();
     const newMessage: MessageEntity = {
       content: messageValue as string,
-      sended_at: new Date(),
+      sended_at: new Date().toISOString() as any,
       messageType: "text",
       media: null,
       is_seen: false,
@@ -68,7 +66,7 @@ const MessageSender = ({ receiver_id, chat_id }: { receiver_id: string; chat_id:
       sended: false,
       chat: raw_chat as any
     };
-    const isSended = await sendMessageFn({ chatSlice, receiver_id, socket, message: newMessage })
+    const isSended = await sendMessageFn({ socket, message: newMessage })
     if (!isSended) {
       toast("Failed to send Message", { position: "top-center" })
       setMessageValue("")

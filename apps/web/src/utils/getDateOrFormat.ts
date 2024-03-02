@@ -1,14 +1,7 @@
 import dayjs from 'dayjs';
-import { MessageEntity } from '@server/modules/chat/entities/message.entity';
 
-export function getDayOrFormattedDate(messages: MessageEntity[]): string {
-  if (!messages || messages.length === 0) return '';
-
-  const message = messages?.reduce((a, b) => {
-    return new Date(a?.sended_at) > new Date(a?.sended_at) ? a : b;
-  });
-
-  const date = dayjs(message.sended_at);
+export function getDayOrFormattedDate(messageDate: Date): string {
+  const date = dayjs(messageDate);
   const today = dayjs();
 
   // Check if the date is within the last 12 hours

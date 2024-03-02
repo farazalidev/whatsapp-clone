@@ -13,10 +13,10 @@ import ProgressBar from '@/Atoms/misc/ProgressBar';
 import useCurrentChat from '@/hooks/useCurrentChat';
 import { MessageEntity } from '@server/modules/chat/entities/message.entity';
 import { sendMessageFn } from '@/utils/sendMessageFn';
-import { mainDb } from '@/utils/mainIndexedDB';
+import { mainDb } from '@/utils/indexedDb/mainIndexedDB';
 import useFetchImage from '@/hooks/useFetchImage';
 
-export const MessageBubbleImagePreview: FC<IMessageBubblePreview> = ({ message, isFromMe, ChatSlice, receiver_id, socket, Me, messageLines }) => {
+export const MessageBubbleImagePreview: FC<IMessageBubblePreview> = ({ message, isFromMe, socket, Me }) => {
 
   const dimensions = useMemo(
     () => calculateScaledDimensions(message?.media?.width, message?.media?.height, 300, 300, 200, 200),
@@ -24,7 +24,6 @@ export const MessageBubbleImagePreview: FC<IMessageBubblePreview> = ({ message, 
   );
 
   const { raw_chat } = useCurrentChat();
-
 
   const lastAction = useCallback(() => {
     const lastAction = async () => {
@@ -36,14 +35,14 @@ export const MessageBubbleImagePreview: FC<IMessageBubblePreview> = ({ message, 
           content: message?.content,
           from: Me as any,
           is_seen: false,
-          media: message?.media,
+          media: { ...message?.media as any, path: `${Me?.user_id}/${message?.media?.id}` },
           messageType: message.messageType,
           received_at: null,
           seen_at: null,
           sended: false,
           sended_at: new Date(),
         };
-        const sended = await sendMessageFn({ chatSlice: ChatSlice, message: messageToSend, receiver_id: ChatSlice?.receiver_id as string, socket });
+        const sended = await sendMessageFn({ message: messageToSend, socket });
         if (sended) {
           await mainDb.media.delete(message.media?.id as string);
           await mainDb.mediaMessages.delete(message.id);
@@ -51,20 +50,20 @@ export const MessageBubbleImagePreview: FC<IMessageBubblePreview> = ({ message, 
       }
     };
     return lastAction();
-  }, [Me, ChatSlice, message, raw_chat, socket]);
+  }, [Me, message, raw_chat, socket]);
 
 
   const dispatch = useDispatch();
 
   const { thumbnailState } = useFetchMediaThumbnail({ isFromMe, message });
 
-  const { imageUrl } = useFetchImage({ isFromMe, me_id: Me?.user_id, message, receiver_id })
-
   const { cancel, download, retry, state } = useUpload({ isFromMe, message, lastAction });
 
+  const { imageUrl } = useFetchImage({ message: message?.media as any })
+
   const handleGalleryOverlay = (id: string | undefined) => {
-    if (id) {
-      dispatch(setActiveGalleryMedia(message as MessageEntity));
+    if (id && message?.media) {
+      dispatch(setActiveGalleryMedia({ ...message?.media, message: message }));
     }
     dispatch(toggleGalleryOverlay());
   };
@@ -88,11 +87,17 @@ export const MessageBubbleImagePreview: FC<IMessageBubblePreview> = ({ message, 
       width={dimensions.width}
       onClick={() => handleGalleryOverlay(message?.media?.id)}
     >
-      <span style={{ width: "100%", height: "100%", backgroundImage: `url(${thumbnailState.thumbnail})`, backgroundSize: "cover" }} >
-        {imageUrl ?
-          <Image key={message?.media?.id} src={imageUrl as string} loading="lazy" alt={''} fill />
-          : null}
-      </span>
+      {message?.messageType === "svg" ? <>
+        <span style={{ width: "100%", height: "100%" }} className='bg-transparent_bg bg-cover'>
+          {imageUrl ?
+            <Image key={message?.media?.id} src={imageUrl as string} loading="lazy" alt={''} fill />
+            : null}
+        </span></> :
+        <span style={{ width: "100%", height: "100%", backgroundImage: `url(${thumbnailState.thumbnail})`, backgroundSize: "cover" }} >
+          {imageUrl ?
+            <Image key={message?.media?.id} src={imageUrl as string} loading="lazy" alt={''} fill />
+            : null}
+        </span>}
 
       <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-b from-transparent to-gray-900"></div>
       {/* progress bar */}
@@ -113,7 +118,7 @@ export const MessageBubbleImagePreview: FC<IMessageBubblePreview> = ({ message, 
         ) : null
       }
 
-      <MediaMessageStatus isFromMe={isFromMe} message={message} key={message?.id} messageLines={messageLines} />
+      <MediaMessageStatus isFromMe={isFromMe} message={message} key={message?.id} />
     </MediaMessageBubbleWrapper >
   );
 };
