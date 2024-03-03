@@ -345,25 +345,6 @@ export class ChatService {
       };
     }
   }
-  async getUnreadMessagesForUser(user_id: string): Promise<unreadMessage[]> {
-    const chats = await this.UserChatRepo.find({ where: [{ chat_for: { user_id } }, { chat_with: { user_id } }], relations: { messages: true } });
-
-    const messages: unreadMessage[] = [];
-
-    for (const chat of chats) {
-      const unreadMessages = chat.messages.filter((message) => !message.is_seen && message.from.user_id !== user_id);
-
-      const chatExists = messages?.find((message) => message.chat_id === chat.id);
-
-      if (chatExists) {
-        chatExists.unread_messages.push(...unreadMessages);
-        return;
-      }
-
-      messages.push({ chat_id: chat.id, unread_messages: [...unreadMessages] });
-    }
-    return messages;
-  }
 
   async markUnreadMessages(user_id: string, chat_id: string): Promise<ResponseType> {
     try {

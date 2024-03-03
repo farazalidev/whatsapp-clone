@@ -13,7 +13,7 @@ const SideBarUserCardOptions: FC<SideBarUserCardOptionsProps> = ({ ...props }) =
       <Menu as="div" className="relative inline-block text-left">
         <div>
           <Menu.Button className="flex place-items-center text-sm">
-            <OptionIcon src="/icons/down.svg" tooltip="options" />
+            <OptionIcon src="/icons/down.svg" tooltip="options" height={15} width={15} />
           </Menu.Button>
         </div>
 

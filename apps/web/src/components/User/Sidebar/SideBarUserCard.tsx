@@ -1,4 +1,4 @@
-import React, { FC, useMemo } from 'react';
+import React, { FC, useMemo, useState } from 'react';
 import Avatar, { AvatarProps } from '../Avatar';
 import { cn } from '@/utils/cn';
 import SideBarUserCardOptions from './SideBarUserCardOptions';
@@ -17,7 +17,6 @@ interface SideBarUserCardProps extends AvatarProps {
   show_options?: boolean;
   active?: boolean;
   onClick?: () => void;
-  unread_message_count?: number;
 }
 
 const SideBarUserCard: FC<SideBarUserCardProps> = ({
@@ -25,22 +24,28 @@ const SideBarUserCard: FC<SideBarUserCardProps> = ({
   show_options = true,
   active = false,
   onClick,
-  unread_message_count,
   user_id,
   for_other,
   messages,
 }) => {
   const { Me } = useSelector((state: RootState) => state.UserSlice);
-
+  const [unreadMessagesCount, setUnreadMessagesCount] = useState(0)
   const lastMessage = useMemo(() => {
     const memoMessages = messages || [];
     const lastMessage = memoMessages[0];
-    return lastMessage;
-  }, [messages]);
+    const unreadMessagesCount = messages.filter(message => !message.is_seen && message.from.user_id !== Me?.user_id)
+    setUnreadMessagesCount(unreadMessagesCount?.length)
+    return { lastMessage, };
+  }, [Me?.user_id, messages]);
 
   return (
     <div
-      onClick={onClick}
+      onClick={() => {
+        if (onClick) {
+          onClick()
+          setUnreadMessagesCount(0)
+        }
+      }}
       className={cn(
         'dark:bg-whatsapp-dark-primary_bg group relative flex w-full px-2 dark:text-white',
         active
@@ -56,49 +61,49 @@ const SideBarUserCard: FC<SideBarUserCardProps> = ({
           <span className="w-[50%] overflow-ellipsis whitespace-nowrap text-sm md:text-base">{clampString(name, 25)}</span>
           {lastMessage ? (
             <div className="w-full text-ellipsis text-xs font-extralight text-gray-600 md:text-sm dark:text-gray-400">
-              {lastMessage.messageType === 'image' || lastMessage.messageType === 'svg' ? (
+              {lastMessage.lastMessage.messageType === 'image' || lastMessage.lastMessage.messageType === 'svg' ? (
                 <div className='flex gap-1 place-items-center'>
-                  {lastMessage.from.user_id === Me?.user_id ? <MessageStatus message={lastMessage} /> : null}
+                  {lastMessage.lastMessage.from.user_id === Me?.user_id ? <MessageStatus message={lastMessage.lastMessage} /> : null}
                   <OptionIcon height={15} width={15} src='/icons/message-status/status-image.svg' />
-                  <span>{lastMessage?.content ? clampString(lastMessage.content, 25) : "Photo"}</span>
+                  <span>{lastMessage.lastMessage?.content ? clampString(lastMessage.lastMessage.content, 25) : "Photo"}</span>
                 </div>
-              ) : lastMessage.messageType === 'video' ? (
+              ) : lastMessage.lastMessage.messageType === 'video' ? (
                 <div className='flex gap-1 place-items-center'>
-                  {lastMessage.from.user_id === Me?.user_id ? <MessageStatus message={lastMessage} /> : null}
+                    {lastMessage.lastMessage.from.user_id === Me?.user_id ? <MessageStatus message={lastMessage.lastMessage} /> : null}
                   <OptionIcon height={15} width={15} src='/icons/message-status/status-video.svg' />
-                  <span>{lastMessage?.content ? clampString(lastMessage.content, 25) : "Video"}</span>
+                    <span>{lastMessage.lastMessage?.content ? clampString(lastMessage.lastMessage.content, 25) : "Video"}</span>
                 </div>
-              ) : lastMessage.messageType === 'pdf' || lastMessage.messageType == 'others' ? (
+                ) : lastMessage.lastMessage.messageType === 'pdf' || lastMessage.lastMessage.messageType == 'others' ? (
                 <div className='flex gap-1 place-items-center'>
-                  {lastMessage.from.user_id === Me?.user_id ? <MessageStatus message={lastMessage} /> : null}
+                      {lastMessage.lastMessage.from.user_id === Me?.user_id ? <MessageStatus message={lastMessage.lastMessage} /> : null}
                   <OptionIcon height={15} width={15} src='/icons/message-status/status-document.svg' />
-                  <span>{lastMessage?.content ? clampString(lastMessage.content, 25) : "File"}</span>
+                      <span>{lastMessage.lastMessage?.content ? clampString(lastMessage.lastMessage.content, 25) : "File"}</span>
                 </div>
-              ) : lastMessage.messageType === 'text' ? (
+                  ) : lastMessage.lastMessage.messageType === 'text' ? (
                 <div className='flex gap-1 place-items-center'>
-                  {lastMessage.from.user_id === Me?.user_id ? <MessageStatus message={lastMessage} /> : null}
-                  <span>{lastMessage?.content ? clampString(lastMessage.content, 25) : null}</span>
+                        {lastMessage.lastMessage.from.user_id === Me?.user_id ? <MessageStatus message={lastMessage.lastMessage} /> : null}
+                        <span>{lastMessage.lastMessage?.content ? clampString(lastMessage.lastMessage.content, 25) : null}</span>
                 </div>
-              ) : lastMessage.messageType === 'audio' ? (
+                    ) : lastMessage.lastMessage.messageType === 'audio' ? (
                 <div className='flex gap-1 place-items-center'>
-                  {lastMessage.from.user_id === Me?.user_id ? <MessageStatus message={lastMessage} /> : null}
+                          {lastMessage.lastMessage.from.user_id === Me?.user_id ? <MessageStatus message={lastMessage.lastMessage} /> : null}
                   <OptionIcon height={15} width={15} src='/icons/message-status/audio_status.svg' />
-                  <span>{lastMessage?.content ? clampString(lastMessage.content, 25) : "Audio"}</span>
+                          <span>{lastMessage.lastMessage?.content ? clampString(lastMessage.lastMessage.content, 25) : "Audio"}</span>
                 </div>
               ) : null}
             </div>
           ) : null}
         </div>
         {show_options ? (
-          <span className="relative flex h-[60%] flex-col gap-3">
+          <span className="relative flex h-[60%] flex-col gap-1">
             <div className="text-xs font-extralight text-gray-600 dark:text-gray-400">
-              {lastMessage?.sended_at ? getDayOrFormattedDate(lastMessage?.sended_at) : null}
+              {lastMessage?.lastMessage.sended_at ? getDayOrFormattedDate(lastMessage?.lastMessage.sended_at) : null}
             </div>
             <div className="relative flex h-full place-items-center justify-evenly overflow-hidden">
               <span className="absolute left-[50%] transition-all duration-300 group-hover:left-0">
-                {unread_message_count ? <UnreadCount count={unread_message_count} /> : null}
+                <UnreadCount count={unreadMessagesCount} />
               </span>
-              <span className="absolute -right-full transition-all duration-300 group-hover:right-0">
+              <span className="absolute -right-full transition-all duration-300 group-hover:right-0 flex justify-center place-items-center">
                 <SideBarUserCardOptions />
               </span>
             </div>
