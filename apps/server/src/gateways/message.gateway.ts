@@ -54,29 +54,26 @@ export class MessageGateway implements OnGatewayInit {
   async joinRoom(client: ISocket, payload: { chat_id: string }) {
     // updating message status bulk
     const response = await this.chatService.updateMessagesStatusToSeen(payload.chat_id, client.user.user_id);
+
     if (isSuccess(response)) {
-      const receiverInTheRoom = await this.roomService.isUserInTheRoom(payload.chat_id, response.data.receiver_id);
-      if (receiverInTheRoom) {
+      let receiver_pid;
+
+      await this.onlineUsersService.getUserPid(response.data.receiver_id, (err, pid) => {
+        if (err) {
+          receiver_pid = null;
+        }
+        receiver_pid = pid;
+      });
+      if (receiver_pid) {
         // emitting new status for messages
-        client.to(payload.chat_id).emit(`update_message_status_bulk`, { chat_id: payload.chat_id, messages: response.data.messages });
+        client.to(response.data.receiver_id).emit(`update_message_status_bulk`, { chat_id: payload.chat_id, messages: response.data.messages });
       }
     }
 
     await this.roomService.joinOrCreateRoom(payload.chat_id, client.user.user_id, process.env.PID);
     // when the user joins the room update its online status
     this.server.emit(`status_user_${client.user.user_id}`, true);
-
     client.join(payload.chat_id);
-  }
-
-  /**
-   *
-   * @param client client socket
-   */
-  @onEvent('get_unread_messages')
-  async getMMessages(client: ISocket) {
-    const user_id = client.user.user_id;
-    client.emit(`unread_messages_${user_id}`, await this.chatService.getUnreadMessagesForUser(user_id));
   }
 
   /**
@@ -136,12 +133,13 @@ export class MessageGateway implements OnGatewayInit {
       }
       // if the user is not in the room then sends message notification
       // TODO: Send a message notification
+      client.emit(`unread_message_${payload.receiverId}`, { chat_id: payload?.chat?.id, message: payload.message });
 
       return;
     }
 
     // emitting message to the room side
-    client.to(payload.chat.id).emit('newMessage', newMessage);
+    client.to(payload.chat.id).emit('newMessage', { chat_id: payload.chat.id, message: newMessage });
   }
 
   @onEvent('typing')

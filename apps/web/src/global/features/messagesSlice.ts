@@ -106,6 +106,7 @@ export const messagesSlice = createSlice({
     // add a new message
 
     addNewMessage: (state, { payload }: { payload: addNewMessagePayload }) => {
+      console.log('🚀 ~ payload:', payload);
       const existedChat = state.paginatedChats.data.find((chat) => chat?.id === payload.chat_id);
       if (existedChat) existedChat?.messages.unshift(payload.message);
       return;

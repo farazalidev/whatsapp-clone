@@ -3,7 +3,7 @@ import MessagePreview from '@/Atoms/chat/MessagePreview';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '@/global/store';
 import useSocket from '@/hooks/useSocket';
-import { addNewMessage, updateMessageStatus, updateMessageStatusBulk } from '@/global/features/messagesSlice';
+import { addNewMessage, updateMessageStatus } from '@/global/features/messagesSlice';
 import useCurrentChat from '@/hooks/useCurrentChat';
 import usePaginatedMessages from '@/hooks/usePaginatedMessages';
 import Image from 'next/image';
@@ -39,17 +39,13 @@ const ChatHandler: FC<ChatHandlerProps> = () => {
 
   useEffect(() => {
     socket.on('newMessage', (message) => {
-      dispatch(addNewMessage({ chat_id: id as string, message }));
+      dispatch(addNewMessage({ chat_id: id || message.chat_id, message: message.message }));
     });
     socket.on('message_status', (messageStatus) => {
       dispatch(updateMessageStatus({ chat_id: messageStatus.chat_id, message_id: messageStatus.message_id, new_status: messageStatus.status }));
     });
-    socket.on('update_message_status_bulk', (messages) => {
-      dispatch(updateMessageStatusBulk(messages));
-    });
     return () => {
       socket.off('message_status');
-      socket.off('update_message_status_bulk');
     };
   }, [socket, dispatch, id]);
 

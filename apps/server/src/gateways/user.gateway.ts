@@ -24,6 +24,7 @@ export class UserGateway implements OnGatewayDisconnect, OnGatewayConnection, On
   }
   async handleConnection(client: ISocket) {
     client.emit('get_pid', process.env.PID);
+    client.join(client.user.user_id);
     if (client?.user) {
       this.server.emit(`status_user_${client.user.user_id}`, true);
       await this.chatService.updateMessagesStatusToReceived(client.user.user_id);

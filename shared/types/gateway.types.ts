@@ -30,7 +30,7 @@ type stopTypingIndicatorEventPattern = `stop_typing_${string}_${string}`;
 type user_online_statusPattern = `status_user_${string}`;
 
 export interface ServerToClientEvents {
-  newMessage: (message: MessageEntity) => void;
+  newMessage: (payload: NewMessagePayload) => void;
   get_pid: (pid: string) => void;
   [event: ChatEventPattern]: (message: MessageEntity) => void;
   [event: unreadMessagesEventPattern]: (messages: unreadMessage[]) => void;
@@ -52,6 +52,11 @@ export interface ClientToServerEvents {
   typing: (payload: typingPayload) => void;
   stop_typing: (payload: typingPayload) => {};
   get_user_online_status: (payload: getUserOnlineStatusPayload) => void;
+}
+
+export interface NewMessagePayload {
+  message: MessageEntity;
+  chat_id: string;
 }
 
 export interface sendMessagePayload {

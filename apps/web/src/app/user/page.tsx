@@ -23,6 +23,7 @@ import CompleteProfile from '@/components/AuthPage/CompleteProfile';
 import AuthPageTop from '@/components/AuthPage/AuthPageTop';
 import SideBarOverlay from '@/components/User/Sidebar/SideBarOverlay';
 import { overlayContent } from '@/components/User/Sidebar/overlaycontent/overlaycontet';
+import { addNewMessage, updateMessageStatusBulk } from '@/global/features/messagesSlice';
 
 
 type Props = {
@@ -37,6 +38,13 @@ const UserPage: FC<Props> = () => {
 
   const dispatch = useDispatch();
 
+
+  const { AddContactModalIsOpen } = useSelector((state: RootState) => state.modalSlice);
+  const { isLoading, error, data } = useUser();
+  const { state: { error: chatsError, isLoading: chatsIsLoading } } = useChats2();
+  const { error: contactsError, isLoading: contactsIsLoading } = useContacts();
+  const { selectedOverlay, show } = useSelector((state: RootState) => state.sideBarOverlaySlice);
+
   // getting pid from the socket
   useEffect(() => {
     socket.on('get_pid', (pid) => {
@@ -49,11 +57,21 @@ const UserPage: FC<Props> = () => {
     };
   }, [socket]);
 
-  const { AddContactModalIsOpen } = useSelector((state: RootState) => state.modalSlice);
-  const { isLoading, error, data } = useUser();
-  const { state: { error: chatsError, isLoading: chatsIsLoading } } = useChats2();
-  const { error: contactsError, isLoading: contactsIsLoading } = useContacts();
-  const { selectedOverlay, show } = useSelector((state: RootState) => state.sideBarOverlaySlice);
+
+  useEffect(() => {
+    socket.on(`unread_message_${data?.Me.user_id}`, (message) => {
+      store.dispatch(addNewMessage({ chat_id: message.chat_id, message: message.message }))
+    })
+    socket.on(`update_message_status_bulk`, (payload) => {
+      console.log("🚀 ~ socket.on ~ payload:", payload)
+      if (payload.messages.length > 0)
+        store.dispatch(updateMessageStatusBulk(payload))
+    })
+    return () => {
+      socket.off(`unread_message_${data?.Me.user_id}`)
+    }
+  }, [data?.Me.user_id, socket])
+
 
   if (isLoading || chatsIsLoading || contactsIsLoading) {
     return <MainLoadingPage />;
