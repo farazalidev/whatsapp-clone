@@ -1,6 +1,7 @@
-import { Column, CreateDateColumn, Entity, JoinColumn, OneToOne, PrimaryColumn, UpdateDateColumn } from 'typeorm';
+import { Column, CreateDateColumn, Entity, JoinColumn, OneToMany, OneToOne, PrimaryColumn, UpdateDateColumn } from 'typeorm';
 import { v4 } from 'uuid';
 import { UserProfileEntity } from './userprofile.entity';
+import { SubscriptionEntity } from './subscription.entity';
 
 @Entity({ name: 'user' })
 export class UserEntity {
@@ -16,6 +17,10 @@ export class UserEntity {
   @OneToOne(() => UserProfileEntity, (profile) => profile.id, { eager: true, cascade: true, nullable: true })
   @JoinColumn({ name: 'profileId' })
   profile: UserProfileEntity;
+
+  @JoinColumn()
+  @OneToMany(() => SubscriptionEntity, (sub) => sub.user, { nullable: true, cascade: true })
+  subscription?: SubscriptionEntity;
 
   @Column({ type: 'boolean', nullable: true, default: false })
   isVerified: boolean = false;

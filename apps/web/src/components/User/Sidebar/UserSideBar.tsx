@@ -10,6 +10,7 @@ import Typography from '@/Atoms/Typography/Typography';
 import { setUserChatEntity } from '@/global/features/ChatSlice';
 import { isIamReceiver } from '../../../utils/isIamReceiver';
 import { setCurrentUserProfilePreview } from '@/global/features/ProfilePreviewSlice';
+import NotificationActivator from './NotificationActivator';
 
 const UserSideBar = () => {
   const dispatch = useDispatch();
@@ -51,6 +52,7 @@ const UserSideBar = () => {
         <SideBarHeader />
         <SideBarSearch />
       </div>
+        <NotificationActivator />
       <Suspense fallback={<>loading...</>}>
           <div className='overflow-y-auto scrollbar h-full'>
         {paginatedChats.data && data?.Me && paginatedChats.data.length !== 0 ? (

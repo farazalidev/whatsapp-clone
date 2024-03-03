@@ -19,6 +19,7 @@ import { UserGateway } from './gateways/user.gateway';
 import { KafkaModule } from './modules/kafka/kafka.module';
 import { MessageConsumer } from './services/message.consumer';
 import { ShutDownService } from './services/shutDown.service';
+import { NotificationModule } from './modules/notification/notification.module';
 
 @Module({
   imports: [
@@ -46,6 +47,7 @@ import { ShutDownService } from './services/shutDown.service';
     AuthModule,
     UserModule,
     ChatModule,
+    NotificationModule,
   ],
   controllers: [AppController],
   providers: [

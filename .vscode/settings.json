@@ -1,5 +1,5 @@
 {
-  "cSpell.words": ["barheigth", "clusterize", "dotfiles", "onlineusers", "rpush", "sidebaroverlay", "submessages"],
+  "cSpell.words": ["barheigth", "clusterize", "dotfiles", "onlineusers", "rpush", "sidebaroverlay", "sonner", "submessages", "webpush"],
   "typescript.tsdk": "node_modules/typescript/lib",
   "tailwindCSS.experimental.classRegex": [
     ["cva\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]"],
