@@ -115,9 +115,23 @@ export class MessageGateway implements OnGatewayInit {
         // if the user is not online at all
         // sends push notification
         const subscription = await this.subRepo.findOne({ where: { user: { user_id: payload.receiverId } }, relations: { user: true } });
+        const messageBody =
+          payload.message.messageType === 'image' || payload.message.messageType === 'svg'
+            ? 'sended an Image'
+            : payload.message.messageType === 'audio'
+              ? 'sended an Audio'
+              : payload.message.messageType === 'pdf'
+                ? 'sended a Pdf'
+                : payload.message.messageType === 'video'
+                  ? 'sended a Video'
+                  : payload.message.messageType === 'text'
+                    ? `message: ${payload.message?.content}`
+                    : payload.message.messageType === 'others'
+                      ? 'sended a File'
+                      : 'new Message';
         const notificationPayload = {
           title: `New message from ${client.user.name}`,
-          body: `message: ${payload.message.content}`,
+          body: messageBody,
           icon: `${process.env.ASSETS_SERVER_URL}/api/file/get-profile-pic/${payload.receiverId}/small`,
           data: {
             url: `${process.env.FRONT_END_URL}/user`,

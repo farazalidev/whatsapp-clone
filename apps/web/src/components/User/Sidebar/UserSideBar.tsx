@@ -60,6 +60,7 @@ const UserSideBar = () => {
             return chat.messages.length > 0 ? (
                 <SideBarUserCard
                   key={chat.id}
+                chat_id={chat.id}
                   name={isIamReceiver(chat.chat_with?.user_id, data?.Me!.user_id) ? chat.chat_for.name : chat?.chat_with.name}
                   messages={chat.messages}
                   active={chat.id === id}
