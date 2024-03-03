@@ -8,11 +8,13 @@ import { MessageEntity } from '@server/modules/chat/entities/message.entity';
 import { getDayOrFormattedDate } from '@/utils/getDateOrFormat';
 import MessageStatus from '@/Atoms/chat/messageBubbles/MessageStatus';
 import { useSelector } from 'react-redux';
-import { RootState } from '@/global/store';
+import { RootState, store } from '@/global/store';
 import OptionIcon from './OptionIcon';
+import { updateMessageStatusBulk } from '@/global/features/messagesSlice';
 
 interface SideBarUserCardProps extends AvatarProps {
   name: string;
+  chat_id: string
   messages: MessageEntity[];
   show_options?: boolean;
   active?: boolean;
@@ -27,14 +29,15 @@ const SideBarUserCard: FC<SideBarUserCardProps> = ({
   user_id,
   for_other,
   messages,
+  chat_id
 }) => {
   const { Me } = useSelector((state: RootState) => state.UserSlice);
-  const [unreadMessagesCount, setUnreadMessagesCount] = useState(0)
+  const [unreadMessagesCount, setUnreadMessagesCount] = useState<MessageEntity[]>([])
   const lastMessage = useMemo(() => {
     const memoMessages = messages || [];
     const lastMessage = memoMessages[0];
     const unreadMessagesCount = messages.filter(message => !message.is_seen && message.from.user_id !== Me?.user_id)
-    setUnreadMessagesCount(unreadMessagesCount?.length)
+    setUnreadMessagesCount(unreadMessagesCount)
     return { lastMessage, };
   }, [Me?.user_id, messages]);
 
@@ -42,8 +45,8 @@ const SideBarUserCard: FC<SideBarUserCardProps> = ({
     <div
       onClick={() => {
         if (onClick) {
+          store.dispatch(updateMessageStatusBulk({ chat_id, messages: unreadMessagesCount.map(message => ({ ...message, is_seen: true })) }))
           onClick()
-          setUnreadMessagesCount(0)
         }
       }}
       className={cn(
@@ -101,7 +104,7 @@ const SideBarUserCard: FC<SideBarUserCardProps> = ({
             </div>
             <div className="relative flex h-full place-items-center justify-evenly overflow-hidden">
               <span className="absolute left-[50%] transition-all duration-300 group-hover:left-0">
-                <UnreadCount count={unreadMessagesCount} />
+                <UnreadCount count={unreadMessagesCount.length} />
               </span>
               <span className="absolute -right-full transition-all duration-300 group-hover:right-0 flex justify-center place-items-center">
                 <SideBarUserCardOptions />
