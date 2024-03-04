@@ -1,7 +1,7 @@
 {
-  "name": "static-assets-server",
+  "name": "assets-server",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "apps/static-assets-server/src",
+  "sourceRoot": "apps/assets-server/src",
   "projectType": "application",
   "targets": {
     "build": {
@@ -11,12 +11,12 @@
       "options": {
         "target": "node",
         "compiler": "tsc",
-        "outputPath": "dist/apps/static-assets-server",
-        "main": "apps/static-assets-server/src/main.ts",
-        "tsConfig": "apps/static-assets-server/tsconfig.app.json",
-        "assets": ["apps/static-assets-server/src/assets"],
+        "outputPath": "dist/apps/assets-server",
+        "main": "apps/assets-server/src/main.ts",
+        "tsConfig": "apps/assets-server/tsconfig.app.json",
+        "assets": ["apps/assets-server/src/assets"],
         "isolatedConfig": true,
-        "webpackConfig": "apps/static-assets-server/webpack.config.js"
+        "webpackConfig": "apps/assets-server/webpack.config.js"
       },
       "configurations": {
         "development": {},
@@ -27,14 +27,14 @@
       "executor": "@nx/js:node",
       "defaultConfiguration": "development",
       "options": {
-        "buildTarget": "static-assets-server:build"
+        "buildTarget": "assets-server:build"
       },
       "configurations": {
         "development": {
-          "buildTarget": "static-assets-server:build:development"
+          "buildTarget": "assets-server:build:development"
         },
         "production": {
-          "buildTarget": "static-assets-server:build:production"
+          "buildTarget": "assets-server:build:production"
         }
       }
     },
@@ -42,14 +42,14 @@
       "executor": "@nx/eslint:lint",
       "outputs": ["{options.outputFile}"],
       "options": {
-        "lintFilePatterns": ["apps/static-assets-server/**/*.ts"]
+        "lintFilePatterns": ["apps/assets-server/**/*.ts"]
       }
     },
     "test": {
       "executor": "@nx/jest:jest",
       "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
       "options": {
-        "jestConfig": "apps/static-assets-server/jest.config.ts"
+        "jestConfig": "apps/assets-server/jest.config.ts"
       }
     }
   },
