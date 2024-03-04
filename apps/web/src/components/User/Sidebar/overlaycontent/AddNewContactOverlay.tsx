@@ -1,6 +1,6 @@
 'use client';
 import SearchInput from '@/Atoms/Input/SearchInput';
-import React, { Suspense } from 'react';
+import React, { Suspense, useMemo } from 'react';
 import AddNewContactHeading from './AddNewContactHeading';
 import { useDispatch, useSelector } from 'react-redux';
 import { toggleAddContactModal } from '@/global/features/ModalSlice';
@@ -16,6 +16,7 @@ import { RootState, store } from '../../../../global/store';
 import { isIamReceiver } from '@/utils/isIamReceiver';
 import { ContactEntity } from '@server/modules/user/entities/contact.entity';
 import ContactCard from './ContactCard';
+import { groupBy } from '@/utils/groupBy';
 
 const AddNewContactOverlay = () => {
   const dispatch = useDispatch();
@@ -66,6 +67,8 @@ const AddNewContactOverlay = () => {
     }
   };
 
+  const groupedContacts = useMemo(() => groupBy(data.contacts, (contact) => contact.contact.name.slice(0, 1)), [data.contacts])
+
   return (
     <div>
       <SearchInput
@@ -82,16 +85,15 @@ const AddNewContactOverlay = () => {
         <AddNewContactHeading heading="Contacts on whatsapp" />
 
         <Suspense fallback={<FallBackLoadingSpinner />}>
-          {data?.contacts || data.contacts.length === 0 ? (
-            data.contacts?.map((contact) => (
-              <ContactCard
-                key={contact.id}
-                name={contact.contact?.name}
-                for_other
-                user_id={contact.contact.user_id}
-                onClick={() => chatStartHandler(contact)}
-              />
-            ))
+          {groupedContacts ? (
+            Array.from(groupedContacts).sort().map(([key, value]) => {
+              return <>
+                <AddNewContactHeading heading={key} />
+                {value.map(contact => {
+                  return <ContactCard key={contact.contact.user_id} contact={contact} for_other user_id={contact.contact.user_id} onClick={() => chatStartHandler(contact)} />
+                })}
+              </>
+            })
           ) : (
             <Typography className="flex h-full w-full place-items-center justify-center"> Nothing here...</Typography>
           )}

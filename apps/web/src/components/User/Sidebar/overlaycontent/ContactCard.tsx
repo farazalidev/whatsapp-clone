@@ -1,14 +1,15 @@
 import React, { FC } from 'react';
 import Avatar, { AvatarProps } from '../../Avatar';
 import { cn } from '@/utils/cn';
+import { ContactEntity } from '@server/modules/user/entities/contact.entity';
 
 interface ContactCardProps extends AvatarProps {
-    name: string;
     onClick?: () => void;
+    contact: ContactEntity
 }
 
 const ContactCard: FC<ContactCardProps> = ({
-    name,
+    contact,
     onClick,
     user_id,
     for_other,
@@ -22,13 +23,15 @@ const ContactCard: FC<ContactCardProps> = ({
             )}
         >
             <span className="py-4">
-                <Avatar user_id={user_id} for_other={for_other} name={name} height={55} width={55} />
+                <Avatar user_id={user_id} for_other={for_other} name={contact.contact?.name} height={55} width={55} />
             </span>
-            <div className="border-whatsapp-light-secondary_bg dark:border-whatsapp-dark-secondary_bg flex w-full place-items-center  justify-between border-b-[1px] px-3">
+            <div className="border-whatsapp-light-secondary_bg dark:border-whatsapp-dark-secondary_bg flex w-full justify-center border-b-[1px] px-3 flex-col">
                 <div className="flex flex-col justify-evenly">
-                    {name}
+                    {contact.contact?.name}
                 </div>
-
+                <span className='text-whatsapp-light-text dark:text-whatsapp-dark-text text-opacity-50 dark:text-opacity-50'>
+                    {contact.contact?.profile?.about}
+                </span>
             </div>
         </div>
     );

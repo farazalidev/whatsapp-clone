@@ -57,7 +57,7 @@ const SideBarUserCard: FC<SideBarUserCardProps> = ({
       )}
     >
       <span className="py-4">
-        <Avatar user_id={user_id} for_other={for_other} name={name} height={55} width={55} />
+        <Avatar user_id={user_id} for_other={for_other} name={name} height={50} width={50} />
       </span>
       <div className="border-whatsapp-light-secondary_bg dark:border-whatsapp-dark-secondary_bg flex w-full place-items-center  justify-between border-b-[1px] px-3">
         <div className="flex flex-col justify-evenly">
