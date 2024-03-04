@@ -77,8 +77,8 @@ const AddNewContactOverlay = () => {
         className="mx-2 mb-[4px] mt-[1px]"
       />
       <div>
-        <SideBarOptionCard title="Add New Contact" icon_path="/icons/add-contact.svg" onClick={handleAddNewContact} />
-        <SideBarOptionCard title="Add New Group" icon_path="/icons/add-group.svg" />
+        <SideBarOptionCard title="Add New Contact" icon_path="/icons/plus-white.svg" onClick={handleAddNewContact} />
+        <SideBarOptionCard title="Add New Group" icon_path="/icons/community-group-white.svg" />
         <AddNewContactHeading heading="Contacts on whatsapp" />
 
         <Suspense fallback={<FallBackLoadingSpinner />}>

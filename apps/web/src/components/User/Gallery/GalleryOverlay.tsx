@@ -71,7 +71,7 @@ const GalleryOverlay: FC<IGalleryOverlay> = ({ onClose, show }) => {
   }, [Me?.user_id, id, dispatch, receiver_id]);
 
   return show ? (
-    <div className="bg-whatsapp-dark-primary_bg absolute inset-0 z-40 flex h-full w-full flex-col bg-opacity-95 text-white">
+    <div className="dark:bg-whatsapp-dark-primary_bg bg-whatsapp-light-secondary_gray absolute inset-0 z-40 flex h-full w-full flex-col bg-opacity-95 text-white">
       {state.loading ? (
         <div className="flex h-full w-full place-items-center justify-center">
           <Image src={'/icons/spinner.svg'} alt="loading" height={50} width={50} />

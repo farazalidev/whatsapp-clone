@@ -23,9 +23,9 @@ const CarouselItem: FC<ICarousalItemProps> = ({ active = false, url, data }) => 
   return (
     <div
       className={cn([
-        'border-whatsapp-light-secondary_bg box-content relative max-h-[60px] max-w-[60px] h-[60px] w-[60px] dark:border-whatsapp-dark-secondary_bg flex-shrink-0 flex-grow-0 cursor-pointer rounded-md border-[5px] bg-gray-50 text-white transition-all',
-        active ? 'border-gray-700 dark:border-gray-300' : '',
-        'hover:border-gray-300',
+        'border-whatsapp-light-secondary_bg box-content relative max-h-[70px] max-w-[70px] h-[60px] w-[60px] dark:border-whatsapp-dark-secondary_bg flex-shrink-0 flex-grow-0 cursor-pointer rounded-md border-[5px] bg-gray-50 text-white transition-all',
+        active ? 'border-gray-700 dark:border-white h-[65px] w-[65px]' : '',
+        'hover:border-gray-400',
         data?.type === "svg" ? 'bg-transparent_bg bg-cover' : ''
       ])}
       onClick={() => handleActiveMedia(data)}
