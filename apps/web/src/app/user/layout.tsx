@@ -1,3 +1,4 @@
+'use client'
 import React, { FC, ReactNode } from 'react';
 
 const UserPageLayout: FC<{ children: ReactNode }> = ({ children }) => {

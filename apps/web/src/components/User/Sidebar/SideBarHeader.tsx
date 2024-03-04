@@ -15,7 +15,7 @@ const SideBarHeader: FC<SideBarHeaderProps> = ({ ...props }) => {
       className="bg-whatsapp-light-secondary_bg dark:bg-whatsapp-dark-secondary_bg inline-flex w-full place-items-center justify-between px-4 py-2"
       {...props}
     >
-      <Avatar for_other={false} user_id={data?.Me!.user_id} height={40} width={40} />
+      <Avatar for_other={false} user_id={data?.Me?.user_id} height={40} width={40} />
       <SideBarHeaderOptions />
     </div>
   );

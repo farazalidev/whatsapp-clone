@@ -1,7 +1,7 @@
 import { cn } from '@/utils/cn';
 import { fetcher } from '@/utils/fetcher';
 import Image from 'next/image';
-import React, { FC, Suspense } from 'react';
+import React, { FC } from 'react';
 import useSwr from 'swr';
 
 export interface AvatarProps extends React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement> {
@@ -25,15 +25,13 @@ const Avatar: FC<AvatarProps> = ({ user_id, for_other, isAbsolute, absolute_src,
   const { data } = useSwr(user_id, isAbsolute ? null : getProfilePic);
 
   return (
-    <Suspense fallback={'loading'}>
       <div {...props} className={cn('relative', props.className)} style={{ height, width }}>
         {isAbsolute ? (
           <Image src={absolute_src || '/icons/avatardefault.svg'} fill className="h-[55px] w-[55px] rounded-full object-cover" alt={name ? name : 'user'} />
         ) : (
           <Image src={(data as string) || '/icons/avatardefault.svg'} fill className="h-[55px] w-[55px] rounded-full object-cover" alt={name ? name : 'user'} />
         )}
-      </div>
-    </Suspense>
+    </div>
   );
 };
 
