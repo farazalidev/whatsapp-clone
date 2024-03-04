@@ -29,11 +29,11 @@ export const Thumbnail: FC<ThumbnailProps> = ({ url, height, width, active, onCl
     <div
       onClick={onClick}
       style={{ height, minWidth: width }}
-      className={`group relative flex place-items-center justify-center overflow-hidden border hover:cursor-pointer ${active ? ' border-whatsapp-misc-my_message_bg_dark rounded-lg border-[3px]' : 'rounded-md border-[1px] border-gray-300  dark:border-gray-600'}`}
+      className={`group relative flex place-items-center justify-center overflow-hidden border hover:cursor-pointer ${active ? ' border-whatsapp-misc-my_message_bg_dark rounded-lg border-[3px]' : 'rounded-md border-[1px] border-gray-500  dark:border-gray-600'}`}
     >
-      <span className="invisible absolute -bottom-[100%] z-10  h-full w-full overflow-hidden bg-gray-800 bg-opacity-50 group-hover:visible group-hover:top-0" />
+      <span className="invisible absolute -bottom-[100%] z-10  h-full w-full overflow-hidden bg-gray-600 bg-opacity-50 group-hover:visible group-hover:top-0" />
       <span className="group invisible absolute right-0 top-0 z-20 h-5 w-5 group-hover:visible" onClick={(e) => handleRemove(e, id)}>
-        {colorScheme === 'light' ? <Image src={'/icons/x.svg'} fill alt="remove" /> : <Image src={'/icons/x_white.svg'} fill alt="remove" />}
+        {colorScheme === 'dark' ? <Image src={'/icons/x.svg'} fill alt="remove" /> : <Image src={'/icons/x_white.svg'} fill alt="remove" />}
       </span>
       {url ? (
         <>

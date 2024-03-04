@@ -58,17 +58,17 @@ export const MessageBubblePdfPreview: FC<IMessageBubblePreview> = ({ message, is
 
     return (
         <div
-            className={`bg-whatsapp-misc-my_message_bg_light dark:bg-whatsapp-misc-my_message_bg_dark flex ${isFromMe ? 'h-[100px]' : 'h-fit border-[2px] border-whatsapp-light-placeholder_text dark:border-whatsapp-dark-placeholder_text'} w-[350px] flex-col rounded-md p-1${isFromMe
+            className={`flex ${isFromMe ? 'h-[100px]' : 'h-fit'} w-[350px] flex-col rounded-md p-1 ${isFromMe
                 ? 'bg-whatsapp-misc-my_message_bg_light dark:bg-whatsapp-misc-my_message_bg_dark dark:text-whatsapp-dark-text text-whatsapp-light-text '
                 : 'bg-whatsapp-misc-other_message_bg_light dark:bg-whatsapp-misc-other_message_bg_dark dark:text-whatsapp-dark-text text-whatsapp-light-text'
                 } `}
         >
-            <div className={`flex-1/3 flex h-fit place-items-center justify-between rounded-md bg-black bg-opacity-20 ${isFromMe ? 'p-1' : 'p-2'}`}>
+            <div className={`flex-1/3 flex h-fit place-items-center justify-between rounded-md ${isFromMe ? 'p-1' : 'p-2'}`}>
                 <div className="flex place-items-center gap-2 p-2">
                     <Image src={'/icons/generic-pdf.svg'} width={40} height={50} alt="file" />
-                    <div className="flex flex-col gap-2 text-white text-opacity-80">
+                    <div className="flex flex-col gap-2 text-whatsapp-light-text text-opacity-80 dark:text-whatsapp-dark-text">
                         <span className="line-clamp-1 text-sm">{clampString(message?.media?.original_name || 'file', 25)}</span>
-                        <span className="flex gap-1 text-xs text-[#86a3b3]">
+                        <span className="flex gap-1 text-xs text-whatsapp-light-text dark:text-[#86a3b3]">
                             <span>{message?.media?.ext}</span>
                             <span>{convertFileSizeFromBytes(message?.media?.size || 0, '•')}</span>
                         </span>
@@ -89,10 +89,6 @@ export const MessageBubblePdfPreview: FC<IMessageBubblePreview> = ({ message, is
                         isFromMe={isFromMe}
                     />
                 </span>
-                {!isFromMe ?
-                    <span className="flex h-12 w-12 cursor-pointer place-items-center justify-center rounded-full bg-black bg-opacity-40" onClick={handleDownload}>
-                        <Image src={'/icons/gallery-icons/download.svg'} height={25} width={25} alt="download" />
-                    </span> : null}
             </div>
             {isFromMe ? (
                 <div className="flex-1/3 relative h-[30%]">

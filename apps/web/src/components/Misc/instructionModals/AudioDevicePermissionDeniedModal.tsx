@@ -11,7 +11,7 @@ const AudioDevicePermissionDeniedModal = () => {
     }
 
     return (
-        <div className='bg-whatsapp-misc-device_not_found_modal_bg rounded-sm w-[452px]'>
+        <div className='dark:bg-whatsapp-misc-device_not_found_modal_bg  bg-white rounded-sm w-[452px]'>
             <div className='flex flex-col py-[22px] px-[24px]'>
                 <div>
                     <Typography level={4} className='mb-5 text-whatsapp-light-text dark:text-whatsapp-dark-text text-opacity-80 dark:text-opacity-80'>

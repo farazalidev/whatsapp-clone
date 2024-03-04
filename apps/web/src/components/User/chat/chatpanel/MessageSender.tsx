@@ -15,8 +15,11 @@ import VoiceMessagePanel from './VoiceMessagePanel';
 import MessageSenderWrapper from './MessageSenderWrapper';
 import { checkAudioDevice } from '@/utils/checkAudioDevice';
 import { openInstructionModal } from '@/global/features/ModalSlice';
+import useColorScheme from '@/hooks/useColorScheme';
 
 const MessageSender = ({ receiver_id, chat_id }: { receiver_id: string; chat_id: string | undefined }) => {
+  const theme = useColorScheme()
+
   const dispatch = useDispatch();
 
   const isVoicePanelOpen = useSelector((state: RootState) => state.overlaySlice.voiceMessagePanelIsOpen);
@@ -111,7 +114,8 @@ const MessageSender = ({ receiver_id, chat_id }: { receiver_id: string; chat_id:
           {messageValue ? (
             <>
               <button type="submit" disabled={message_input_loading}>
-                <OptionIcon src="/icons/send.svg" tooltip="" />
+                  {theme === "dark" ?
+                    <OptionIcon src="/icons/send.svg" tooltip="" /> : <OptionIcon src="/icons/send -light.svg" tooltip="" />}
               </button>
             </>
           ) : (

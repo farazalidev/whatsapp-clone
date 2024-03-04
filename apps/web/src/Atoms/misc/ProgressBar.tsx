@@ -5,6 +5,7 @@ import { IUploadState } from '@/hooks/useUpload';
 import Image from 'next/image';
 import { cn } from '@/utils/cn';
 import { expectedFileTypes } from '../../../../../shared/types/mediaTypes';
+import useColorScheme from '@/hooks/useColorScheme';
 
 interface ProgressBarProps extends React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement>, IUploadState {
   barStyle: 'circle' | 'line';
@@ -32,6 +33,8 @@ const ProgressBar: FC<ProgressBarProps> = ({
   isFromMe,
   ...props
 }) => {
+  const theme = useColorScheme();
+
   const circleControl = useAnimation();
 
   // Trigger the animation whenever the percentage changes
@@ -57,11 +60,19 @@ const ProgressBar: FC<ProgressBarProps> = ({
 
       {/* action button */}
       {showActionButton && progress === 100 && !isLoading ? (
-        <span onClick={onActionButtonClick} className="z-10 cursor-pointer">
+        <span onClick={onActionButtonClick} className="cursor-pointe z-10">
           {messageType === 'others' ? (
-            <Image src={'/icons/gallery-icons/download.svg'} alt="download" height={25} width={25} />
+            theme === 'light' ? (
+              <Image src={'/icons/media-download.svg'} alt="download" height={35} width={35} />
+            ) : (
+              <Image src={'/icons/media-download-light.svg'} alt="download" height={35} width={35} />
+            )
           ) : messageType === 'pdf' ? (
-            <Image src={'/icons/gallery-icons/download.svg'} alt="download" height={25} width={25} />
+              theme === 'light' ? (
+                <Image src={'/icons/media-download.svg'} alt="download" height={35} width={35} />
+              ) : (
+                <Image src={'/icons/media-download-light.svg'} alt="download" height={35} width={35} />
+              )
           ) : messageType === 'video' ? (
             <Image src={'/icons/play.svg'} alt="play" height={25} width={25} />
           ) : null}

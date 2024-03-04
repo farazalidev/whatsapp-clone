@@ -79,7 +79,7 @@ const OverlayContainer: FC<IOverlayContainer> = ({ parentRef, isOpen, onClose })
       {isOpen ? (
         <motion.div
           {...slideUpAnimation}
-          className={`bg-whatsapp-light-primary_bg dark:bg-whatsapp-dark-primary_bg absolute z-30 flex h-full w-full flex-col overflow-hidden px-2 `}
+          className={`bg-whatsapp-light-secondary_gray dark:bg-whatsapp-dark-primary_bg absolute z-30 flex h-full w-full flex-col overflow-hidden px-2 `}
         >
           {isLoading ? (
             <div className="flex h-full w-full place-items-center justify-center z-30">

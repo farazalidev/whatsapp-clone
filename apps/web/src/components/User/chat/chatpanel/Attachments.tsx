@@ -22,13 +22,13 @@ const Attachments = () => {
   return (
     <Popover
       as="span"
-      className={`hover:bg-whatsapp-misc-attachment_bg_hover } relative rounded-full p-1 ${isOpen ? 'bg-whatsapp-misc-attachment_bg_hover' : ''}`}
+      className={`hover:dark:bg-whatsapp-misc-attachment_bg_hover hover:bg-whatsapp-misc-attachment_bg_hover_light relative rounded-full p-1 ${isOpen ? 'dark:bg-whatsapp-misc-attachment_bg_hover bg-whatsapp-misc-attachment_bg_hover_light' : ''}`}
     >
       {({ open, close }) => {
         open ? setIsOpen(true) : setIsOpen(false);
         return (
           <>
-            <Popover.Button as="span" className={`hover:bg-whatsapp-misc-attachment_bg_hover rounded-full`}>
+            <Popover.Button as="span" className={`hover:dark:bg-whatsapp-misc-attachment_bg_hover rounded-full hover:bg-whatsapp-misc-attachment_bg_hover_light`}>
               <OptionIcon
                 src="/icons/attach-menu-plus.svg"
                 tooltip="attach"

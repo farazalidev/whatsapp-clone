@@ -10,11 +10,10 @@ import { sendMessageFn } from '@/utils/sendMessageFn';
 import { MessageEntity } from '@server/modules/chat/entities/message.entity';
 import useCurrentChat from '@/hooks/useCurrentChat';
 import { mainDb } from '@/utils/indexedDb/mainIndexedDB';
-
+import useColorScheme from '@/hooks/useColorScheme';
 
 export const MessageBubbleOtherFilesPreview: FC<IMessageBubblePreview> = ({ message, isFromMe, Me, socket }) => {
-
-
+    const theme = useColorScheme();
     const { raw_chat } = useCurrentChat();
 
     const lastAction = useCallback(() => {
@@ -27,7 +26,7 @@ export const MessageBubbleOtherFilesPreview: FC<IMessageBubblePreview> = ({ mess
                     content: message?.content,
                     from: Me as any,
                     is_seen: false,
-                    media: { ...message?.media as any, path: `${Me?.user_id}/${message?.media?.id}` },
+                    media: { ...(message?.media as any), path: `${Me?.user_id}/${message?.media?.id}` },
                     messageType: message.messageType,
                     received_at: null,
                     seen_at: null,
@@ -60,16 +59,21 @@ export const MessageBubbleOtherFilesPreview: FC<IMessageBubblePreview> = ({ mess
 
     return (
         <div
-            className={`bg-whatsapp-misc-my_message_bg_light dark:bg-whatsapp-misc-my_message_bg_dark flex ${isFromMe ? 'h-[100px]' : 'h-fit border-[2px] border-whatsapp-light-placeholder_text dark:border-whatsapp-dark-placeholder_text'} w-[350px] flex-col rounded-md p-1${isFromMe
+            className={`bg-whatsapp-misc-my_message_bg_light dark:bg-whatsapp-misc-my_message_bg_dark flex ${isFromMe ? 'h-[100px]' : ''} w-[350px] flex-col rounded-md p-1 ${isFromMe
                 ? 'bg-whatsapp-misc-my_message_bg_light dark:bg-whatsapp-misc-my_message_bg_dark dark:text-whatsapp-dark-text text-whatsapp-light-text '
-                : 'bg-whatsapp-misc-other_message_bg_light dark:bg-whatsapp-misc-other_message_bg_dark dark:text-whatsapp-dark-text text-whatsapp-light-text'} `}
+                : 'bg-whatsapp-misc-other_message_bg_light dark:bg-whatsapp-misc-other_message_bg_dark dark:text-whatsapp-dark-text text-whatsapp-light-text'
+                } `}
         >
-            <div className={`flex-1/3 flex h-fit place-items-center justify-between rounded-md bg-black bg-opacity-20 ${isFromMe ? 'p-1' : 'p-2'}`}>
+            <div className={`flex-1/3 flex h-fit place-items-center justify-between rounded-md ${isFromMe ? 'p-1 bg-black bg-opacity-10' : 'p-2'}`}>
                 <div className="flex place-items-center gap-2 p-2">
-                    <Image src={'/icons/preview-generic.svg'} width={40} height={50} alt="file" />
-                    <div className="flex flex-col gap-2 text-white text-opacity-80">
+                    {theme === 'dark' ? (
+                        <Image src={'/icons/preview-generic.svg'} width={40} height={50} alt="file" />
+                    ) : (
+                        <Image src={'/icons/file-light.png'} width={40} height={50} alt="file" />
+                    )}
+                    <div className="text-whatsapp-light-text dark:text-whatsapp-dark-text flex flex-col gap-2 text-opacity-80">
                         <span className="line-clamp-1 text-sm">{clampString(message?.media?.original_name || 'file', 25)}</span>
-                        <span className="flex gap-1 text-xs text-[#86a3b3]">
+                        <span className="text-whatsapp-light-text flex gap-1 text-xs dark:text-[#86a3b3]">
                             <span>{message?.media?.ext}</span>
                             <span>{convertFileSizeFromBytes(message?.media?.size || 0, '•')}</span>
                         </span>
@@ -89,7 +93,6 @@ export const MessageBubbleOtherFilesPreview: FC<IMessageBubblePreview> = ({ mess
                         messageType={message?.messageType}
                         isFromMe={isFromMe}
                     />
-
                 </span>
             </div>
             {isFromMe ? (

@@ -26,6 +26,7 @@ const config: Config = {
             text: '#000',
             bg: '#E0E0DD',
             sender_bg: '#F0F2F5',
+            secondary_gray: '#F0F2F5',
           },
           dark: {
             input_bg: '#202C33',
@@ -50,6 +51,7 @@ const config: Config = {
             other_message_bg_dark: '#202C33',
             other_message_bg_light: '#FFFFFF',
             attachment_bg_hover: '#374248',
+            attachment_bg_hover_light: '#D9DBDF',
             whatsapp_primary_green_light: '#00A884',
             delete_red: '#F15C6D',
             playerBg: '#3B4A54',
