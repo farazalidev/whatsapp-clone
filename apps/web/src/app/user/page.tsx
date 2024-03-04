@@ -4,7 +4,7 @@ import UserChat from '@/components/User/chat/UserChat';
 import React, { FC, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState, store } from '../../global/store';
-import { toggleAddContactModal } from '@/global/features/ModalSlice';
+import { closeInstructionModal, toggleAddContactModal } from '@/global/features/ModalSlice';
 import AddNewContactModalContent from '@/components/Misc/ModalContent/AddNewContactModal/AddNewContactModalContent';
 import Modal from '@/components/Misc/Modal';
 import UserPageLayout from './UserPageLayout';
@@ -24,6 +24,8 @@ import AuthPageTop from '@/components/AuthPage/AuthPageTop';
 import SideBarOverlay from '@/components/User/Sidebar/SideBarOverlay';
 import { overlayContent } from '@/components/User/Sidebar/overlaycontent/overlaycontet';
 import { addNewMessage, updateMessageStatusBulk } from '@/global/features/messagesSlice';
+import InstructionsModal from '@/components/Misc/instructionModals/InstructionsModal';
+import { getInstructionModal } from '@/data/instructionsModal';
 
 
 type Props = {
@@ -39,7 +41,7 @@ const UserPage: FC<Props> = () => {
   const dispatch = useDispatch();
 
 
-  const { AddContactModalIsOpen } = useSelector((state: RootState) => state.modalSlice);
+  const { AddContactModalIsOpen, instructionsModal: { isOpen, component } } = useSelector((state: RootState) => state.modalSlice);
   const { isLoading, error, data } = useUser();
   const { state: { error: chatsError, isLoading: chatsIsLoading } } = useChats();
   const { error: contactsError, isLoading: contactsIsLoading } = useContacts();
@@ -112,6 +114,7 @@ const UserPage: FC<Props> = () => {
         </AnimatePresence>
 
         <Modal onClose={() => dispatch(toggleAddContactModal())} isOpen={AddContactModalIsOpen} content={<AddNewContactModalContent />} />
+        <InstructionsModal isOpen={isOpen} onClose={() => dispatch(closeInstructionModal())} Component={getInstructionModal(component)} />
       </div>
     </UserPageLayout>
   );

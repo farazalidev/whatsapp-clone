@@ -13,11 +13,13 @@ import useCurrentChat from '@/hooks/useCurrentChat';
 import { toggleVoiceMessagePanelOverlay } from '@/global/features/overlaySlice';
 import VoiceMessagePanel from './VoiceMessagePanel';
 import MessageSenderWrapper from './MessageSenderWrapper';
+import { checkAudioDevice } from '@/utils/checkAudioDevice';
+import { openInstructionModal } from '@/global/features/ModalSlice';
 
 const MessageSender = ({ receiver_id, chat_id }: { receiver_id: string; chat_id: string | undefined }) => {
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
 
-  const isVoicePanelOpen = useSelector((state: RootState) => state.overlaySlice.voiceMessagePanelIsOpen)
+  const isVoicePanelOpen = useSelector((state: RootState) => state.overlaySlice.voiceMessagePanelIsOpen);
 
   const { message_input_loading } = useSelector((state: RootState) => state.LoadingSlice);
 
@@ -29,7 +31,7 @@ const MessageSender = ({ receiver_id, chat_id }: { receiver_id: string; chat_id:
 
   const [messageValue, setMessageValue] = useState<string>();
 
-  const { raw_chat } = useCurrentChat()
+  const { raw_chat } = useCurrentChat();
 
   const handleMessageChange = (e: ChangeEvent<HTMLInputElement>) => {
     setMessageValue(e.target.value);
@@ -55,7 +57,7 @@ const MessageSender = ({ receiver_id, chat_id }: { receiver_id: string; chat_id:
     const newMessage: MessageEntity = {
       content: messageValue as string,
       sended_at: new Date().toISOString() as any,
-      messageType: "text",
+      messageType: 'text',
       media: null,
       is_seen: false,
       id: v4(),
@@ -64,24 +66,41 @@ const MessageSender = ({ receiver_id, chat_id }: { receiver_id: string; chat_id:
       from: Me as any,
       clear_for: null,
       sended: false,
-      chat: raw_chat as any
+      chat: raw_chat as any,
     };
-    const isSended = await sendMessageFn({ socket, message: newMessage })
+    const isSended = await sendMessageFn({ socket, message: newMessage });
     if (!isSended) {
-      toast("Failed to send Message", { position: "top-center" })
-      setMessageValue("")
+      toast('Failed to send Message', { position: 'top-center' });
+      setMessageValue('');
     }
-    setMessageValue("")
+    setMessageValue('');
   };
 
   const handleVoiceMessagePanel = () => {
-    dispatch(toggleVoiceMessagePanelOverlay())
-  }
+    checkAudioDevice().then((result) => {
+      if (result === 'Success: Audio device connected') {
+        dispatch(toggleVoiceMessagePanelOverlay());
+      } else if (result === 'Fail: No audio device connected') {
+        dispatch(openInstructionModal('Audio Device Not found'));
+      } else if (result === 'Denied: Permission denied for audio device') {
+        dispatch(openInstructionModal('Audio device Permission denied'));
+      } else if (result === 'Fail: MediaDevices API not supported') {
+        dispatch(openInstructionModal('Audio Device Not supported'));
+      } else {
+        return
+      }
+    });
+  };
 
-  return isVoicePanelOpen ? <MessageSenderWrapper> <VoiceMessagePanel /></MessageSenderWrapper> : (
+  return isVoicePanelOpen ? (
+    <MessageSenderWrapper>
+      {' '}
+      <VoiceMessagePanel />
+    </MessageSenderWrapper>
+  ) : (
     <form
       onSubmit={(e) => handleSendMessage(e)}
-      className="bg-whatsapp-light-sender_bg dark:bg-whatsapp-dark-sender_bg flex place-items-center justify-between gap-[16px] px-[20px] py-[5px] min-h-[57px]"
+        className="bg-whatsapp-light-sender_bg dark:bg-whatsapp-dark-sender_bg flex min-h-[57px] place-items-center justify-between gap-[16px] px-[20px] py-[5px]"
     >
       <>
         <Attachments />

@@ -18,7 +18,7 @@ import { calculateChecksumPromise } from '../../../../utils/file/calculateFileCh
 const VoiceMessagePanel = () => {
     const dispatch = useDispatch();
 
-    const { mediaRecorder, start, time, pauseResume, isPaused, stop, chunks } = useVoiceRecorder();
+    const { mediaRecorder, start, time, pauseResume, isPaused, stop, chunks, error } = useVoiceRecorder();
 
     const [audioUrl, setAudioUrl] = useState<string | null>(null);
 
@@ -93,6 +93,8 @@ const VoiceMessagePanel = () => {
             setLoading(false)
         }
     }, [Me, chunks, dispatch, raw_chat, stop]);
+
+    console.log(error);
 
 
     return (

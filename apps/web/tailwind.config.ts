@@ -53,6 +53,7 @@ const config: Config = {
             whatsapp_primary_green_light: '#00A884',
             delete_red: '#F15C6D',
             playerBg: '#3B4A54',
+            device_not_found_modal_bg: '#3B4A54',
           },
         },
       },

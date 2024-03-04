@@ -1,7 +1,11 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 const useVoiceRecorder = () => {
-  const [state, setState] = useState<{ isRecording: boolean; isPaused: boolean }>({ isPaused: false, isRecording: false });
+  const [state, setState] = useState<{ isRecording: boolean; isPaused: boolean; error?: boolean | undefined }>({
+    isPaused: false,
+    isRecording: false,
+    error: undefined,
+  });
 
   const recorderRef: React.MutableRefObject<MediaRecorder | null> = useRef(null);
 
@@ -78,7 +82,9 @@ const useVoiceRecorder = () => {
         setChunks((prev) => [...prev, newChunks]);
       };
     } catch (error) {
-      console.log('🚀 ~ start ~ error:', error);
+      setState((prev) => {
+        return { ...prev, error: true };
+      });
     }
   }, [_startTimer, _stopTimer, timerInterval]);
 
