@@ -4,7 +4,7 @@ import { useCallback, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { PaginatedMessages, PaginatedMessagesMeta } from '@server/modules/chat/DTO/chats.dto';
 import { RootState } from '@/global/store';
-import { chatPaginationConfig } from '@/config/chatPagination.cnfig';
+import { chatPaginationConfig } from '@/config/chatPagination.config';
 
 interface IUsePaginateChatMessagesArgs {
   chat_id: string | undefined;

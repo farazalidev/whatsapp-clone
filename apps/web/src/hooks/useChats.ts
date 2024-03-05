@@ -5,7 +5,7 @@ import { initPaginatedChats } from '@/global/features/messagesSlice';
 import { AxiosError } from 'axios';
 import { useEffect, useMemo, useState } from 'react';
 import { ChatsDto } from '@server/modules/chat/DTO/chats.dto';
-import { chatPaginationConfig } from '@/config/chatPagination.cnfig';
+import { chatPaginationConfig } from '@/config/chatPagination.config';
 
 interface IUseChatsState {
   isLoading: boolean;

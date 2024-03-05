@@ -4,7 +4,7 @@ import { messageStatus } from '@shared/types';
 import { MessageEntity } from '@server/modules/chat/entities/message.entity';
 import { UserChatEntity } from '@server/modules/chat/entities/userchat.entity';
 import { ChatsDto, PaginatedMessages } from '@server/modules/chat/DTO/chats.dto';
-import { chatPaginationConfig } from '@/config/chatPagination.cnfig';
+import { chatPaginationConfig } from '@/config/chatPagination.config';
 
 interface IMessagesSliceInitialState {
   chats: { chat_id: string; messages: MessageEntity[]; receiverFootPrints?: string }[];
