@@ -15,7 +15,7 @@ export class UserChatEntity {
   chat_with: UserEntity;
 
   @OneToMany(() => MessageEntity, (message) => message.chat, { cascade: true, eager: true })
-  messages: MessageEntity[];
+  messages?: MessageEntity[];
 
   @BeforeInsert()
   async initMessages?() {

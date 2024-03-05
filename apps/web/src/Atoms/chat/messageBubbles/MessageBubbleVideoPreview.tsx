@@ -27,10 +27,10 @@ export const MessageBubbleVideoPreview: FC<IMessageBubblePreview> = ({ message, 
   const lastAction = useCallback(() => {
 
     const lastAction = async () => {
-      if (message) {
+      if (message && raw_chat) {
         const messageToSend: MessageEntity = {
           id: message.id,
-          chat: raw_chat as any,
+          chat: { chat_for: raw_chat?.chat_for, chat_with: raw_chat?.chat_with, id: raw_chat?.id, },
           clear_for: null,
           content: message?.content,
           from: Me as any,

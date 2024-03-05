@@ -57,12 +57,12 @@ const UserSideBar = () => {
           <div className='overflow-y-auto scrollbar h-full'>
         {paginatedChats.data && data?.Me && paginatedChats.data.length !== 0 ? (
           paginatedChats.data?.map((chat) => {
-            return chat.messages.length > 0 ? (
+            return chat.messages && chat?.messages.length > 0 ? (
                 <SideBarUserCard
                   key={chat.id}
                 chat_id={chat.id}
                   name={isIamReceiver(chat.chat_with?.user_id, data?.Me!.user_id) ? chat.chat_for.name : chat?.chat_with.name}
-                  messages={chat.messages}
+                messages={chat?.messages}
                   active={chat.id === id}
                   for_other
                   user_id={isIamReceiver(chat.chat_with.user_id, Me?.user_id) ? chat.chat_for.user_id : chat.chat_with.user_id}

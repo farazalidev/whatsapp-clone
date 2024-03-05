@@ -23,7 +23,11 @@ export const sendMessageFn: SendMessageFnType = async ({ socket, message }) => {
       // then create a new chat
       const chat = store.getState().messagesSlice.paginatedChats.data.find((chat) => chat.id === id);
       if (chat) {
-        socket?.emit('send_message', { chat, message: { ...message }, receiverId: receiver_id });
+        socket?.emit('send_message', {
+          chat: { chat_for: chat.chat_for, chat_with: chat.chat_with, id: chat.id },
+          message: { ...message },
+          receiverId: receiver_id,
+        });
         if (message.messageType === 'text') {
           store.dispatch(addNewMessage({ chat_id: id as string, message: message }));
         }

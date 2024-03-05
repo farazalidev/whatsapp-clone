@@ -61,7 +61,7 @@ const VoiceMessagePanel = () => {
                 const mediaId = v4();
                 const audioFile = new File([...chunks], mediaId, { type: 'webm' });
                 const message: MessageEntity = {
-                    chat: raw_chat,
+                    chat: { chat_for: raw_chat?.chat_for, chat_with: raw_chat?.chat_with, id: raw_chat?.id, },
                     clear_for: null,
                     from: Me,
                     id: messageId,

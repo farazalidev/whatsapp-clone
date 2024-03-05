@@ -47,7 +47,12 @@ export const start_newChat: IStartNewChat = async (args) => {
             pendingMessages?.messages.map(async (message) => {
               if (response.data?.chat) {
                 const newsSocket = createSocket();
-                return await sendMessage({ chat: response.data?.chat, message, receiver_id: chat_receiver.user_id, socket: newsSocket.socket });
+                return await sendMessage({
+                  chat: { chat_for: response.data.chat.chat_for, chat_with: response.data.chat.chat_with, id: response.data.chat.id },
+                  message,
+                  receiver_id: chat_receiver.user_id,
+                  socket: newsSocket.socket,
+                });
               }
               toast.error('Failed to Send messages', { position: 'bottom-left' });
               store.dispatch(removePaginatedChat({ chat_id }));
