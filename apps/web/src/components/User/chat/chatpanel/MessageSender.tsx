@@ -57,8 +57,6 @@ const MessageSender = ({ receiver_id, chat_id }: { receiver_id: string; chat_id:
 
   const handleSendMessage = async (e: FormEvent) => {
     e.preventDefault();
-    if (raw_chat) {
-
       const newMessage: MessageEntity = {
         content: messageValue as string,
       sended_at: new Date().toISOString() as any,
@@ -71,13 +69,12 @@ const MessageSender = ({ receiver_id, chat_id }: { receiver_id: string; chat_id:
       from: Me as any,
       clear_for: null,
       sended: false,
-        chat: { chat_for: raw_chat?.chat_for, chat_with: raw_chat?.chat_with, id: raw_chat?.id, },
+        chat: { chat_for: raw_chat?.chat_for as any, chat_with: raw_chat?.chat_with as any, id: raw_chat?.id as any, },
     };
     const isSended = await sendMessageFn({ socket, message: newMessage });
     if (!isSended) {
       toast('Failed to send Message', { position: 'top-center' });
       setMessageValue('');
-    }
     }
     setMessageValue('');
   };

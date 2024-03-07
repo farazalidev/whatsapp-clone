@@ -24,7 +24,7 @@ const ChatHandler: FC<ChatHandlerProps> = () => {
 
   const [scrolled, setScrolled] = useState(false)
 
-  const [currentMessagesSize, setCurrentMessagesSize] = useState<number | undefined>(chat?.messages.length)
+  const [currentMessagesSize, setCurrentMessagesSize] = useState<number | undefined>(chat?.messages?.length)
 
   useEffect(() => {
 
@@ -57,7 +57,7 @@ const ChatHandler: FC<ChatHandlerProps> = () => {
   }, [bottomRef, id]);
 
   useEffect(() => {
-    sizeChanged(currentMessagesSize, chat?.messages.length, (newSize, changedSize) => {
+    sizeChanged(currentMessagesSize, chat?.messages?.length, (newSize, changedSize) => {
       setCurrentMessagesSize(newSize)
       if (bottomRef && changedSize && changedSize < 2) {
         bottomRef.current?.scrollIntoView()
@@ -96,7 +96,7 @@ const ChatHandler: FC<ChatHandlerProps> = () => {
         {chat?.messages
           ? [...chat.messages].reverse()
             .map((message, index) => {
-              if (index === Math.ceil(chat.messages.length * .1)) {
+              if (index === Math.ceil(chat?.messages?.length || 0 * .1)) {
                 return (
                   <MessagePreview ref={lastMessageElement} isFromMe={Me?.user_id === message?.from?.user_id} message={message} key={message?.id} ChatSlice={chatSlice} receiver_id={receiver_id} socket={socket} Me={Me} />
 

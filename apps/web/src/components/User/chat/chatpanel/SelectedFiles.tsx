@@ -11,7 +11,12 @@ import { mainDb } from '@/utils/indexedDb/mainIndexedDB';
 import { closeOverlay } from '@/global/features/overlaySlice';
 import { combineMediaWithMessages } from '@/utils/combineMediaWithMessages';
 import useCurrentChat from '@/hooks/useCurrentChat';
-import { addNewMessage } from '@/global/features/messagesSlice';
+import { addNewMessage, addPaginatedChat } from '@/global/features/messagesSlice';
+import { UserChatEntity } from '@server/modules/chat/entities/userchat.entity';
+import { v4 } from 'uuid';
+import { Mutation } from '@/utils/fetcher';
+import { SuccessResponseType } from '@server/Misc/ResponseType.type';
+import { setUserChatEntity } from '@/global/features/ChatSlice';
 
 export interface SelectedFileType {
   id: string;
@@ -42,6 +47,8 @@ const SelectedFiles: FC<ISelectedFiles> = () => {
 
   const [isLoading, setIsLoading] = useState<boolean>(false)
 
+  const { chat_receiver, started_from } = useSelector((state: RootState) => state.ChatSlice)
+
   const dispatch = useDispatch()
 
   const selectFileTOPreview = (fileToPreview: fileToPreviewType) => {
@@ -68,16 +75,53 @@ const SelectedFiles: FC<ISelectedFiles> = () => {
       }))
 
       // combining media with message
-      const mediaMessages = combineMediaWithMessages(loadedFiles, Me, raw_chat)
+      // if the the chat is already started 
+      if (raw_chat && started_from === "chat") {
 
-      // adding messages in local storage
-      await mainDb.mediaMessages.bulkAdd(mediaMessages)
+        const mediaMessages = combineMediaWithMessages(loadedFiles, Me, raw_chat)
 
-      mediaMessages.forEach(message => {
-        dispatch(addNewMessage({ chat_id: raw_chat?.id, message: { ...message, } }))
-      })
+        // adding messages in local storage
+        await mainDb.mediaMessages.bulkAdd(mediaMessages)
 
-      dispatch(closeOverlay())
+        mediaMessages.forEach(message => {
+          dispatch(addNewMessage({ chat_id: raw_chat?.id, message: { ...message, } }))
+        })
+        dispatch(closeOverlay())
+
+      }
+
+      else if (started_from === "contact" && Me && chat_receiver) {
+        const chat_id = v4()
+        const newChat: UserChatEntity = {
+          id: chat_id,
+          chat_for: Me,
+          chat_with: chat_receiver,
+          messages: [],
+        };
+        const response = await Mutation<{ chat: UserChatEntity }, SuccessResponseType<{ chat: UserChatEntity }>>('chat/new-chat', {
+          chat: newChat,
+        });
+
+        if (response.data?.chat) {
+          dispatch(addPaginatedChat(response?.data?.chat))
+          dispatch(
+            setUserChatEntity({ id: response.data.chat.id, started_from: 'chat', receiver_id: chat_receiver.user_id, chat_receiver: chat_receiver, status: 'created' }),
+          );
+          const mediaMessages = combineMediaWithMessages(loadedFiles, Me, response.data.chat)
+
+          // adding messages in local storage
+          await mainDb.mediaMessages.bulkAdd(mediaMessages)
+
+          mediaMessages.forEach(message => {
+            dispatch(addNewMessage({ chat_id: response.data?.chat?.id, message: { ...message, } }))
+          })
+          dispatch(closeOverlay())
+        }
+        else {
+          throw new Error("Error while uploading files")
+        }
+      }
+
 
     } catch (error) {
       toast.error("Error While uploading Files", { position: "bottom-left" })
