@@ -2,7 +2,17 @@ import { Socket } from 'socket.io';
 import { MessageEntity } from '../../apps/server/src/modules/chat/entities/message.entity';
 import { UserEntity } from '../../apps/server/src/modules/user/entities/user.entity';
 import { single_unread_message, unreadMessage } from '../../apps/server/src/modules/types';
-import { UpdateMessageStatusBulk, messageStatus } from '.';
+import {
+  ICallOffer,
+  IOnCallOffer,
+  UpdateMessageStatusBulk,
+  messageStatus,
+  IAcceptAnswerPayload,
+  IceCandidatePayload,
+  OnAcceptAnswer,
+  ICallStatus,
+  IRejectCallPayload,
+} from '.';
 import { UserChatEntity } from '../../apps/server/src/modules/chat/entities/userchat.entity';
 
 export interface ISocket extends Socket<ClientToServerEvents, ServerToClientEvents> {
@@ -40,6 +50,10 @@ export interface ServerToClientEvents {
   [event: user_online_statusPattern]: (status: boolean) => void;
   message_status: (messageStatus: IMessageStatus) => void;
   update_message_status_bulk: (payload: UpdateMessageStatusBulk) => void;
+  onCallOffer: (offer: IOnCallOffer) => void;
+  onAcceptAnswer: (payload: OnAcceptAnswer) => void;
+  onIceCandidate: (candidate: RTCIceCandidate) => void;
+  callStatus: (callStatus: ICallStatus) => void;
 }
 export interface ClientToServerEvents {
   send_message: (payload: sendMessagePayload) => void;
@@ -52,6 +66,10 @@ export interface ClientToServerEvents {
   typing: (payload: typingPayload) => void;
   stop_typing: (payload: typingPayload) => {};
   get_user_online_status: (payload: getUserOnlineStatusPayload) => void;
+  offerCall: (callOffer: ICallOffer) => void;
+  acceptAnswer: (ans: IAcceptAnswerPayload) => void;
+  icecandidate: (payload: IceCandidatePayload) => void;
+  rejectCall: (payload: IRejectCallPayload) => void;
 }
 
 export interface NewMessagePayload {

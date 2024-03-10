@@ -9,6 +9,7 @@ import { overlaySlice } from './features/overlaySlice';
 import { filesSlice } from './features/filesSlice';
 import { GallerySlice } from './features/GallerySlice';
 import ProfilePreviewSlice from './features/ProfilePreviewSlice';
+import { CallSlice } from './features/callSlice';
 
 export const store = configureStore({
   reducer: {
@@ -22,6 +23,7 @@ export const store = configureStore({
     filesSlice: filesSlice.reducer,
     LoadingSlice: LoadingSlice.reducer,
     ProfilePreviewSlice: ProfilePreviewSlice.reducer,
+    CallSlice: CallSlice.reducer,
   },
   middleware(getDefaultMiddleware) {
     return getDefaultMiddleware({ serializableCheck: false });

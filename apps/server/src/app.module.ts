@@ -20,6 +20,7 @@ import { KafkaModule } from './modules/kafka/kafka.module';
 import { MessageConsumer } from './services/message.consumer';
 import { ShutDownService } from './services/shutDown.service';
 import { NotificationModule } from './modules/notification/notification.module';
+import { CallModule } from './modules/call/call.module';
 
 @Module({
   imports: [
@@ -47,6 +48,7 @@ import { NotificationModule } from './modules/notification/notification.module';
     AuthModule,
     UserModule,
     ChatModule,
+    CallModule,
     NotificationModule,
   ],
   controllers: [AppController],

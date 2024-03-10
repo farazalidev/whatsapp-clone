@@ -65,7 +65,6 @@ const UserPage: FC<Props> = () => {
       store.dispatch(addNewMessage({ chat_id: message.chat_id, message: message.message }))
     })
     socket.on(`update_message_status_bulk`, (payload) => {
-      console.log("🚀 ~ socket.on ~ payload:", payload)
       if (payload.messages.length > 0)
         store.dispatch(updateMessageStatusBulk(payload))
     })
