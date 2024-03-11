@@ -7,6 +7,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { UserEntity } from '../../user/entities/user.entity';
 import { Repository } from 'typeorm';
 import { decryptCookie } from '../../../utils/encdecCookie';
+import { getCookieValue } from '../../../utils/getCookieFromHeader';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -24,9 +25,13 @@ export class AuthGuard implements CanActivate {
     }
     const req = context.switchToHttp().getRequest<Request>();
 
-    const accessToken = req.headers['authorization']?.split(' ')[1];
+    const accessTokenFromHeaders = getCookieValue(req.headers.cookie, process.env.ACCESS_TOKEN_NAME);
+    const accessToken = req.headers['authorization']?.split(' ')[1] || accessTokenFromHeaders;
+    const refreshToken = getCookieValue(req.headers.cookie, process.env.REFRESH_TOKEN_NAME);
+
     if (!accessToken) {
-      throw new UnauthorizedException();
+      if (!refreshToken) throw new UnauthorizedException();
+      throw new ForbiddenException();
     }
     try {
       const decryptedAccessToken = decryptCookie(accessToken);

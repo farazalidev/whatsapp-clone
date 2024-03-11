@@ -23,7 +23,7 @@ const axiosWithAuth = ({ static_server }: { static_server?: boolean }) => {
 
         try {
           // Call your API route to refresh the access token
-          await axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}auth/refresh`, { withCredentials: true });
+           await axios.get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/refresh`, { withCredentials: true });
           const newAccessToken = getCookie(process.env.NEXT_PUBLIC_ACCESS_TOKEN_NAME);
 
           // Update the original request with the new access token
