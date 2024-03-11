@@ -11,6 +11,8 @@ import { useDispatch, useSelector } from 'react-redux';
 const UserPageLayout: FC<{ children: ReactNode }> = ({ children }) => {
   const { GalleryOverlayIsOpen } = useSelector((state: RootState) => state.overlaySlice);
 
+  const { isOpen } = useSelector((state: RootState) => state.CallSlice)
+
   const dispatch = useDispatch();
 
   const handleClose = () => {
@@ -18,7 +20,7 @@ const UserPageLayout: FC<{ children: ReactNode }> = ({ children }) => {
   };
 
   return (
-    <div className="bg-whatsapp-light-bg dark:bg-whatsapp-dark-bg relative flex h-screen w-full place-items-center justify-center overflow-hidden ">
+    <div className="bg-whatsapp-light-bg dark:bg-whatsapp-dark-bg relative flex h-screen w-full place-items-center justify-center overflow-hidden" style={{ userSelect: isOpen ? "none" : "auto" }}>
       <GalleryOverlay show={GalleryOverlayIsOpen} onClose={handleClose} />
       <AuthPageTop noLogo className="dark:bg-whatsapp-dark-bg absolute top-0" />
       <OutInAnimation className="absolute h-full max-h-[1500px] xl:container xl:h-[96%]">{children}</OutInAnimation>

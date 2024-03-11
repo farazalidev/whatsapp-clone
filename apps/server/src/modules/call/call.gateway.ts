@@ -31,6 +31,8 @@ export class CallGateway implements OnGatewayInit {
       if (pid) {
         client.emit('callStatus', 'online');
         client.to(payload.callee.user_id).emit('onCallOffer', { from: payload.caller, offer: payload.offer, callMode: payload.callMode });
+      } else {
+        client.emit('callStatus', 'offline');
       }
     });
   }

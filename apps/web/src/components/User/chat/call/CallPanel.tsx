@@ -8,6 +8,7 @@ import { RTC_Config } from '@/config/rtc.config';
 import AcceptedCall from './AcceptedCall';
 import CallAnswerPanel from './CallAnswerPanel';
 import CallAwaitingPanel from './CallAwaitingPanel';
+import { wait } from '@/utils/wait';
 
 export interface MediaState {
     micIsOn: boolean
@@ -28,7 +29,7 @@ const CallPanel = () => {
 
     const [mediaState, setMediaState] = useState<MediaState>({ cameraIsOn: true, micIsOn: true, speakerIsOn: true })
 
-    const [callStatus, setCallStatus] = useState<ICallStatus | undefined>(callType == 'offer' ? 'offline' : 'pending');
+    const [callStatus, setCallStatus] = useState<ICallStatus | undefined>(callType == 'offer' ? 'offline' : callType === "answer" ? 'pending' : undefined);
 
     const userVideRef = useRef<HTMLVideoElement>(null);
     const userStreamRef = useRef<MediaStream>();
@@ -97,10 +98,8 @@ const CallPanel = () => {
             const offer = await peer.current?.createOffer({ offerToReceiveAudio: true, offerToReceiveVideo: true });
             if (offer && callReceiver && Me) {
                 await peer.current?.setLocalDescription(new RTCSessionDescription(offer));
+                setCallStatus("offline")
                 socket.emit('offerCall', { callee: callReceiver, caller: Me, offer, callMode });
-                socket.on('callStatus', (status) => {
-                    setCallStatus(status);
-                });
             } else {
                 throw new Error('Failed to create offer');
             }
@@ -158,12 +157,18 @@ const CallPanel = () => {
                 }
             });
 
-            socket.on("callStatus", (status) => {
+            socket.on("callStatus", async (status) => {
+                console.log("🚀 ~ socket.on ~ status:", status)
                 if (status === "rejected") {
                     peer.current?.close()
                     peer.current = undefined
                     setCallStatus(undefined)
                     store.dispatch(closeCallPanel())
+                }
+                if (status === "offline" && callType === "offer") {
+                    console.log("🚀 ~ socket.on ~ status:", status)
+                    await wait(5000)
+                    await createOffer()
                 }
                 setCallStatus(status)
             })
@@ -175,7 +180,8 @@ const CallPanel = () => {
             socket.off("callStatus")
         }
 
-    }, [isOpen, socket]);
+    }, [callType, createOffer, isOpen, socket]);
+
 
     const hangupCall = () => {
         socket.emit("hangupCall", { to: callType === "offer" ? callReceiver : callOffer?.from })
@@ -239,13 +245,13 @@ const CallPanel = () => {
 
 
     return isOpen ? (
-        <div className={`relative overflow-hidden rounded-lg w-full h-full flex justify-center place-items-center z-40`}>
-            {callType === "offer" && callStatus !== "accepted" ? <CallAwaitingPanel callStatus={callStatus} callMode={callMode} callEndCallBack={hangupCall} /> : null}
+        <>
+            {callType === "offer" && callStatus !== "accepted" ? <CallAwaitingPanel to={callReceiver} callStatus={callStatus} callMode={callMode} callEndCallBack={hangupCall} /> : null}
 
             <CallAnswerPanel show={callType === "answer" && callStatus !== "accepted" ? true : false} callMode={callMode} caller={callOffer?.from} callAcceptCallBack={answerCall} callEndCallBack={hangupCall} /> 
 
             <AcceptedCall callReceiver={callType === "offer" ? callReceiver : callOffer?.from} show={callStatus === "accepted" ? true : false} mediaState={mediaState} callMode={callMode} onCameraToggle={toggleCamera} onMicToggle={toggleMic} onSpeakerToggle={toggleSpeaker} remoteVideRef={remoteVideRef} userVideoRef={userVideRef} onEndCall={hangupCall} />
-        </div>
+        </>
     ) : null
 };
 

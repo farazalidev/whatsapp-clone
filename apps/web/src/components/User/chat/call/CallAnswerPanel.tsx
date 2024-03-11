@@ -16,6 +16,8 @@ interface ICallAnswerPanel {
 }
 
 const CallAnswerPanel: FC<ICallAnswerPanel> = ({ callMode, callEndCallBack, callAcceptCallBack, show, caller }) => {
+  console.log(caller);
+
   useMoveable('call-answer-panel')
 
   const userVideoRef = useRef<HTMLVideoElement>(null);
@@ -45,7 +47,7 @@ const CallAnswerPanel: FC<ICallAnswerPanel> = ({ callMode, callEndCallBack, call
           <div className="bg-whatsapp-dark-secondary_bg absolute bottom-2 flex h-[100px] w-[80%] place-items-center rounded-lg bg-opacity-90 p-2 z-20">
             <div className="flex w-full place-items-center justify-between">
               <div className="flex place-items-center justify-center gap-2">
-                <Avatar user_id="b1d72fea-f75e-455b-95ad-fed2f034ab16" />
+                <Avatar user_id={caller?.user_id} />
                 <Typography>{caller?.name}</Typography>
               </div>
               <div className="flex place-items-center gap-2">
@@ -57,10 +59,10 @@ const CallAnswerPanel: FC<ICallAnswerPanel> = ({ callMode, callEndCallBack, call
           <video muted autoPlay ref={userVideoRef} className="absolute h-full w-full object-cover rounded-lg" />
         </div>
       ) : (
-        <div className="bg-whatsapp-dark-secondary_bg absolute flex h-[100px] min-w-[400px] max-w-[500px] w-[30%] place-items-center rounded-lg p-2 border select-none"  >
+          <div className="bg-whatsapp-light-secondary_bg dark:bg-whatsapp-dark-secondary_bg absolute flex h-[100px] min-w-[400px] max-w-[500px] w-[30%] place-items-center rounded-lg p-2 border border-whatsapp-light-text dark:border-whatsapp-dark-text select-none"  >
           <div className="flex w-full place-items-center justify-between">
             <div className="flex place-items-center justify-center gap-2">
-              <Avatar user_id="b1d72fea-f75e-455b-95ad-fed2f034ab16" />
+                <Avatar user_id={caller?.user_id} />
               <Typography>{caller?.name}</Typography>
             </div>
             <div className="flex place-items-center gap-2">

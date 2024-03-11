@@ -5,14 +5,16 @@ import Typography from '@/Atoms/Typography/Typography';
 import OptionIcon from '../../Sidebar/OptionIcon';
 import useMoveable from '@/hooks/useMoveable';
 import { toast } from 'sonner';
+import { UserEntity } from '@server/modules/user/entities/user.entity';
 
 interface ICallAnswerPanel {
   callMode: CallMode;
   callStatus: ICallStatus | undefined;
   callEndCallBack: () => Promise<void> | void;
+  to: UserEntity | undefined;
 }
 
-const CallAwaitingPanel: FC<ICallAnswerPanel> = ({ callMode, callEndCallBack, callStatus }) => {
+const CallAwaitingPanel: FC<ICallAnswerPanel> = ({ callMode, callEndCallBack, callStatus, to }) => {
   useMoveable('call-awaiting-panel');
 
   const userVideoRef = useRef<HTMLVideoElement>(null);
@@ -51,13 +53,14 @@ const CallAwaitingPanel: FC<ICallAnswerPanel> = ({ callMode, callEndCallBack, ca
       ) : (
         <div
           id="call-awaiting-panel"
-          className="bg-whatsapp-dark-secondary_bg absolute flex h-[100px] w-[30%] min-w-[400px] max-w-[500px] select-none place-items-center rounded-lg border bg-opacity-90 p-2"
+            className="bg-whatsapp-light-secondary_bg dark:bg-whatsapp-dark-secondary_bg absolute flex h-[100px] w-[30%] min-w-[400px] max-w-[500px] select-none place-items-center rounded-lg border border-whatsapp-light-text dark:border-whatsapp-dark-text bg-opacity-90 p-2"
         >
           <div className="flex w-full place-items-center justify-between">
-            <div className="flex place-items-center justify-center gap-3">
-              <Avatar user_id="b1d72fea-f75e-455b-95ad-fed2f034ab16" />
-              <Typography> {callStatus === 'online' ? 'Ringing' : 'Calling'}</Typography>
-            </div>
+              <div className="flex place-items-center gap-3">
+                <Avatar user_id={to?.user_id} />
+                <Typography level={3}>{to?.name}</Typography>
+              </div>
+              <Typography className='bg-whatsapp-misc-my_message_bg_dark p-1 rounded-lg'> {callStatus === 'online' ? 'Ringing' : 'Calling'}</Typography>
             <div className="flex place-items-center gap-2">
               <OptionIcon src="icons/call/end-call-icon.svg" height={45} width={45} className="rounded-full bg-white" onClick={callEndCallBack} />
             </div>
