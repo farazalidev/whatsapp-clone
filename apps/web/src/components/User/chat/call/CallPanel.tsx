@@ -3,14 +3,19 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { ICallStatus, IOnCallOffer } from '../../../../../../../shared/types/call.types';
 import { useSelector } from 'react-redux';
 import { RootState, store } from '@/global/store';
-import { openCallPanel } from '@/global/features/callSlice';
+import { closeCallPanel, openCallPanel } from '@/global/features/callSlice';
 import { RTC_Config } from '@/config/rtc.config';
-import OptionIcon from '../../Sidebar/OptionIcon';
-import useMoveable from '@/hooks/useMoveable';
+import AcceptedCall from './AcceptedCall';
+import CallAnswerPanel from './CallAnswerPanel';
+import CallAwaitingPanel from './CallAwaitingPanel';
+
+export interface MediaState {
+    micIsOn: boolean
+    cameraIsOn: boolean
+    speakerIsOn: boolean
+}
 
 const CallPanel = () => {
-    useMoveable('call-box');
-
     const peer = useRef<RTCPeerConnection>();
 
     const { socket } = useSocket();
@@ -19,9 +24,11 @@ const CallPanel = () => {
 
     const [callOffer, setCallOffer] = useState<IOnCallOffer>();
 
-    const { callReceiver, callType, isOpen } = useSelector((state: RootState) => state.CallSlice);
+    const { callReceiver, callType, isOpen, callMode } = useSelector((state: RootState) => state.CallSlice);
 
-    const [callStatus, setCallStatus] = useState<ICallStatus>(callType == 'offer' ? 'offline' : 'pending');
+    const [mediaState, setMediaState] = useState<MediaState>({ cameraIsOn: true, micIsOn: true, speakerIsOn: true })
+
+    const [callStatus, setCallStatus] = useState<ICallStatus | undefined>(callType == 'offer' ? 'offline' : 'pending');
 
     const userVideRef = useRef<HTMLVideoElement>(null);
     const userStreamRef = useRef<MediaStream>();
@@ -30,8 +37,8 @@ const CallPanel = () => {
     const remoteStreamRef = useRef<MediaStream>();
 
     const getUserStream = useCallback(async () => {
-        if (!peer.current) peer.current = new RTCPeerConnection(RTC_Config);
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
+        if (!peer.current) peer.current = new RTCPeerConnection(RTC_Config)
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: callMode === "video" ? true : false });
         userStreamRef.current = stream;
         if (userVideRef.current) userVideRef.current.srcObject = stream;
 
@@ -53,13 +60,13 @@ const CallPanel = () => {
             };
 
             peer.current.ontrack = (e) => {
-                console.log('🚀 ~ getUserStream ~ e:', e.streams[0]);
                 if (e.streams && remoteVideRef.current) {
                     remoteVideRef.current.srcObject = e.streams[0];
+                    remoteStreamRef.current = e.streams[0]
                 }
             };
         }
-    }, [callOffer?.from, callReceiver, callType, socket]);
+    }, [callMode, callOffer?.from, callReceiver, callType, socket]);
 
     const answerCall = useCallback(async () => {
         try {
@@ -90,7 +97,7 @@ const CallPanel = () => {
             const offer = await peer.current?.createOffer({ offerToReceiveAudio: true, offerToReceiveVideo: true });
             if (offer && callReceiver && Me) {
                 await peer.current?.setLocalDescription(new RTCSessionDescription(offer));
-                socket.emit('offerCall', { callee: callReceiver, caller: Me, offer });
+                socket.emit('offerCall', { callee: callReceiver, caller: Me, offer, callMode });
                 socket.on('callStatus', (status) => {
                     setCallStatus(status);
                 });
@@ -100,95 +107,146 @@ const CallPanel = () => {
         } catch (error) {
             console.log('🚀 ~ createOffer ~ error:', error);
         }
-    }, [Me, callReceiver, getUserStream, socket]);
+    }, [Me, callMode, callReceiver, getUserStream, socket]);
 
     useEffect(() => {
         socket.on('onCallOffer', (offer) => {
             if (Me) {
                 setCallOffer(offer);
-                store.dispatch(openCallPanel({ callReceiver: Me, callType: 'answer' }));
+                setMediaState(prev => { return { ...prev, cameraIsOn: offer.callMode === "video" ? true : false } })
+                store.dispatch(openCallPanel({ callReceiver: Me, callType: 'answer', callMode: offer.callMode }));
             }
         });
 
         socket.on('onAcceptAnswer', async (payload) => {
             if (payload.acceptorSdp) {
-                await peer.current?.setRemoteDescription(new RTCSessionDescription(payload.acceptorSdp));
-                setCallStatus('accepted');
+                try {
+                    await peer.current?.setRemoteDescription(new RTCSessionDescription(payload.acceptorSdp));
+                    setCallStatus('accepted');
+                } catch (error) {
+                    console.log("🚀 ~ socket.on ~ error:", error)
+
+                }
             }
         });
+        return () => {
+            socket.off("onCallOffer")
+            socket.off("onAcceptAnswer")
+        }
     }, [Me, socket]);
 
     useEffect(() => {
         const init = async () => {
             if (callType === 'offer' && isOpen) {
+                setMediaState(prev => { return { ...prev, cameraIsOn: callMode === "video" ? true : false } })
                 await createOffer();
             }
         };
         init();
-    }, [callType, createOffer, isOpen]);
+    }, [callMode, callType, createOffer, isOpen]);
 
     useEffect(() => {
         if (isOpen) {
             socket.on('onIceCandidate', (candidate) => {
-                peer.current?.addIceCandidate(candidate);
+                if (peer.current) {
+                    try {
+                        peer.current.addIceCandidate(candidate);
+                    } catch (error) {
+                        console.log("🚀 ~ socket.on ~ error:", error)
+
+                    }
+                }
             });
+
+            socket.on("callStatus", (status) => {
+                if (status === "rejected") {
+                    peer.current?.close()
+                    peer.current = undefined
+                    setCallStatus(undefined)
+                    store.dispatch(closeCallPanel())
+                }
+                setCallStatus(status)
+            })
+
         }
+
+        return () => {
+            socket.off("onIceCandidate")
+            socket.off("callStatus")
+        }
+
     }, [isOpen, socket]);
 
-    return (
-        <div id="call-box" className={`absolute h-[50%] w-[50%] bg-white ${isOpen ? 'block' : 'hidden'} group/main flex flex-col overflow-hidden rounded-lg`}>
-            <div className="relative h-full flex-1 rounded-lg">
-                <div className="group/my-video absolute z-10 m-1 rounded-lg ">
-                    {callStatus !== "accepted" ? <video autoPlay ref={userVideRef} className="rounded-lg border h-full w-full" /> :
-                        <video autoPlay ref={userVideRef} height={150} width={200} className="rounded-lg border" />}
-                    <span className="invisible absolute bottom-0 text-white group-hover/my-video:visible">Controls</span>
-                </div>
+    const hangupCall = () => {
+        socket.emit("hangupCall", { to: callType === "offer" ? callReceiver : callOffer?.from })
+        peer.current?.close()
+        peer.current = undefined
+        setCallStatus(undefined)
+        store.dispatch(closeCallPanel())
+    }
+    const toggleCamera = () => {
+        setMediaState((prev) => {
+            const videoTrack = userStreamRef.current?.getTracks().find(track => track.kind === "video")
+            if (prev.cameraIsOn) {
+                if (videoTrack) {
+                    videoTrack.enabled = false
+                }
+                return { ...prev, cameraIsOn: false }
+            }
+            else {
+                if (videoTrack) {
+                    videoTrack.enabled = true
+                }
+                return { ...prev, cameraIsOn: true }
+            }
+        })
+    }
+    const toggleMic = () => {
+        setMediaState((prev) => {
+            const audioTrack = userStreamRef.current?.getTracks().find(track => track.kind === "audio")
+            if (prev.micIsOn) {
+                if (audioTrack?.enabled) {
+                    audioTrack.enabled = false
+                }
+                return { ...prev, micIsOn: false }
+            }
+            else {
+                if (audioTrack) {
+                    audioTrack.enabled = true
+                }
+                return { ...prev, micIsOn: true }
+            }
+        })
+    }
+    const toggleSpeaker = () => {
+        setMediaState((prev) => {
+            const remoteAudioTrack = remoteStreamRef.current?.getTracks().find(track => track.kind === "audio")
 
-                <video autoPlay ref={remoteVideRef} className="relative rounded-lg" playsInline />
-                {callType === 'offer' ? (
-                    <div
-                        className={`bg-whatsapp-misc-whatsapp_primary_green_light z-10 flex h-16 w-full place-items-center justify-center gap-5 rounded-lg transition-all  ${callStatus !== "accepted" ? "bottom-0" : "absolute -bottom-[100%] group-hover/main:bottom-0"}`}
-                    >
-                        <OptionIcon src='icons/camera-on.svg' />
-                        <OptionIcon src='icons/call-mic-on.svg' />
-                        <OptionIcon src="icons/call/end-call-icon.svg" height={40} width={40} onClick={() => {
-                            console.log("reject call");
-                        }} />
-                    </div>
-                ) : callType === 'answer' && callStatus === 'pending' ? (
-                    <div
-                        className={`bg-whatsapp-misc-whatsapp_primary_green_light absolute -bottom-[100%] z-10 flex h-16 w-full place-items-center justify-center gap-5 rounded-lg transition-all group-hover/main:bottom-0`}
-                    >
-                        <OptionIcon src="icons/call/accept-call-icon.svg" height={40} width={40} onClick={answerCall} />
-                        <OptionIcon src="icons/call/end-call-icon.svg" height={40} width={40} onClick={() => {
-                            console.log("reject call");
-                        }} />
-                    </div>
-                ) : callType === 'answer' && callStatus === 'accepted' ? (
-                    <div
-                        className={`bg-whatsapp-misc-whatsapp_primary_green_light absolute -bottom-[100%] z-10 flex h-16 w-full place-items-center justify-center gap-5 rounded-lg transition-all group-hover/main:bottom-0`}
-                    >
-                        <OptionIcon src="/icons/call-mic-on.svg" height={40} width={40} />
-                        <OptionIcon src="/icons/camera-on.svg" height={40} width={40} />
-                        <OptionIcon src="icons/call/end-call-icon.svg" height={40} width={40} />
-                    </div>
-                ) : null}
-            </div>
+            if (prev.speakerIsOn) {
+                if (remoteAudioTrack?.enabled) {
+                    remoteAudioTrack.enabled = false
+                }
+                return { ...prev, speakerIsOn: false }
+            }
+            else {
+                if (remoteAudioTrack) {
+                    remoteAudioTrack.enabled = true
+                }
+                return { ...prev, speakerIsOn: true }
+            }
+        })
+    }
 
-            {/* {callType === 'answer' ? (
-                <div className='flex justify-center place-items-center gap-5 h-[20%] bg-whatsapp-misc-whatsapp_primary_green_light'>
-                    <OptionIcon src='icons/call/end-call-icon.svg' />
-                    <OptionIcon src="icons/call/accept-call-icon.svg" onClick={answerCall} />
-                </div>
-            ) : callType === 'offer' ? (
-                <div className='flex justify-center place-items-center gap-5 h-[20%] bg-whatsapp-misc-whatsapp_primary_green_light'>
-                    <OptionIcon src='/icons/call-mic-on.svg' />
-                    <OptionIcon src='/icons/camera-on.svg' />
-                    <OptionIcon src='icons/call/end-call-icon.svg' />
-                </div>
-            ) : null} */}
+
+    return isOpen ? (
+        <div className={`relative overflow-hidden rounded-lg w-full h-full flex justify-center place-items-center z-40`}>
+            {callType === "offer" && callStatus !== "accepted" ? <CallAwaitingPanel callStatus={callStatus} callMode={callMode} callEndCallBack={hangupCall} /> : null}
+
+            <CallAnswerPanel show={callType === "answer" && callStatus !== "accepted" ? true : false} callMode={callMode} caller={callOffer?.from} callAcceptCallBack={answerCall} callEndCallBack={hangupCall} /> 
+
+            <AcceptedCall callReceiver={callType === "offer" ? callReceiver : callOffer?.from} show={callStatus === "accepted" ? true : false} mediaState={mediaState} callMode={callMode} onCameraToggle={toggleCamera} onMicToggle={toggleMic} onSpeakerToggle={toggleSpeaker} remoteVideRef={remoteVideRef} userVideoRef={userVideRef} onEndCall={hangupCall} />
         </div>
-    );
+    ) : null
 };
 
 export default CallPanel;

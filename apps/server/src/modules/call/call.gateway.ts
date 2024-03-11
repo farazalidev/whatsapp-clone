@@ -30,7 +30,7 @@ export class CallGateway implements OnGatewayInit {
       // if the user is online the send the call notification
       if (pid) {
         client.emit('callStatus', 'online');
-        client.to(payload.callee.user_id).emit('onCallOffer', { from: payload.caller, offer: payload.offer });
+        client.to(payload.callee.user_id).emit('onCallOffer', { from: payload.caller, offer: payload.offer, callMode: payload.callMode });
       }
     });
   }
@@ -45,7 +45,7 @@ export class CallGateway implements OnGatewayInit {
     client.to(payload.to.user_id).emit('onIceCandidate', payload.candidate);
   }
 
-  @onEvent('rejectCall')
+  @onEvent('hangupCall')
   rejectCall(client: ISocket, payload: IRejectCallPayload) {
     client.to(payload.to.user_id).emit('callStatus', 'rejected');
   }

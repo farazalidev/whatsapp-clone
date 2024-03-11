@@ -7,9 +7,9 @@ import useGetUserOnlineStatus from '@/hooks/useGetUserOnlineStatus';
 import { useDispatch, } from 'react-redux';
 import ChatPanelHeaderWrapper from './ChatPanelHeaderWrapper';
 import { setCurrentUserProfilePreview } from '@/global/features/ProfilePreviewSlice';
-import { ICallType } from '@server/modules/call/entities/call.entity';
 import { UserEntity } from '@server/modules/user/entities/user.entity';
 import { openCallPanel } from '@/global/features/callSlice';
+import { CallMode } from '../../../../../../../shared/types/call.types';
 
 interface ChatPanelHeaderProps extends AvatarProps {
   receiver: UserEntity | undefined
@@ -53,9 +53,9 @@ const ChatPanelHeader: FC<ChatPanelHeaderProps> = ({ receiver, chat_id, ...props
     dispatch(setCurrentUserProfilePreview(receiver?.user_id))
   }
 
-  const handleCall = useCallback(async (type: ICallType) => {
+  const handleCall = useCallback(async (type: CallMode) => {
     if (receiver) {
-      dispatch(openCallPanel({ callReceiver: receiver, callType: "offer" }))
+      dispatch(openCallPanel({ callReceiver: receiver, callType: "offer", callMode: type }))
     }
   }, [dispatch, receiver])
 

@@ -69,7 +69,7 @@ export interface ClientToServerEvents {
   offerCall: (callOffer: ICallOffer) => void;
   acceptAnswer: (ans: IAcceptAnswerPayload) => void;
   icecandidate: (payload: IceCandidatePayload) => void;
-  rejectCall: (payload: IRejectCallPayload) => void;
+  hangupCall: (payload: IRejectCallPayload) => void;
 }
 
 export interface NewMessagePayload {

@@ -3,11 +3,13 @@ export interface ICallOffer {
   caller: UserEntity;
   callee: UserEntity;
   offer: RTCSessionDescriptionInit;
+  callMode: CallMode;
 }
 
 export interface IOnCallOffer {
   offer: RTCSessionDescriptionInit;
   from: UserEntity;
+  callMode: CallMode;
 }
 
 export interface IAcceptAnswerPayload {
@@ -30,3 +32,4 @@ export interface IRejectCallPayload {
 }
 
 export type ICallStatus = 'offline' | 'online' | 'rejected' | 'error' | 'pending' | 'accepted';
+export type CallMode = 'video' | 'voice' | undefined;
