@@ -45,7 +45,7 @@ export const messagesSlice = createSlice({
       const chat = state.paginatedChats.data.find((chat) => chat.id === payload?.chat_id);
       if (chat && payload) {
         const meta = payload.paginatedMessages.meta;
-        chat.messages.push(...new Set([...payload.paginatedMessages.messages]));
+        chat?.messages?.push(...new Set([...payload.paginatedMessages.messages]));
         chat.count = meta.totalMessages;
         chat.currentPage = meta.currentPage;
         chat.hasNext = meta.hasNext;
@@ -71,6 +71,17 @@ export const messagesSlice = createSlice({
         messagesTake: chatPaginationConfig.messagesTake,
         totalMessagesPages: 1,
       });
+    },
+
+    addLocalMediaMessages: (state, { payload }: { payload: MessageEntity[] }) => {
+      for (const message of payload) {
+        const chat = state.paginatedChats.data.find((chat) => {
+          return chat.id === message.chat.id;
+        });
+        if (chat) {
+          chat.messages?.unshift(message);
+        }
+      }
     },
 
     removePaginatedChat: (state, { payload }: { payload: { chat_id: string } }) => {
@@ -108,7 +119,7 @@ export const messagesSlice = createSlice({
     addNewMessage: (state, { payload }: { payload: addNewMessagePayload }) => {
       console.log('🚀 ~ payload:', payload);
       const existedChat = state.paginatedChats.data.find((chat) => chat?.id === payload.chat_id);
-      if (existedChat) existedChat?.messages.unshift(payload.message);
+      if (existedChat) existedChat?.messages?.unshift(payload.message);
       return;
     },
 
@@ -117,13 +128,12 @@ export const messagesSlice = createSlice({
     updateMessageStatus: (state, { payload }: { payload: updateMessagePayload }) => {
       const { chat_id, message_id, new_status } = payload;
       const chatIndex = state.paginatedChats.data.findIndex((chat) => chat.id === chat_id);
-
       if (chatIndex !== -1) {
-        const messageIndex = state.paginatedChats.data[chatIndex].messages.findIndex((message) => message.id === message_id);
+        const messageIndex = state?.paginatedChats?.data[chatIndex]?.messages?.findIndex((message) => message.id === message_id);
 
-        if (messageIndex !== -1) {
-          state.paginatedChats.data[chatIndex].messages[messageIndex] = {
-            ...state.paginatedChats.data[chatIndex].messages[messageIndex],
+        if (messageIndex && messageIndex !== -1 && state.paginatedChats.data) {
+          state.paginatedChats.data[chatIndex].messages![messageIndex] = {
+            ...state?.paginatedChats?.data[chatIndex]?.messages![messageIndex],
             ...new_status,
           };
         }
@@ -134,7 +144,7 @@ export const messagesSlice = createSlice({
       const chatIndex = state.paginatedChats.data.findIndex((chat) => chat.id === payload.chat_id);
 
       if (chatIndex !== -1) {
-        state.paginatedChats.data[chatIndex].messages = state.paginatedChats.data[chatIndex].messages.map((message) => {
+        state.paginatedChats.data[chatIndex].messages = state?.paginatedChats?.data[chatIndex]?.messages?.map((message) => {
           const updatedMessage = payload.messages.find((updated) => updated.id === message.id);
           return updatedMessage ? { ...message, ...updatedMessage } : message;
         });
@@ -154,4 +164,5 @@ export const {
   paginateChatMessages,
   addPaginatedChat,
   removePaginatedChat,
+  addLocalMediaMessages,
 } = messagesSlice.actions;

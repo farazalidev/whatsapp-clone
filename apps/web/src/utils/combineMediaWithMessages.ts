@@ -4,6 +4,7 @@ import { UserEntity } from '@server/modules/user/entities/user.entity';
 import { extname } from 'path';
 import { v4 } from 'uuid';
 import { UserChatEntity } from '@server/modules/chat/entities/userchat.entity';
+import { omitObject } from './OmitObject';
 
 export const combineMediaWithMessages = (files: SelectedFileType[], from: UserEntity | null, chat: UserChatEntity | undefined) => {
   const messages: MessageEntity[] = [];
@@ -28,7 +29,7 @@ export const combineMediaWithMessages = (files: SelectedFileType[], from: UserEn
         original_name: file.original_name,
         mime: file.mime,
       },
-      chat: chat as UserChatEntity,
+      chat: omitObject(chat as UserChatEntity, ['messages']) as UserChatEntity,
       messageType: file.type,
       received_at: null,
       seen_at: null,

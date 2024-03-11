@@ -1,11 +1,12 @@
 'use client';
 import { fetcher } from '@/utils/fetcher';
 import { useDispatch } from 'react-redux';
-import { initPaginatedChats } from '@/global/features/messagesSlice';
+import { addLocalMediaMessages, initPaginatedChats } from '@/global/features/messagesSlice';
 import { AxiosError } from 'axios';
 import { useEffect, useMemo, useState } from 'react';
 import { ChatsDto } from '@server/modules/chat/DTO/chats.dto';
 import { chatPaginationConfig } from '@/config/chatPagination.config';
+import { mainDb } from '@/utils/indexedDb/mainIndexedDB';
 
 interface IUseChatsState {
   isLoading: boolean;
@@ -32,8 +33,9 @@ export const useChats: IUseChats = () => {
         const result = await fetcher<ChatsDto>(
           `chat/user-chats?page=${chatPaginationConfig.page}&messagesPage=${chatPaginationConfig.messagesPage}&take=${chatPaginationConfig.take}&messagesTake=${chatPaginationConfig.messagesTake}&order=${chatPaginationConfig.order}`,
         );
-
         dispatch(initPaginatedChats(result));
+        const localMediaMessages = await mainDb.mediaMessages.toArray();
+        dispatch(addLocalMediaMessages(localMediaMessages));
         setChats(result);
       } catch (error: any) {
         setState((prev) => {
