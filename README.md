@@ -1,33 +1,55 @@
-# Real-Time Chat Application with Next.js and Nest.js
+# WhatsApp Web Clone(Nextjs, Nestjs)
 
-<p align="center">
-<img src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/6b/WhatsApp.svg/512px-WhatsApp.svg.png" alt="drawing" width="200"/>
-</p>
+This repository contains the source code for a real-time chat application built with Next.js and Nest.js. The application utilizes WebSockets for instant messaging, PostgreSQL as the database with TypeORM for ORM, Redis PubSub for websockets scalebity, Kafka to handle High throughput and also exposes a REST API 
+for various functionalities.
 
-## Overview
+# Screen shots
+[![Screenshot-from-2024-03-28-18-05-14.png](https://i.postimg.cc/RZgMRFBr/Screenshot-from-2024-03-28-18-05-14.png)](https://postimg.cc/pmnbVPrk)
 
-This repository contains the source code for a real-time chat application built with Next.js and Nest.js. The application utilizes WebSockets for instant messaging, PostgreSQL as the database with TypeORM for ORM, and also exposes a REST API for various functionalities.
+[![Screenshot-from-2024-03-28-18-05-21.png](https://i.postimg.cc/4xq0skv7/Screenshot-from-2024-03-28-18-05-21.png)](https://postimg.cc/bZ0g95Bp)
 
-## Features
+[![Screenshot-from-2024-03-28-18-05-32.png](https://i.postimg.cc/wMM513g6/Screenshot-from-2024-03-28-18-05-32.png)](https://postimg.cc/hQFQwDXw)
 
-- **Real-time Messaging:** Experience instant messaging with WebSockets.
-- **REST API:** Build and interact with the API for user management and other features.
-- **User Authentication:** Securely log in with user authentication.
-- **Database Integration:** PostgreSQL database with TypeORM for data storage.
+[![Screenshot-from-2024-03-28-18-06-17.png](https://i.postimg.cc/FFGpZ56t/Screenshot-from-2024-03-28-18-06-17.png)](https://postimg.cc/QV9c8PsS)
 
-## Technologies Used
+[![Screenshot-from-2024-03-28-18-06-34.png](https://i.postimg.cc/NFW540q7/Screenshot-from-2024-03-28-18-06-34.png)](https://postimg.cc/n9GFVpLC)
 
-- **Next.js:** React framework for building server-side rendered and statically generated web applications.
-- **Nest.js:** A progressive Node.js framework for building efficient, reliable, and scalable server-side applications.
-- **WebSockets:** Real-time communication for instant messaging.
-- **PostgreSQL:** Open-source relational database.
-- **TypeORM:** Object-Relational Mapping (ORM) for TypeScript and JavaScript.
-- **REST API:** Expose endpoints for external integrations and features.
+[![Screenshot-from-2024-03-28-18-06-58.png](https://i.postimg.cc/dVnTMw8v/Screenshot-from-2024-03-28-18-06-58.png)](https://postimg.cc/HrcLXGZP)
+# Features
+- Realtime messaging
+- File sharing
+- Voice messages
+- Gallery Preview
+- Profile Preview
+- Contacts Management
+- P2P Voice and Video call
+- Authentication
+- Realtime notifications
 
-## Getting Started
+# How to setup locally
 
-1. **Clone the Repository:**
-   ```bash
-   git clone https://github.com/farazalidev/whatsapp-repo
-   cd whatsapp-repo
-   ```
+## PreRequsities
+Kafka: [installation guide](https://kafka.apache.org/quickstart)\
+Redis: [installation guide](https://redis.io/docs/install/install-stack/)\
+PostgreSQL:[installation guide windws](https://www.w3schools.com/postgresql/postgresql_install.php) && [installation guide linux](https://www.devart.com/dbforge/postgresql/how-to-install-postgresql-on-linux)
+
+
+# Before running
+Open ```.env.example``` in all the projects and add the required environment variables
+
+To setup locally you need to clone this Repo first:
+```bash
+git clone https://github.com/farazalidev/whatsapp-clone
+```
+After clonnging instant:
+```bash
+cd whatsapp-clone
+```
+install Dependencies
+```bash
+npm i
+```
+
+Because this repo is using Nx repo for managing Mono repos, setup Nx for your editor [Nx repo setup](https://nx.dev/features/integrate-with-editors)
+
+open ```https://localhost:4200```
