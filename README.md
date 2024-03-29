@@ -1,6 +1,6 @@
 # WhatsApp Web Clone(Nextjs, Nestjs)
 
-This repository contains the source code for a real-time chat application built with Next.js and Nest.js. The application utilizes WebSockets for instant messaging, PostgreSQL as the database with TypeORM for ORM, Redis PubSub for websockets scalebity, Kafka to handle High throughput and also exposes a REST API 
+This repository contains the source code for a real-time chat application built with Next.js and Nest.js. The application utilizes WebSockets for instant messaging, PostgreSQL as the database with TypeORM for ORM, Redis PubSub for websockets scalebility, Kafka to handle High throughput and also exposes a REST API 
 for various functionalities.
 
 # Screen shots
@@ -24,7 +24,9 @@ for various functionalities.
 - Contacts Management
 - P2P Voice and Video call
 - Authentication
-- Realtime notifications
+- Push notifications
+- In app notifications
+- Message status
 
 # How to setup locally
 
