@@ -34,16 +34,13 @@ for various functionalities.
 Kafka: [installation guide](https://kafka.apache.org/quickstart)\
 Redis: [installation guide](https://redis.io/docs/install/install-stack/)\
 PostgreSQL:[installation guide windws](https://www.w3schools.com/postgresql/postgresql_install.php) && [installation guide linux](https://www.devart.com/dbforge/postgresql/how-to-install-postgresql-on-linux)
-
-
-# Before running
 Open ```.env.example``` in all the projects and add the required environment variables
 
 To setup locally you need to clone this Repo first:
 ```bash
 git clone https://github.com/farazalidev/whatsapp-clone
 ```
-After clonnging instant:
+After clonnging:
 ```bash
 cd whatsapp-clone
 ```
