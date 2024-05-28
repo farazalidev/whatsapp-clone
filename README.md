@@ -31,10 +31,10 @@ for various functionalities.
 # How to setup locally
 
 ## PreRequsities
-Kafka: [installation guide](https://kafka.apache.org/quickstart)\
-Redis: [installation guide](https://redis.io/docs/install/install-stack/)\
-PostgreSQL:[installation guide windws](https://www.w3schools.com/postgresql/postgresql_install.php) && [installation guide linux](https://www.devart.com/dbforge/postgresql/how-to-install-postgresql-on-linux)
-Open ```.env.example``` in all the projects and add the required environment variables
+1. Kafka: [installation guide](https://kafka.apache.org/quickstart)\
+2. Redis: [installation guide](https://redis.io/docs/install/install-stack/)\
+3. PostgreSQL:[installation guide windws](https://www.w3schools.com/postgresql/postgresql_install.php) && [installation guide linux](https://www.devart.com/dbforge/postgresql/how-to-install-postgresql-on-linux)
+4. Open ```.env.example``` in all the projects and add the required environment variables
 
 To setup locally you need to clone this Repo first:
 ```bash
